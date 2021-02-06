@@ -1,0 +1,29 @@
+{
+  "name": "svelte-app",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "start": "sirv public"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^16.0.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^10.0.0",
+    "bitcoin-predict": "file:../bitcoin-predict",
+    "graphql": "^15.5.0",
+    "graphql-request": "^3.4.0",
+    "qrcode": "^1.4.4",
+    "rollup": "^2.38.4",
+    "rollup-plugin-css-only": "^3.1.0",
+    "rollup-plugin-livereload": "^2.0.0",
+    "rollup-plugin-node-polyfills": "file:../rollup-plugin-node-polyfills",
+    "rollup-plugin-svelte": "^7.1.0",
+    "rollup-plugin-terser": "^7.0.0",
+    "svelte": "^3.32.1",
+    "svelte-persistent-store": "^0.1.6"
+  },
+  "dependencies": {
+    "sirv-cli": "^1.0.11"
+  }
+}
