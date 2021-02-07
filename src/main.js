@@ -1,10 +1,11 @@
-import App from './App.svelte';
+import App from "./App.svelte"
+import "../public/global.css"
 
 const app = new App({
-	target: document.body,
-	props: {
-		name: 'world'
-	}
-});
+  target: document.body,
+  props: {
+    title: "Svelte + Tailwind 2"
+  }
+})
 
-export default app;
+export default app

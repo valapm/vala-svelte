@@ -52,57 +52,37 @@
       liquidity: market.liquidity
     }
   }
-
-  function getPercentFor(balance) {
-    return (balance.sharesFor + balance.sharesAgainst) / balance.sharesFor
-  }
 </script>
 
-<main>
+<div class="flex w-full h-20 items-center space-x-8 p-7 justify-end">
   {#if $wallet}
-    <h1>Welcome {$address}</h1>
-
-    <Qr value={$address} />
+    <div>Logged in as {$address}</div>
+    <button class="button px-4 rounded-sm h-8 flex items-center text-lg bg-blue-500 text-white font-semibold"
+      >wallet</button
+    >
   {:else}
-    <button on:click={createWallet}>Create wallet</button>
+    <button
+      on:click={createWallet}
+      class="button px-4 rounded-sm h-8 flex items-center text-lg bg-blue-500 text-white font-semibold"
+      >Create wallet</button
+    >
   {/if}
-
-  <br />
-
-  {#await getMarkets()}
-    loading markets..
-  {:then res}
-    <table>
+</div>
+<div class="h-screen w-full flex justify-center">
+  <div class="w-2/3 h-full flex flex-col space-y-4 mt-10">
+    {#await getMarkets()}
+      loading...
+    {:then res}
       {#each res.market as market}
-        <tr>
-          <td>{market.firstTxTxid}</td>
-          <td>{market.resolve}</td>
-          <td>{getPercentFor(getBalance(market))}</td>
-          <td>{lmsr.getLmsrSats(getBalance(market))} sats</td>
-        </tr>
+        <div class="w-full px-3 border-blue-600 border-2 rounded-lg p-2">
+          <h3 class="font-semibold text-blue-900 w-full">{market.firstTxTxid}</h3>
+          <div class="flex items-center justify-between">
+            <div class="text-xl">{market.resolve}</div>
+            <div class="font-bold text-5xl">{lmsr.getProbability(getBalance(market)) * 100}%</div>
+          </div>
+          <div class="">{lmsr.getLmsrSats(getBalance(market)) * 100000000} BSV</div>
+        </div>
       {/each}
-    </table>
-  {/await}
-</main>
-
-<style>
-  main {
-    text-align: center;
-    padding: 1em;
-    max-width: 240px;
-    margin: 0 auto;
-  }
-
-  h1 {
-    color: #ff3e00;
-    text-transform: uppercase;
-    font-size: 4em;
-    font-weight: 100;
-  }
-
-  @media (min-width: 640px) {
-    main {
-      max-width: none;
-    }
-  }
-</style>
+    {/await}
+  </div>
+</div>
