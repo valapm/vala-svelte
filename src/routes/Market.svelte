@@ -5,14 +5,14 @@
   import { gqlClient } from "../graphql"
   import { onMount } from "svelte"
 
-  export let currentRoute
+  export let params
 
   let sharesFor = 0
   let sharesAgainst = 0
 
   const marketQuery = gql`
     {
-      market(where: { firstTxTxid: { _eq: "${currentRoute.namedParams.firstTxTxid}" } }) {
+      market(where: { firstTxTxid: { _eq: "${params.firstTxTxid}" } }) {
         decided
         firstTxTxid
         resolve

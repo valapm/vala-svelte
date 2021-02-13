@@ -67,7 +67,7 @@ export default {
       dedupe: ["svelte"],
       preferBuiltins: true
     }),
-    commonjs({ requireReturnsDefault: "auto" }),
+    commonjs(),
     json(),
     nodePolyfills({
       include: ["node_modules", "../bitcoin-predict/lib"],

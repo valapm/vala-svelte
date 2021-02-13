@@ -2,8 +2,7 @@
   import { lmsr } from "bitcoin-predict"
   import { price } from "../store/price"
   import { onMount } from "svelte"
-  // import { navigateTo } from 'svelte-router-spa'
-  import { Navigate } from "svelte-router-spa"
+  // import { navigateTo } from 'svelte-spa-router'
 
   export let market
 
@@ -42,7 +41,7 @@
   // })
 </script>
 
-<Navigate to="market/{market.firstTxTxid}" {market}>
+<a href="#/market/{market.firstTxTxid}">
   <div>
     <div class="w-full px-3 border-blue-600 border-2 rounded-lg p-2">
       <h3 class="font-semibold text-blue-900 w-full">{market.firstTxTxid}</h3>
@@ -53,4 +52,4 @@
       <div class="">{round(bsvTotal)} BSV ({round(usdTotal)} $)</div>
     </div>
   </div>
-</Navigate>
+</a>
