@@ -1,26 +1,21 @@
 <script>
-  import { writable } from "svelte-persistent-store/dist/local"
-  import { derived } from "svelte/store"
   import { bsv } from "bitcoin-predict"
   import { gql } from "graphql-request"
   import InlineMarket from "../components/InlineMarket.svelte"
-  import { gqlClient } from "../graphql"
-
-  let wallet = writable("wallet", null)
-
-  let address = derived(
-    wallet,
-    wallet => {
-      return wallet ? bsv.PrivateKey.fromString(wallet).toAddress().toString() : null
-    },
-    null
-  )
+  import { gqlClient } from "../store/graphql"
+  import { address, seed } from "../store/wallet"
+  import Qr from "../components/Qr.svelte"
+  import Mnemonic from "../utils/mnemonic"
 
   const marketQuery = gql`
     {
-      market {
+      market(where: { _not: { markets: {} } }) {
         decided
-        firstTxTxid
+        marketByFirststateid {
+          transaction {
+            txid
+          }
+        }
         resolve
         sharesFor
         sharesAgainst
@@ -30,17 +25,20 @@
   `
 
   async function getMarkets() {
-    return gqlClient.request(marketQuery)
+    return $gqlClient.request(marketQuery)
   }
 
   function createWallet() {
-    $wallet = bsv.PrivateKey.fromRandom().toString()
+    $seed = Mnemonic.fromRandom().toString()
   }
 </script>
 
 <div class="flex w-full h-20 items-center space-x-8 p-7 justify-end">
-  {#if $wallet}
-    <div>Logged in as {$address}</div>
+  {#if $seed}
+    <div>Logged in as {$address.toString()}</div>
+    <a href="#/create" class="button px-4 rounded-sm h-8 flex items-center text-lg bg-blue-500 text-white font-semibold"
+      >Create Market</a
+    >
     <button class="button px-4 rounded-sm h-8 flex items-center text-lg bg-blue-500 text-white font-semibold"
       >wallet</button
     >
@@ -54,6 +52,10 @@
 </div>
 <div class="h-screen w-full flex justify-center">
   <div class="w-2/3 h-full flex flex-col space-y-8 mt-10">
+    {#if $seed}
+      <Qr value={$address.toString()} />
+    {/if}
+
     {#await getMarkets()}
       loading...
     {:then res}

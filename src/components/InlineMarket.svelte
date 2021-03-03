@@ -41,10 +41,10 @@
   // })
 </script>
 
-<a href="#/market/{market.firstTxTxid}">
+<a href="#/market/{market.marketByFirststateid.transaction.txid}">
   <div>
     <div class="w-full px-3 border-blue-600 border-2 rounded-lg p-2">
-      <h3 class="font-semibold text-blue-900 w-full">{market.firstTxTxid}</h3>
+      <h3 class="font-semibold text-blue-900 w-full">{market.marketByFirststateid.transaction.txid}</h3>
       <div class="flex items-center justify-between">
         <div class="text-xl">{market.resolve}</div>
         <div class="font-bold text-5xl">{probability * 100}%</div>

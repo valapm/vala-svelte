@@ -1,4 +1,3 @@
-import { writable } from "svelte/store"
 import { BACKEND_HOST } from "../config"
 import { asyncReadable } from "svelte-async-readable"
 
@@ -9,9 +8,7 @@ async function getPrice() {
   return parseInt(json.price)
 }
 
-// export const price = writable(getPrice())
-
 export const price = asyncReadable({
   dataProvider: getPrice,
-  initialValue: null
+  initialValue: 0
 })
