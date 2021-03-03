@@ -12,11 +12,10 @@
   const priceQuery = gql`
   {
     market(where: {marketByFirststateid: {transactionTxid: {_eq: "${market}"}}}, order_by: {stateCount: asc}, offset: 1) {
-      market {
-        sharesFor
-        sharesAgainst
-        liquidity
-      }
+      sharesFor
+      sharesAgainst
+      liquidity
+      stateCount
     }
   }
 `
@@ -24,11 +23,15 @@
   onMount(async () => {
     const marketData = await $gqlClient.request(priceQuery)
 
-    const priceData = marketData.market.map(market => lmsr.getProbability(market.market))
+    const priceData = marketData.market.map(market => lmsr.getProbability(market))
+    const labels = marketData.market.map(market => market.stateCount)
+
+    console.log(priceData)
 
     new Chart(ctx, {
       type: "line",
       data: {
+        labels: labels,
         datasets: [
           {
             data: priceData,

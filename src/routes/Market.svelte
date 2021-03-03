@@ -65,6 +65,9 @@
 
   let market
 
+  let sellSharesFor = 0
+  let sellSharesAgainst = 0
+
   async function getMarket() {
     const res = await $gqlClient.request(marketQuery)
     return res.market[0]
@@ -117,16 +120,6 @@
     sharesAgainst: balance.sharesAgainst + sharesAgainst
   }
 
-  $: newEntry = {
-    ...newBalance,
-    publicKey: $publicKey
-  }
-
-  // $: newEntry = {
-  //   pubKey: bsv.PublicKey.fromString(pubKey),
-  //   balance: newBalance
-  // }
-
   function getEntries() {
     return market.entries.map(entry => {
       return {
@@ -146,33 +139,20 @@
   }
 
   async function buyShares() {
+    const entries = getEntries()
+
+    let newTx
     if (existingEntry) {
-      updateEntry()
+      newTx = await getUpdateTx(newBalance, entries)
     } else {
       addEntry()
     }
-  }
-
-  function toggleShareType() {
-    if (shareType === 1) {
-      shareType = 2
-    } else if (shareType === 2) {
-      shareType = 1
-    }
-  }
-
-  async function updateEntry() {
-    const currentTx = await getRawTx(market.transaction.txid)
-
-    const entries = getEntries()
-
-    const updateTx = pmTx.getUpdateEntryTx(currentTx, entries, newBalance, $privateKey)
 
     const utxos = await getUtxos($address.toString(), $testnet)
 
     console.log(utxos)
 
-    const fundedTx = pmTx.fundTx(updateTx, $privateKey, $address, utxos)
+    const fundedTx = pmTx.fundTx(newTx, $privateKey, $address, utxos)
 
     console.log(fundedTx.outputs[0].script.toASM().split(" ").reverse()[2])
 
@@ -185,9 +165,41 @@
     console.log(postRes)
   }
 
+  function toggleShareType() {
+    if (shareType === 1) {
+      shareType = 2
+    } else if (shareType === 2) {
+      shareType = 1
+    }
+  }
+
+  async function getUpdateTx(newBalance, entries) {
+    const currentTx = await getRawTx(market.transaction.txid)
+    const updateTx = pmTx.getUpdateEntryTx(currentTx, entries, newBalance, $privateKey)
+    return updateTx
+  }
+
   async function addEntry() {}
 
-  async function sellShares() {}
+  async function sellShares() {
+    const updatedBalance = { ...balance }
+
+    if (sellSharesFor) {
+      updatedBalance.sharesFor = updatedBalance.sharesFor - sellSharesFor
+    } else if (sellSharesAgainst) {
+      updatedBalance.sharesAgainst = updatedBalance.sharesAgainst - sellSharesAgainst
+    }
+
+    const entries = getEntries()
+    const newTx = await getUpdateTx(updatedBalance, entries)
+
+    console.log(newTx)
+
+    const rawtx = newTx.checkedSerialize()
+
+    const postRes = await postTx(rawtx, entries, $testnet)
+    console.log(postRes)
+  }
 
   onMount(async () => {
     market = await getMarket()
@@ -286,9 +298,14 @@
       <div>
         <h2>Balance</h2>
         {#if balance.sharesFor}
-          <p class="text-green-700">{balance.sharesFor} Shares</p>
-        {:else if balance.sharesAgainst}
-          <p class="text-green-700">{balance.sharesAgainst} Shares</p>
+          <p class="text-green-700">{balance.sharesFor} Shares For</p>
+          <input type="number" min="0" max={balance.sharesFor} bind:value={sellSharesFor} />
+          <button on:click={sellShares}>Sell</button>
+        {/if}
+        {#if balance.sharesAgainst}
+          <p class="text-red-700">{balance.sharesAgainst} Shares Against</p>
+          <input type="number" min="0" max={balance.sharesFor} bind:value={sellSharesAgainst} />
+          <button on:click={sellShares}>Sell</button>
         {/if}
       </div>
     {/if}
