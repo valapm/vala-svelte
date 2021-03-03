@@ -16,6 +16,7 @@
     "autoprefixer": "^10.2.4",
     "bitcoin-predict": "file:../bitcoin-predict",
     "buffer": "^6.0.3",
+    "chart.js": "^2.9.4",
     "create-hmac": "^1.1.7",
     "cross-env": "^7.0.3",
     "css-loader": "^5.0.2",

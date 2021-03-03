@@ -11,6 +11,7 @@
   // import { mattercloudKey } from "../store/apis"
   import { testnet, txqHost } from "../store/options"
   import AnimatedNumber from "../components/AnimatedNumber.svelte"
+  import Chart from "../components/Chart.svelte"
 
   export let params
 
@@ -208,6 +209,9 @@
       <div class="text-gray-700 font-light">{Math.round(usdTotal)} $ total</div>
     </div>
 
+    <div class="max-w-screen-md mx-auto pt-6">
+      <Chart market={market.marketByFirststateid.transaction.txid} />
+    </div>
     <!-- <AnimatedNumber {num} />
     <button on:click={() => (num = num + 1000)}> Increase </button> -->
 
