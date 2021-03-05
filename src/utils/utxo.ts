@@ -3,7 +3,7 @@ import { fetchUTXOs as mattercloudUtxos } from "../apis/mattercloud"
 import { mattercloudKey } from "../store/apis"
 import { bsv } from "bitcoin-predict"
 
-export async function getUtxos(address, testnet = false) {
+export async function getUtxos(address: bsv.Address, testnet = false) {
   const utxos = testnet
     ? await whatsonchainUtxos(address, testnet)
     : await mattercloudUtxos(address, mattercloudKey.get())

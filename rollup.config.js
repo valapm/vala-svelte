@@ -6,7 +6,9 @@ import { terser } from "rollup-plugin-terser"
 import json from "@rollup/plugin-json"
 import nodePolyfills from "rollup-plugin-node-polyfills"
 import postcss from "rollup-plugin-postcss"
-import css from "rollup-plugin-css-only"
+// import css from "rollup-plugin-css-only"
+import sveltePreprocess from "svelte-preprocess"
+import typescript from "@rollup/plugin-typescript"
 
 const production = !process.env.ROLLUP_WATCH
 
@@ -32,7 +34,7 @@ function serve() {
 }
 
 export default {
-  input: "src/main.js",
+  input: "src/main.ts",
   output: {
     sourcemap: true,
     format: "iife",
@@ -42,11 +44,12 @@ export default {
   plugins: [
     postcss({
       extract: "bundle.css",
-      sourceMap: true,
+      sourceMap: !production,
       minimize: production
     }),
     svelte({
       emitCss: true,
+      preprocess: sveltePreprocess({ sourceMap: !production }),
       compilerOptions: {
         // enable run-time checks when not in production
         dev: !production,
@@ -72,6 +75,11 @@ export default {
     nodePolyfills({
       include: ["node_modules"], //, "../bitcoin-predict/lib"],
       exclude: ["node_modules/bsv"]
+      // crypto: true
+    }),
+    typescript({
+      sourceMap: !production,
+      inlineSources: !production
     }),
 
     // In dev mode, call `npm run start` once
