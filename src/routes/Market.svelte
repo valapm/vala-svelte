@@ -112,7 +112,7 @@
 
   $: potentialAssetsUSD = ((shares * lmsr.SatScaling) / 100000000) * $price || 0
   $: potentialWin = potentialAssetsUSD - priceForUSD
-  $: potentialX = potentialWin / potentialAssetsUSD
+  $: potentialX = potentialWin / priceForUSD
 
   $: newBalance = {
     liquidity: balance.liquidity,
