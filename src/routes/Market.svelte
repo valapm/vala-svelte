@@ -7,7 +7,7 @@
   import { publicKey, privateKey, seed, address } from "../store/wallet"
   import { getUtxos } from "../utils/utxo"
   import { getTx } from "../apis/txq"
-  import { postTx } from "../apis/web"
+  import { postMarketTx } from "../apis/web"
   // import { mattercloudKey } from "../store/apis"
   import { testnet, txqHost } from "../store/options"
   import AnimatedNumber from "../components/AnimatedNumber.svelte"
@@ -161,7 +161,7 @@
     const rawtx = fundedTx.checkedSerialize() // FIXME: throws if not enough sats
     console.log(fundedTx)
 
-    const postRes = await postTx(rawtx, entries, $testnet)
+    const postRes = await postMarketTx(rawtx, entries, $testnet)
     console.log(postRes)
   }
 
@@ -197,7 +197,7 @@
 
     const rawtx = newTx.checkedSerialize()
 
-    const postRes = await postTx(rawtx, entries, $testnet)
+    const postRes = await postMarketTx(rawtx, entries, $testnet)
     console.log(postRes)
   }
 
