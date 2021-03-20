@@ -12,6 +12,9 @@
 
   let resolve
   let oracle
+  let liquidity = 1
+
+  $: console.log(oracle)
 
   const oracleQuery = gql`
     {
@@ -32,26 +35,29 @@
       balance: {
         sharesFor: 0,
         sharesAgainst: 0,
-        liquidity: 1
+        liquidity
       }
     }
   ]
 
-  $: market = bp.pm.getNewMarket(
-    {
-      resolve
-    },
-    entries,
-    [
-      {
-        pubKey: oracle,
-        votes: 100
-      }
-    ]
-  )
-
   async function createMarket() {
+    const market = bp.pm.getNewMarket(
+      {
+        resolve
+      },
+      entries,
+      [
+        {
+          pubKey: BigInt(oracle),
+          votes: 100
+        }
+      ]
+    )
+
     const tx = buildTx(market)
+
+    // console.log(market.miners)
+    // console.log(bp.transaction.getMinerDetails(tx.outputs[0].script))
     const utxos = await getUtxos($address.toString(), $testnet)
 
     const fundedTx = fundTx(tx, $privateKey, $address, utxos)
@@ -60,9 +66,20 @@
     const postRes = await postMarketTx(rawtx, entries, $testnet)
     console.log(postRes)
   }
+
+  let retryRawtx
+
+  async function retry() {
+    const postRes = await postMarketTx(retryRawtx, entries, $testnet)
+    console.log(postRes)
+  }
 </script>
 
+test
+{$publicKey.toString()}
+<br />
 Resolve: <input type="text" bind:value={resolve} />
+Inital liquidity: <input type="number" bind:value={liquidity} min="1" />
 <br />
 Choose oracle
 {#await $gqlClient.request(oracleQuery)}
@@ -70,9 +87,13 @@ Choose oracle
 {:then res}
   <select bind:value={oracle}>
     {#each res.oracle as oracle}
-      <option value={oracle.pubKey}>{oracle.name}...</option>
+      <option value={oracle.pubKey}>{oracle.name}</option>
     {/each}
   </select>
 {/await}
 <br />
 <button on:click={createMarket}>Create new market</button>
+
+<h3>Retry Rawtx</h3>
+<input type="text" bind:value={retryRawtx} />
+<button on:click={retry}>Retry</button>

@@ -1,7 +1,7 @@
 import { BACKEND_HOST, BACKEND_HOST_TESTNET } from "../config"
 import { post } from "../utils/fetch"
 
-export async function postMarketTx(rawtx, entries, testnet = false) {
+export async function postMarketTx(rawtx, entries = [], testnet = false) {
   const entryPayload = entries.map(entry => {
     return {
       ...entry,
@@ -12,7 +12,9 @@ export async function postMarketTx(rawtx, entries, testnet = false) {
   const host = testnet ? BACKEND_HOST_TESTNET : BACKEND_HOST
   console.log("posting to ", host)
 
-  return await post(host + "/market", { rawtx, entries: entryPayload })
+  const payLoad = entries.length ? { rawtx, entries: entryPayload } : { rawtx }
+
+  return await post(host + "/market", payLoad)
 
   // const post = await fetch(host + "/market", {
   //   method: "post",

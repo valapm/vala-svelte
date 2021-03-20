@@ -9,7 +9,7 @@
 
   const marketQuery = gql`
     {
-      market(where: { _not: { markets: {} } }) {
+      market(where: { _not: { markets: {} } }, order_by: { liquidity: desc }) {
         decided
         marketByFirststateid {
           transaction {

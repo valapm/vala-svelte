@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { lmsr, bsv, transaction as pmTx } from "bitcoin-predict"
   import { price } from "../store/price"
   import { gql } from "graphql-request"
@@ -25,10 +25,13 @@
   $: sharesFor = shareType === 1 ? shares : 0
   $: sharesAgainst = shareType === 2 ? shares : 0
 
+  let liquidity = 1
+
   const marketQuery = gql`
     {
       market(limit: 1, order_by: {stateCount: desc}, where: {marketByFirststateid: {transaction: {txid: {_eq: "${params.firstTxTxid}"}}}}) {
         decided
+        decision
         marketByFirststateid {
           transaction {
             txid
@@ -114,12 +117,6 @@
   $: potentialWin = potentialAssetsUSD - priceForUSD
   $: potentialX = potentialWin / priceForUSD
 
-  $: newBalance = {
-    liquidity: balance.liquidity,
-    sharesFor: balance.sharesFor + sharesFor,
-    sharesAgainst: balance.sharesAgainst + sharesAgainst
-  }
-
   function getEntries() {
     return market.entries.map(entry => {
       return {
@@ -138,15 +135,10 @@
     return Math.round(n * factor) / factor
   }
 
-  async function buyShares() {
+  async function updateMarket(newBalance) {
     const entries = getEntries()
 
-    let newTx
-    if (existingEntry) {
-      newTx = await getUpdateTx(newBalance, entries)
-    } else {
-      addEntry()
-    }
+    const newTx = await getUpdateTx(newBalance, entries)
 
     const utxos = await getUtxos($address.toString(), $testnet)
 
@@ -161,8 +153,27 @@
     const rawtx = fundedTx.checkedSerialize() // FIXME: throws if not enough sats
     console.log(fundedTx)
 
-    const postRes = await postMarketTx(rawtx, entries, $testnet)
+    const postRes = await postMarketTx(rawtx, [], $testnet)
     console.log(postRes)
+  }
+
+  async function addLiquidity() {
+    const newBalance = {
+      ...balance,
+      liquidity: balance.liquidity + liquidity
+    }
+
+    await updateMarket(newBalance)
+  }
+
+  async function buyShares() {
+    const newBalance = {
+      liquidity: balance.liquidity,
+      sharesFor: balance.sharesFor + sharesFor,
+      sharesAgainst: balance.sharesAgainst + sharesAgainst
+    }
+
+    await updateMarket(newBalance)
   }
 
   function toggleShareType() {
@@ -175,11 +186,20 @@
 
   async function getUpdateTx(newBalance, entries) {
     const currentTx = await getRawTx(market.transaction.txid)
-    const updateTx = pmTx.getUpdateEntryTx(currentTx, entries, newBalance, $privateKey)
+
+    let updateTx
+    if (existingEntry) {
+      updateTx = pmTx.getUpdateEntryTx(currentTx, entries, newBalance, $privateKey)
+    } else {
+      const newEntry = {
+        balance: newBalance,
+        publicKey: $publicKey
+      }
+      updateTx = pmTx.getAddEntryTx(currentTx, entries, newEntry)
+    }
+
     return updateTx
   }
-
-  async function addEntry() {}
 
   async function sellShares() {
     const updatedBalance = { ...balance }
@@ -230,70 +250,81 @@
     <h3 class="font-semibold text-blue-900 w-full">{market.marketByFirststateid.transaction.txid}</h3>
     <div class="">{round(bsvTotal)} BSV ({round(usdTotal)} $)</div>
 
-    <!-- <div class="shadow-xl w-72 p-5 rounded-2xl bg-gray-300"> -->
-    <div class="flex w-full justify-around mt-2">
-      <div class="flex flex-col items-center space-y-3">
-        <div class="flex flex-row h-10 w-32 rounded-lg relative bg-transparent mt-1" id="shareSelector">
-          <button
-            data-action="decrement"
-            class=" bg-gray-300 text-gray-600 hover:text-gray-700 hover:bg-gray-400 h-full w-20 rounded-l cursor-pointer outline-none"
-            on:click={() => {
-              if (shares >= 1) shares -= 1
-            }}
-          >
-            <span class="m-auto text-2xl font-thin">−</span>
-          </button>
-          <input
-            type="number"
-            class="outline-none focus:outline-none text-center w-full bg-gray-300 font-semibold text-md hover:text-black focus:text-black  md:text-basecursor-default flex items-center text-gray-700"
-            bind:value={shares}
-            style="-moz-appearance: textfield;"
-            id="shareInput"
-            min="0"
-            on:input={() => {
-              if (shares < 0) shares = 0
-            }}
-          />
-          <button
-            data-action="increment"
-            class="bg-gray-300 text-gray-600 hover:text-gray-700 hover:bg-gray-400 h-full w-20 rounded-r cursor-pointer"
-            on:click={() => (shares += 1)}
-          >
-            <span class="m-auto text-2xl font-thin">+</span>
-          </button>
-        </div>
+    {#if market}
+      {#if market.decided}
+        Market has been resolved ({market.decision ? "YES" : "NO"})
+      {:else}
+        <!-- <div class="shadow-xl w-72 p-5 rounded-2xl bg-gray-300"> -->
+        <div class="flex w-full justify-around mt-2">
+          <div class="flex flex-col items-center space-y-3">
+            <div class="flex flex-row h-10 w-32 rounded-lg relative bg-transparent mt-1" id="shareSelector">
+              <button
+                data-action="decrement"
+                class=" bg-gray-300 text-gray-600 hover:text-gray-700 hover:bg-gray-400 h-full w-20 rounded-l cursor-pointer outline-none"
+                on:click={() => {
+                  if (shares >= 1) shares -= 1
+                }}
+              >
+                <span class="m-auto text-2xl font-thin">−</span>
+              </button>
+              <input
+                type="number"
+                class="outline-none focus:outline-none text-center w-full bg-gray-300 font-semibold text-md hover:text-black focus:text-black  md:text-basecursor-default flex items-center text-gray-700"
+                bind:value={shares}
+                style="-moz-appearance: textfield;"
+                id="shareInput"
+                min="0"
+                on:input={() => {
+                  if (shares < 0) shares = 0
+                }}
+              />
+              <button
+                data-action="increment"
+                class="bg-gray-300 text-gray-600 hover:text-gray-700 hover:bg-gray-400 h-full w-20 rounded-r cursor-pointer"
+                on:click={() => (shares += 1)}
+              >
+                <span class="m-auto text-2xl font-thin">+</span>
+              </button>
+            </div>
 
-        <div class="py-4 flex items-center space-x-4">
-          <span class="w-5 {shareType === 1 ? 'font-bold' : 'font-thin'}">For</span>
-          <div
-            class="ml-auto text-right w-16 p-2 rounded-full {shareType === 1
-              ? 'bg-blue-300'
-              : 'bg-red-300'} flex cursor-pointer align-middle transition-all"
-            on:click={toggleShareType}
-          >
-            <b
-              class="bg-white rounded-full shadow-lg w-5 h-5 transition-all {shareType === 1
-                ? ''
-                : 'transform translate-x-7'}"
-            />
+            <div class="py-4 flex items-center space-x-4">
+              <span class="w-5 {shareType === 1 ? 'font-bold' : 'font-thin'}">For</span>
+              <div
+                class="ml-auto text-right w-16 p-2 rounded-full {shareType === 1
+                  ? 'bg-blue-300'
+                  : 'bg-red-300'} flex cursor-pointer align-middle transition-all"
+                on:click={toggleShareType}
+              >
+                <b
+                  class="bg-white rounded-full shadow-lg w-5 h-5 transition-all {shareType === 1
+                    ? ''
+                    : 'transform translate-x-7'}"
+                />
+              </div>
+              <span class="w-5 transition-all {shareType === 2 ? 'font-bold' : 'font-thin'}">Against</span>
+            </div>
+            <div class="flex font-thin text-xl">
+              <AnimatedNumber num={priceForUSD} class="pr-2" /> $
+            </div>
+            <div class="flex font-bold text-sm text-green-500">
+              Potential win:
+              <AnimatedNumber num={potentialWin} class="px-2" /> $ ( <AnimatedNumber num={potentialX} />x)
+            </div>
+
+            <button
+              class="button text-red-600 border-red-600 border-4  font-extrabold text-3xl py-1 px-3 rounded-md"
+              on:click={buyShares}>BUY</button
+            >
           </div>
-          <span class="w-5 transition-all {shareType === 2 ? 'font-bold' : 'font-thin'}">Against</span>
+          <!-- </div> -->
         </div>
-        <div class="flex font-thin text-xl">
-          <AnimatedNumber num={priceForUSD} class="pr-2" /> $
-        </div>
-        <div class="flex font-bold text-sm text-green-500">
-          Potential win:
-          <AnimatedNumber num={potentialWin} class="px-2" /> $ ( <AnimatedNumber num={potentialX} />x)
-        </div>
+      {/if}
+    {/if}
 
-        <button
-          class="button text-red-600 border-red-600 border-4  font-extrabold text-3xl py-1 px-3 rounded-md"
-          on:click={buyShares}>BUY</button
-        >
-      </div>
-      <!-- </div> -->
-    </div>
+    <h3 class="text-3xl">Add liquidity</h3>
+    <input type="number" min="1" />
+    <button on:click={addLiquidity}>Add</button>
+
     {#if balance.sharesFor || balance.sharesAgainst}
       <div>
         <h2>Balance</h2>

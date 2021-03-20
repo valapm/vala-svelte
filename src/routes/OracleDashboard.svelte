@@ -1,13 +1,14 @@
 <script type="ts">
   import { BoostPowJobModel } from "../utils/boostPow"
   import { bsv, rabin } from "bitcoin-predict"
+  import * as bp from "bitcoin-predict"
   import { rabinPubKey, rabinPrivKey } from "../store/oracle"
-  import { address } from "../store/wallet"
+  import { address, privateKey } from "../store/wallet"
   import { getUtxos } from "../utils/utxo"
   import { testnet } from "../store/options"
   import { gql } from "graphql-request"
   import { gqlClient } from "../store/graphql"
-  import { postBoostJobTx, postOracleDetails } from "../apis/web"
+  import { postBoostJobTx, postOracleDetails, postMarketTx } from "../apis/web"
   import { onMount } from "svelte"
 
   const diffMultiplier = 0.00002
@@ -27,6 +28,9 @@
         }
       }
       resolve
+      transaction {
+        txid
+      }
       sharesFor
       sharesAgainst
       liquidity
@@ -88,6 +92,74 @@
     console.log(res)
   }
 
+  // FIXME: Duplicate code in Market.svelte
+  function getTxQuery(txid) {
+    return gql`
+    {
+      transaction(where: { txid: { _eq: "${txid}" } }) {
+        hex
+      }
+    }
+  `
+  }
+
+  // FIXME: Duplicate code in Market.svelte
+  async function getRawTx(txid) {
+    const res = await $gqlClient.request(getTxQuery(txid))
+    const hex = res.transaction[0].hex
+    const tx = new bsv.Transaction()
+    tx.fromString(hex)
+    return tx
+  }
+
+  const Interp = bsv.Script.Interpreter
+
+  export const DEFAULT_FLAGS =
+    Interp.SCRIPT_ENABLE_MAGNETIC_OPCODES |
+    Interp.SCRIPT_ENABLE_MONOLITH_OPCODES | // TODO: to be removed after upgrade to bsv 2.0
+    Interp.SCRIPT_VERIFY_STRICTENC |
+    Interp.SCRIPT_ENABLE_SIGHASH_FORKID |
+    Interp.SCRIPT_VERIFY_LOW_S |
+    Interp.SCRIPT_VERIFY_NULLFAIL |
+    Interp.SCRIPT_VERIFY_DERSIG |
+    Interp.SCRIPT_VERIFY_MINIMALDATA |
+    Interp.SCRIPT_VERIFY_NULLDUMMY |
+    Interp.SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_NOPS |
+    Interp.SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY |
+    Interp.SCRIPT_VERIFY_CHECKSEQUENCEVERIFY
+
+  async function resolveMarket(market, decision: 0 | 1) {
+    const currentTx = await getRawTx(market.transaction.txid)
+
+    const sig = bp.oracle.getSignature(decision, $rabinPrivKey)
+
+    console.log(sig)
+
+    const newTx = await bp.transaction.getDecideTx(currentTx, decision, [sig])
+
+    const utxos = await getUtxos($address.toString(), $testnet)
+
+    const fundedTx = bp.transaction.fundTx(newTx, $privateKey, $address, utxos)
+
+    const rawtx = fundedTx.checkedSerialize() // FIXME: throws if not enough sats
+
+    // const interpreter = bsv.Script.Interpreter()
+
+    // console.log(
+    //   interpreter.verify(
+    //     fundedTx.inputs[0].script,
+    //     currentTx.outputs[0].script,
+    //     fundedTx,
+    //     0,
+    //     DEFAULT_FLAGS,
+    //     currentTx.outputs[0].satoshisBN
+    //   )
+    // )
+
+    const postRes = await postMarketTx(rawtx, [], $testnet)
+    console.log(postRes)
+  }
+
   onMount(async () => {
     const oracleQuery = gql`
     query {
@@ -121,7 +193,8 @@ Set a name
   {#if res.market.length > 0}
     <h3>Undecided Markets</h3>
     {#each res.market as market}
-      {market.resolve} <button>VOTE YES</button> <button>VOTE NO</button>
+      {market.resolve} <button on:click={() => resolveMarket(market, 1)}>VOTE YES</button>
+      <button on:click={() => resolveMarket(market, 0)}>VOTE NO</button>
     {/each}
   {/if}
 {/await}
