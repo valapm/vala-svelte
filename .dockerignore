@@ -1,0 +1,5 @@
+.env
+public/build/
+public/includes/
+
+node_modules

@@ -9,7 +9,7 @@
   import { getTx } from "../apis/txq"
   import { postMarketTx } from "../apis/web"
   // import { mattercloudKey } from "../store/apis"
-  import { testnet, txqHost } from "../store/options"
+  import { testnet } from "../store/options"
   import AnimatedNumber from "../components/AnimatedNumber.svelte"
   import Chart from "../components/Chart.svelte"
 
