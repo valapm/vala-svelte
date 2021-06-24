@@ -4,7 +4,7 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "start": "sirv public -s",
+    "start": "sirv public -s --no-clear",
     "build:webpack": "cross-env NODE_ENV=production webpack",
     "dev:webpack": "webpack serve --content-base public",
     "validate": "svelte-check"
