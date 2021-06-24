@@ -17,8 +17,7 @@
           }
         }
         resolve
-        sharesFor
-        sharesAgainst
+        shares
         liquidity
       }
     }

@@ -10,6 +10,7 @@ import postcss from "rollup-plugin-postcss"
 import sveltePreprocess from "svelte-preprocess"
 import typescript from "@rollup/plugin-typescript"
 import alias from "@rollup/plugin-alias"
+import copy from "rollup-plugin-copy"
 
 const production = !process.env.ROLLUP_WATCH
 
@@ -42,6 +43,7 @@ export default {
     name: "app",
     file: "public/build/bundle.js"
   },
+  external: ["vala-auth"],
   plugins: [
     alias({
       crypto: "crypto-browserify"
@@ -84,6 +86,9 @@ export default {
     typescript({
       sourceMap: !production,
       inlineSources: !production
+    }),
+    copy({
+      targets: [{ src: "node_modules/vala-auth/dist/*", dest: "public/includes" }]
     }),
 
     // In dev mode, call `npm run start` once
