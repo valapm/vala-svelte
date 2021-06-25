@@ -12,6 +12,9 @@ import typescript from "@rollup/plugin-typescript"
 import alias from "@rollup/plugin-alias"
 import copy from "rollup-plugin-copy"
 import replace from "@rollup/plugin-replace"
+import dotenv from "dotenv"
+
+dotenv.config()
 
 const production = !process.env.ROLLUP_WATCH
 
@@ -46,18 +49,19 @@ export default {
   },
   external: ["vala-auth"],
   plugins: [
+    replace({
+      include: ["src/config.ts"],
+      values: {
+        ENV: JSON.stringify({
+          BACKEND_HOST: process.env.BACKEND_HOST || "",
+          BACKEND_HOST_TESTNET: process.env.BACKEND_HOST_TESTNET || "",
+          GRAPHQL_HOST: process.env.GRAPHQL_HOST || "",
+          GRAPHQL_HOST_TESTNET: process.env.GRAPHQL_HOST_TESTNET || ""
+        })
+      }
+    }),
     alias({
       crypto: "crypto-browserify"
-    }),
-    replace({
-      process: JSON.stringify({
-        env: {
-          BACKEND_HOST: process.env.BACKEND_HOST,
-          BACKEND_HOST_TESTNET: process.env.BACKEND_HOST_TESTNET,
-          GRAPHQL_HOST: process.env.GRAPHQL_HOST,
-          GRAPHQL_HOST_TESTNET: process.env.GRAPHQL_HOST_TESTNET
-        }
-      })
     }),
     postcss({
       extract: "bundle.css",
