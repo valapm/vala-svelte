@@ -16,6 +16,13 @@ import dotenv from "dotenv"
 
 dotenv.config()
 
+console.log({
+  BACKEND_HOST: process.env.BACKEND_HOST || "",
+  BACKEND_HOST_TESTNET: process.env.BACKEND_HOST_TESTNET || "",
+  GRAPHQL_HOST: process.env.GRAPHQL_HOST || "",
+  GRAPHQL_HOST_TESTNET: process.env.GRAPHQL_HOST_TESTNET || ""
+})
+
 const production = !process.env.ROLLUP_WATCH
 
 function serve() {
