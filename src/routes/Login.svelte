@@ -2,6 +2,7 @@
   import { seed } from "../store/wallet"
   import { push } from "svelte-spa-router"
   import Mnemonic from "../utils/mnemonic"
+  import Header from "../components/Header.svelte"
 
   let valaauth
 
@@ -59,17 +60,64 @@
 
 <svelte:window on:keydown={handleKeydown} />
 
-<h1>Login</h1>
+<Header />
 
-<form>
-  <input placeholder="username" name="username" bind:value={username} />
-  <input type="password" placeholder="password" name="password" bind:value={password} />
-</form>
+<div class="login">
+  <h1>Login to Vala</h1>
 
-{#if error}
-  {error}
-{/if}
+  <form>
+    <input placeholder="Username" name="username" bind:value={username} />
+    <input type="password" placeholder="Password" name="password" bind:value={password} />
+  </form>
 
-<button on:click={login} disabled={!username || !password}>Login</button>
+  {#if error}
+    {error}
+  {/if}
 
-<a href="#/register">Register</a>
+  <div class="buttons">
+    <button class="login-button" on:click={login} disabled={!username || !password}>Login</button>
+    <!-- <a href="#/register">Register</a> -->
+  </div>
+</div>
+
+<style>
+  .login {
+    display: flex;
+    flex-direction: column;
+    transform: translate(-50%, -50%);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    gap: 2rem;
+    text-align: center;
+    width: min(90%, 15rem);
+    align-items: center;
+  }
+
+  .login form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .login form input {
+    width: 100%;
+    padding: 0.4rem;
+    border: 1px solid lightgray;
+    border-radius: 5px;
+  }
+
+  .login-button {
+    border-radius: 3px;
+    background-color: #1b3fbc;
+    color: white;
+    padding: 0.3rem 0.7rem;
+    font-weight: bold;
+    width: max-content;
+  }
+
+  h1 {
+    font-size: 2rem;
+    /* margin-bottom: 1rem; */
+  }
+</style>

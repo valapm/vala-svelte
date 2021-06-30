@@ -4,6 +4,7 @@ import { bsv } from "bitcoin-predict"
 import Mnemonic from "../utils/mnemonic"
 import { testnet } from "./options"
 import { getUtxos } from "../utils/utxo"
+import { price } from "./price"
 
 // console.log(Mnemonic)
 
@@ -46,7 +47,9 @@ export let address = derived(
 export let utxos = derived(
   [address, testnet],
   async ([$address, $testnet], set) => {
-    set(await getUtxos($address, $testnet))
+    if ($address) {
+      set(await getUtxos($address, $testnet))
+    }
   },
   []
 )
@@ -55,6 +58,14 @@ export let satBalance = derived(
   utxos,
   $utxos => {
     return $utxos.reduce((sats, output) => output.satoshis + sats, 0)
+  },
+  0
+)
+
+export let usdBalance = derived(
+  [satBalance, price],
+  ([$satBalance, $price]) => {
+    return ($price * $satBalance) / 100000000
   },
   0
 )
