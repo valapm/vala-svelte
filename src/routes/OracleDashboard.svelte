@@ -31,8 +31,7 @@
       transaction {
         txid
       }
-      sharesFor
-      sharesAgainst
+      shares
       liquidity
     }
   }
