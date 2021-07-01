@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.action-button {
+  border-radius: 3px;
+  background-color: #1b3fbc;
+  color: white;
+  padding: 0.3rem 0.7rem;
+  font-weight: bold;
+  width: max-content;
+}

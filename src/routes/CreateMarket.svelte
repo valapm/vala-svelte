@@ -95,16 +95,44 @@
     console.log(postRes)
   }
 
-  let canComplete0 = resolve || details
-  let canComplete1 = options.length >= 2 && !options.some(option => !option.name)
-  let canComplete2 = !!oracle
-  let canComplete3 = creatorFee >= 0
-  let canCreateMarket = canComplete0 && canComplete1 && canComplete2 && canComplete3 && liquidity >= 0
+  $: canComplete0 = resolve || details
+  $: canComplete1 = options.length >= 2 && !options.some(option => !option.name)
+  $: canComplete2 = !!oracle
+  $: canComplete3 = creatorFee >= 0
+  $: canCreateMarket = canComplete0 && canComplete1 && canComplete2 && canComplete3 && liquidity >= 0
 
-  const completeStep0 = () => (canComplete0 ? (step = 1) : console.error("Can't complete step"))
-  const completeStep1 = () => (canComplete1 ? (step = 1) : console.error("Can't complete step"))
-  const completeStep2 = () => (canComplete2 ? (step = 1) : console.error("Can't complete step"))
-  const completeStep3 = () => (canComplete3 ? (step = 1) : console.error("Can't complete step"))
+  const completeStep0 = () => {
+    if (canComplete0) {
+      step = 1
+    } else {
+      console.log(resolve, details, canComplete0, resolve || details)
+      console.error("Can't complete step")
+    }
+  }
+  const completeStep1 = () => {
+    if (canComplete1) {
+      step = 2
+    } else {
+      console.error("Can't complete step")
+    }
+  }
+  const completeStep2 = () => {
+    if (canComplete2) {
+      step = 3
+    } else {
+      console.error("Can't complete step")
+    }
+  }
+  const completeStep3 = () => {
+    if (canComplete3) {
+      step = 4
+    } else {
+      console.error("Can't complete step")
+    }
+  }
+  // const completeStep1 = () => (canComplete1 ? (step = 1) : console.error("Can't complete step"))
+  // const completeStep2 = () => (canComplete2 ? (step = 1) : console.error("Can't complete step"))
+  // const completeStep3 = () => (canComplete3 ? (step = 1) : console.error("Can't complete step"))
 
   function stepBack() {
     if (step > 0) step -= 1
@@ -123,47 +151,92 @@
 
 <Header />
 
-{#if step === 0}
-  Resolve: <input type="text" bind:value={resolve} />
-  Details: <input type="text" bind:value={details} />
-  <button on:click={completeStep0}>Continue</button>
-{:else if step === 1}
-  Options
+<h1>Create new Market</h1>
 
-  {#each options as option}
-    <div>
-      Option:
-      <input type="text" bind:value={option.name} />
-      <input type="text" bind:value={option.details} />
+<div class="content">
+  {#if step === 0}
+    Resolve: <input type="text" bind:value={resolve} />
+    Details: <textarea class="large" bind:value={details} />
+
+    <div class="buttons">
+      <button on:click={completeStep0} class="action-button">Continue</button>
     </div>
-  {/each}
+  {:else if step === 1}
+    Options
 
-  <button on:click={addOption}>Add option</button>
+    {#each options as option}
+      <div>
+        Option:
+        <input type="text" bind:value={option.name} />
+        <textarea class="large" bind:value={option.details} />
+      </div>
+    {/each}
 
-  <button on:click={completeStep1}>Continue</button>
-  <button on:click={stepBack}>Back</button>
-{:else if step === 2}
-  Choose oracle
-  {#await $gqlClient.request(oracleQuery)}
-    loading...
-  {:then res}
-    <select bind:value={oracle}>
-      {#each res.oracle as oracle}
-        <option value={oracle.pubKey}>{oracle.name}</option>
-      {/each}
-    </select>
-  {/await}
+    <button on:click={addOption}>Add option</button>
+    <div class="buttons">
+      <button on:click={completeStep1} class="action-button">Continue</button>
+      <button on:click={stepBack}>Back</button>
+    </div>
+  {:else if step === 2}
+    Choose oracle
+    {#await $gqlClient.request(oracleQuery)}
+      loading...
+    {:then res}
+      <select bind:value={oracle}>
+        {#each res.oracle as oracle}
+          <option value={oracle.pubKey}>{oracle.name}</option>
+        {/each}
+      </select>
+    {/await}
 
-  <button on:click={completeStep2}>Continue</button>
-  <button on:click={stepBack}>Back</button>
-{:else if step === 3}
-  Set a fee for yourself in percent
-  <input type="number" bind:value={creatorFee} min="0" />
-  <button on:click={completeStep3}>Continue</button>
-  <button on:click={stepBack}>Back</button>
-{:else if step === 4}
-  Inital liquidity: <input type="number" bind:value={liquidity} min="1" />
+    <div class="buttons">
+      <button on:click={completeStep2} class="action-button">Continue</button>
+      <button on:click={stepBack}>Back</button>
+    </div>
+  {:else if step === 3}
+    Set a fee for yourself in percent
+    <input type="number" bind:value={creatorFee} min="0" />
+    <div class="buttons">
+      <button on:click={completeStep3} class="action-button">Continue</button>
+      <button on:click={stepBack}>Back</button>
+    </div>
+  {:else if step === 4}
+    Inital liquidity: <input type="number" bind:value={liquidity} min="1" />
+    <div class="buttons">
+      <button on:click={createMarket} class="action-button">Create new market</button>
+      <button on:click={stepBack}>Back</button>
+    </div>
+  {/if}
+</div>
 
-  <button on:click={createMarket}>Create new market</button>
-  <button on:click={stepBack}>Back</button>
-{/if}
+<style>
+  h1 {
+    font-size: 2rem;
+    text-align: center;
+  }
+
+  input,
+  textarea {
+    padding: 0.8rem;
+    border: 1px solid lightgray;
+    border-radius: 5px;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: min(30rem, 90%);
+    margin: auto;
+  }
+
+  .buttons {
+    display: flex;
+    justify-content: space-around;
+    gap: 1rem;
+  }
+
+  textarea {
+    height: 10rem;
+  }
+</style>
