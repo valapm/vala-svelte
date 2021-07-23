@@ -21,7 +21,7 @@
     "bigint-buffer": "^1.1.5",
     "bitcoin-predict": "github:valapm/bitcoin-predict#43a4c327056779514fe27e33c3551240e006bcd7",
     "buffer": "^6.0.3",
-    "chart.js": "^2.9.4",
+    "chart.js": "^3.4.1",
     "create-hmac": "^1.1.7",
     "cross-env": "^7.0.3",
     "crypto-browserify": "^3.12.0",
