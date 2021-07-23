@@ -13,7 +13,7 @@ export async function fetchTx(txid, testnet = false) {
 }
 
 export async function fetchUTXOs(addressHashBuffer, testnet = false) {
-  console.log("start")
+  // console.log("start")
   const net = testnet ? "test" : "main"
   const script = bsv.Script.fromASM(`OP_DUP OP_HASH160 ${addressHashBuffer} OP_EQUALVERIFY OP_CHECKSIG`)
   const scriptHash = bsv.crypto.Hash.sha256(script.toBuffer()).toString("hex").match(/.{2}/g).reverse().join("")

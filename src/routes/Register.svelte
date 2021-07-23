@@ -2,6 +2,7 @@
   import { seed } from "../store/wallet"
   import { push } from "svelte-spa-router"
   import Mnemonic from "../utils/mnemonic"
+  import { AUTH_HOST } from "../config"
 
   let valaauth
 
@@ -29,7 +30,7 @@
   async function register() {
     console.log("test")
     try {
-      await window.valaauth.register(username, password, generatedSeed)
+      await window.valaauth.register(username, password, generatedSeed, AUTH_HOST)
     } catch (e) {
       error = "Something went wrong. Please try again or contact Support."
       return

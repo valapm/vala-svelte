@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { lmsr, bsv, transaction as pmTx } from "bitcoin-predict"
+  import { lmsr, bsv, transaction as pmTx, pm } from "bitcoin-predict"
   import { price } from "../store/price"
   import { gql } from "graphql-request"
   import { gqlClient } from "../store/graphql"
   import { onMount } from "svelte"
-  import { publicKey, privateKey, seed, address } from "../store/wallet"
+  import { publicKey, privateKey, seed, address, satBalance } from "../store/wallet"
   import { getUtxos } from "../utils/utxo"
   import { getTx } from "../apis/txq"
   import { postMarketTx } from "../apis/web"
@@ -12,20 +12,9 @@
   import { testnet } from "../store/options"
   import AnimatedNumber from "../components/AnimatedNumber.svelte"
   import Chart from "../components/Chart.svelte"
+  import Header from "../components/Header.svelte"
 
   export let params
-
-  let shares = 0
-
-  /**
-   * 1: sharesFor
-   * 2: sharesAgainst
-   */
-  let shareType = 1
-  $: sharesFor = shareType === 1 ? shares : 0
-  $: sharesAgainst = shareType === 2 ? shares : 0
-
-  let liquidity = 1
 
   const marketQuery = gql`
     {
@@ -38,16 +27,19 @@
           }
         }
         resolve
-        sharesFor
-        sharesAgainst
+        shares
         liquidity
         transaction {
           txid
         }
+        optionLength
+        options {
+          name
+          details
+        }
         entries {
           liquidity
-          sharesAgainst
-          sharesFor
+          shares
           investor {
             pubKey
           }
@@ -68,9 +60,6 @@
 
   let market
 
-  let sellSharesFor = 0
-  let sellSharesAgainst = 0
-
   async function getMarket() {
     const res = await $gqlClient.request(marketQuery)
     return res.market[0]
@@ -85,37 +74,83 @@
   }
 
   $: marketBalance = {
-    sharesFor: market ? market.sharesFor : 0,
-    sharesAgainst: market ? market.sharesAgainst : 0,
+    shares: market ? market.shares : [],
     liquidity: market ? market.liquidity : 0
   }
 
   $: marketSats = lmsr.getLmsrSats(marketBalance)
-  $: probability = lmsr.getProbability(marketBalance)
-
-  $: newBalanceSharesFor = { ...marketBalance, sharesFor: marketBalance.sharesFor + sharesFor }
-  $: newBalanceSharesAgainst = { ...marketBalance, sharesAgainst: marketBalance.sharesAgainst + sharesAgainst }
-
-  $: priceSharesFor = lmsr.getLmsrSats(newBalanceSharesFor) - lmsr.getLmsrSats(marketBalance) || 0
-  $: priceSharesAgainst = lmsr.getLmsrSats(newBalanceSharesAgainst) - lmsr.getLmsrSats(marketBalance) || 0
-  $: priceShares = shareType === 1 ? priceSharesFor : priceSharesAgainst
-
-  $: priceForUSD = round((priceShares / 100000000) * $price)
 
   $: bsvTotal = marketSats / 100000000
   $: usdTotal = bsvTotal * $price
 
   $: existingEntry = market && market.entries.find(entry => entry.investor.pubKey === $publicKey.toString())
-
   $: balance = existingEntry || {
-    sharesAgainst: 0,
-    sharesFor: 0,
+    shares: new Array(market ? market.optionLength : 0).fill(0),
     liquidity: 0
   }
 
-  $: potentialAssetsUSD = ((shares * lmsr.SatScaling) / 100000000) * $price || 0
-  $: potentialWin = potentialAssetsUSD - priceForUSD
-  $: potentialX = potentialWin / priceForUSD
+  let selectedShare // Only one share can be bought/sold at a time
+  let selectedShareChange = 0
+  $: {
+    if (selectedShare === undefined) selectedShareChange = 0
+  } // Reset shareChange when selection changes
+  let liquidityChange = 0
+
+  let newShares
+  $: {
+    newShares = [...balance.shares]
+    if (selectedShare !== undefined) newShares[selectedShare] += selectedShareChange
+  }
+  $: newLiquidity = balance.liquidity + liquidityChange
+  $: newBalance = {
+    shares: newShares,
+    liquidity: newLiquidity
+  }
+  $: shareChange = balance.shares.map((s, i) => s - newShares[i])
+
+  let isValidBalance = true
+  $: {
+    try {
+      lmsr.getLmsrSats(newBalance)
+      isValidBalance = true
+    } catch (e) {
+      isValidBalance = false
+    }
+  }
+
+  $: satPriceTotal = lmsr.lmsr(newBalance) * lmsr.SatScaling - lmsr.lmsr(balance) * lmsr.SatScaling
+  $: usdPriceTotal = round((satPriceTotal / 100000000) * $price)
+
+  $: potentialAssetsUSD = ((selectedShareChange * lmsr.SatScaling) / 100000000) * $price || 0
+  $: potentialWin = potentialAssetsUSD - usdPriceTotal
+  $: potentialX = potentialAssetsUSD / usdPriceTotal
+
+  $: shares =
+    market &&
+    market.shares.map((share, index) => {
+      const nextPriceShares = [...newShares]
+      nextPriceShares[index] += shareChange[index] + 1
+
+      const satPrice =
+        lmsr.lmsr({
+          shares: nextPriceShares,
+          liquidity: newLiquidity
+        }) *
+          lmsr.SatScaling -
+        lmsr.lmsr({
+          shares: newShares,
+          liquidity: newLiquidity
+        }) *
+          lmsr.SatScaling
+
+      const usdPrice = round((satPrice / 100000000) * $price)
+
+      return {
+        usdPrice,
+        probability: lmsr.getProbability(balance, share) * 100,
+        potentialX: lmsr.SatScaling / satPrice
+      }
+    })
 
   function getEntries() {
     return market.entries.map(entry => {
@@ -123,8 +158,7 @@
         publicKey: bsv.PublicKey.fromString(entry.investor.pubKey),
         balance: {
           liquidity: entry.liquidity,
-          sharesFor: entry.sharesFor,
-          sharesAgainst: entry.sharesAgainst
+          sharesFor: entry.shares
         }
       }
     })
@@ -135,7 +169,7 @@
     return Math.round(n * factor) / factor
   }
 
-  async function updateMarket(newBalance) {
+  async function updateMarket() {
     const entries = getEntries()
 
     const newTx = await getUpdateTx(newBalance, entries)
@@ -144,202 +178,153 @@
 
     console.log(utxos)
 
+    if ($satBalance < newTx.outputs[0].satoshis) {
+      throw new Error("Not enough funds")
+      return
+    }
+
     const fundedTx = pmTx.fundTx(newTx, $privateKey, $address, utxos)
 
     console.log(fundedTx.outputs[0].script.toASM().split(" ").reverse()[2])
 
     // console.log(pmTx.isValidMarketUpdateTx(fundedTx, currentTx, entries))
 
-    const rawtx = fundedTx.checkedSerialize() // FIXME: throws if not enough sats
+    const rawtx = fundedTx.checkedSerialize()
     console.log(fundedTx)
 
     const postRes = await postMarketTx(rawtx, [], $testnet)
     console.log(postRes)
   }
 
-  async function addLiquidity() {
-    const newBalance = {
-      ...balance,
-      liquidity: balance.liquidity + liquidity
-    }
-
-    await updateMarket(newBalance)
-  }
-
-  async function buyShares() {
-    const newBalance = {
-      liquidity: balance.liquidity,
-      sharesFor: balance.sharesFor + sharesFor,
-      sharesAgainst: balance.sharesAgainst + sharesAgainst
-    }
-
-    await updateMarket(newBalance)
-  }
-
-  function toggleShareType() {
-    if (shareType === 1) {
-      shareType = 2
-    } else if (shareType === 2) {
-      shareType = 1
-    }
-  }
-
   async function getUpdateTx(newBalance, entries) {
     const currentTx = await getRawTx(market.transaction.txid)
 
+    const utxos = await getUtxos($address.toString(), $testnet)
+
     let updateTx
     if (existingEntry) {
-      updateTx = pmTx.getUpdateEntryTx(currentTx, entries, newBalance, $privateKey)
+      updateTx = pmTx.getUpdateEntryTx(currentTx, entries, newBalance, $privateKey, $address, utxos, $privateKey)
     } else {
       const newEntry = {
         balance: newBalance,
         publicKey: $publicKey
       }
-      updateTx = pmTx.getAddEntryTx(currentTx, entries, newEntry)
+      updateTx = pmTx.getAddEntryTx(currentTx, entries, newEntry, $address, utxos, $privateKey)
     }
 
     return updateTx
   }
 
-  async function sellShares() {
-    const updatedBalance = { ...balance }
-
-    if (sellSharesFor) {
-      updatedBalance.sharesFor = updatedBalance.sharesFor - sellSharesFor
-    } else if (sellSharesAgainst) {
-      updatedBalance.sharesAgainst = updatedBalance.sharesAgainst - sellSharesAgainst
-    }
-
-    const entries = getEntries()
-    const newTx = await getUpdateTx(updatedBalance, entries)
-
-    console.log(newTx)
-
-    const rawtx = newTx.checkedSerialize()
-
-    const postRes = await postMarketTx(rawtx, entries, $testnet)
-    console.log(postRes)
-  }
-
   onMount(async () => {
     market = await getMarket()
   })
-
-  // let num = 0
 </script>
 
-{#if market}
-  <div class="bg-gray-100 py-60">
-    <div class="flex flex-col items-center">
-      <p class="text-gray-700 text-xl pb-7">{market.resolve}</p>
-      <h1 class="font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-pink-400 to-red-600">
-        <span class="text-9xl">
-          {round(probability * 100, 1)}
-        </span>
-        <span class="text-3xl">%</span>
-      </h1>
-      <div class="text-gray-700 font-light">{Math.round(usdTotal)} $ total</div>
-    </div>
+<Header />
 
-    <div class="max-w-screen-md mx-auto pt-6">
-      <Chart market={market.marketByFirststateid.transaction.txid} />
+{#if market}
+  <div class="market">
+    <h1>
+      {market.resolve}
+    </h1>
+    <div>{Math.round(usdTotal)} $ total</div>
+
+    <div class="chart">
+      <Chart {market} />
     </div>
     <!-- <AnimatedNumber {num} />
     <button on:click={() => (num = num + 1000)}> Increase </button> -->
 
-    <h3 class="font-semibold text-blue-900 w-full">{market.marketByFirststateid.transaction.txid}</h3>
-    <div class="">{round(bsvTotal)} BSV ({round(usdTotal)} $)</div>
+    <h3>{market.marketByFirststateid.transaction.txid}</h3>
+    <div class="totalAssets">{round(bsvTotal)} BSV ({round(usdTotal)} $)</div>
 
     {#if market}
       {#if market.decided}
-        Market has been resolved ({market.decision ? "YES" : "NO"})
+        Market has been resolved ({market.decision})
       {:else}
-        <!-- <div class="shadow-xl w-72 p-5 rounded-2xl bg-gray-300"> -->
-        <div class="flex w-full justify-around mt-2">
-          <div class="flex flex-col items-center space-y-3">
-            <div class="flex flex-row h-10 w-32 rounded-lg relative bg-transparent mt-1" id="shareSelector">
-              <button
-                data-action="decrement"
-                class=" bg-gray-300 text-gray-600 hover:text-gray-700 hover:bg-gray-400 h-full w-20 rounded-l cursor-pointer outline-none"
-                on:click={() => {
-                  if (shares >= 1) shares -= 1
-                }}
-              >
-                <span class="m-auto text-2xl font-thin">−</span>
-              </button>
-              <input
-                type="number"
-                class="outline-none focus:outline-none text-center w-full bg-gray-300 font-semibold text-md hover:text-black focus:text-black  md:text-basecursor-default flex items-center text-gray-700"
-                bind:value={shares}
-                style="-moz-appearance: textfield;"
-                id="shareInput"
-                min="0"
-                on:input={() => {
-                  if (shares < 0) shares = 0
-                }}
-              />
-              <button
-                data-action="increment"
-                class="bg-gray-300 text-gray-600 hover:text-gray-700 hover:bg-gray-400 h-full w-20 rounded-r cursor-pointer"
-                on:click={() => (shares += 1)}
-              >
-                <span class="m-auto text-2xl font-thin">+</span>
-              </button>
-            </div>
+        {#if selectedShare !== undefined}
+          <div class="modal">
+            <div
+              class="modal-bg"
+              on:click={() => {
+                selectedShare = undefined
+              }}
+            />
+            <div class="modal-container">
+              <h3>{market.options[selectedShare].name}</h3>
+              {market.options[selectedShare].details}
+              Balance: {balance.shares[selectedShare]}.
 
-            <div class="py-4 flex items-center space-x-4">
-              <span class="w-5 {shareType === 1 ? 'font-bold' : 'font-thin'}">For</span>
-              <div
-                class="ml-auto text-right w-16 p-2 rounded-full {shareType === 1
-                  ? 'bg-blue-300'
-                  : 'bg-red-300'} flex cursor-pointer align-middle transition-all"
-                on:click={toggleShareType}
-              >
-                <b
-                  class="bg-white rounded-full shadow-lg w-5 h-5 transition-all {shareType === 1
-                    ? ''
-                    : 'transform translate-x-7'}"
+              {#if !isValidBalance}
+                Outside smart contract limits. Add more market liquidity or increase limits.
+              {/if}
+              <div id="shareSelector">
+                <button
+                  data-action="decrement"
+                  on:click={() => {
+                    if (selectedShareChange >= 1) selectedShareChange -= 1
+                  }}
+                >
+                  <span>−</span>
+                </button>
+                <input
+                  type="number"
+                  bind:value={selectedShareChange}
+                  style="-moz-appearance: textfield;"
+                  id="shareInput"
+                  min="0"
+                  on:input={() => {
+                    if (selectedShareChange < 0) selectedShareChange = 0
+                  }}
                 />
+                <button
+                  data-action="increment"
+                  on:click={() => {
+                    selectedShareChange += 1
+                  }}
+                >
+                  <span>+</span>
+                </button>
               </div>
-              <span class="w-5 transition-all {shareType === 2 ? 'font-bold' : 'font-thin'}">Against</span>
-            </div>
-            <div class="flex font-thin text-xl">
-              <AnimatedNumber num={priceForUSD} class="pr-2" /> $
-            </div>
-            <div class="flex font-bold text-sm text-green-500">
-              Potential win:
-              <AnimatedNumber num={potentialWin} class="px-2" /> $ ( <AnimatedNumber num={potentialX} />x)
-            </div>
 
-            <button
-              class="button text-red-600 border-red-600 border-4  font-extrabold text-3xl py-1 px-3 rounded-md"
-              on:click={buyShares}>BUY</button
-            >
+              <div>
+                <AnimatedNumber num={usdPriceTotal} /> $
+              </div>
+
+              Potential win ${potentialWin}
+              {potentialX}x
+
+              <button on:click={updateMarket}>BUY</button>
+              <button
+                on:click={() => {
+                  selectedShare = undefined
+                }}>Cancel</button
+              >
+            </div>
           </div>
-          <!-- </div> -->
+        {/if}
+
+        <div class="options">
+          {#each shares as share, index}
+            <button
+              on:click={() => {
+                if (!liquidityChange && selectedShare === undefined) selectedShare = index
+              }}
+            >
+              <h3>{market.options[index].name}</h3>
+              <div>${share.usdPrice}</div>
+              <div>{share.probability}% - {share.potentialX}x</div>
+              <div>Balance: {balance.shares[index]}</div>
+            </button>
+          {/each}
         </div>
       {/if}
     {/if}
-
-    <h3 class="text-3xl">Add liquidity</h3>
+    <!--
+    <h3>Add liquidity</h3>
     <input type="number" min="1" />
-    <button on:click={addLiquidity}>Add</button>
+    <button on:click={updateMarket}>Add</button> -->
 
-    {#if balance.sharesFor || balance.sharesAgainst}
-      <div>
-        <h2>Balance</h2>
-        {#if balance.sharesFor}
-          <p class="text-green-700">{balance.sharesFor} Shares For</p>
-          <input type="number" min="0" max={balance.sharesFor} bind:value={sellSharesFor} />
-          <button on:click={sellShares}>Sell</button>
-        {/if}
-        {#if balance.sharesAgainst}
-          <p class="text-red-700">{balance.sharesAgainst} Shares Against</p>
-          <input type="number" min="0" max={balance.sharesFor} bind:value={sellSharesAgainst} />
-          <button on:click={sellShares}>Sell</button>
-        {/if}
-      </div>
-    {/if}
     <div style="white-space: break-spaces;">
       {JSON.stringify(market, null, "\t")}
     </div>
@@ -361,5 +346,89 @@
 
   #shareSelector button {
     outline: none !important;
+  }
+
+  .modal {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    transition: all 0.3s ease;
+    top: 0;
+    left: 0;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+
+  .modal-bg {
+    position: absolute;
+    background: rgb(186, 186, 186, 0.6);
+    width: 100%;
+    height: 100%;
+  }
+
+  .modal-container {
+    max-width: 95%;
+    max-height: 90vh;
+    background: #fff;
+    position: relative;
+    overflow-y: auto;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+    text-align: center;
+  }
+  .market {
+    margin-top: 4rem;
+  }
+
+  .options {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+  }
+  .options > button {
+    /* border: 1px solid grey; */
+    padding: 0.5rem;
+    width: 15rem;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+  }
+
+  .options > button::after {
+    content: "";
+    border-radius: 5px;
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+  }
+
+  .options > button:hover {
+    transform: scale(1.25, 1.25);
+  }
+
+  .options > button:hover::after {
+    opacity: 1;
+  }
+
+  .options h3 {
+    font-size: 1.5rem;
   }
 </style>

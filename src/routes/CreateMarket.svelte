@@ -1,13 +1,15 @@
 <script>
   import * as bp from "bitcoin-predict"
   import { privateKey, publicKey, address } from "../store/wallet"
-  import { getUtxos } from "../utils/utxo"
+  // import { getUtxos } from "../utils/utxo"
   import { oracles } from "../oracle"
   import { testnet } from "../store/options"
   import { postMarketTx } from "../apis/web"
   import { gql } from "graphql-request"
   import { gqlClient } from "../store/graphql"
   import Header from "../components/Header.svelte"
+  import { price } from "../store/price"
+  import { satBalance, utxos } from "../store/wallet"
 
   const { fundTx, buildTx } = bp.transaction
 
@@ -17,8 +19,6 @@
   let liquidity = 1
   let options = []
   let creatorFee = 0
-
-  $: console.log(options)
 
   let step = 0
 
@@ -35,57 +35,58 @@
     }
   `
 
-  $: entry = {
-    publicKey: $publicKey.toString(),
-    balance: {
-      shares: Array(options.length).fill(0),
-      liquidity
-    }
-  }
+  // function createMarket() {
+  //   if (!canCreateMarket) {
+  //     throw new Error("Missing inputs")
+  //   }
 
-  async function createMarket() {
-    if (!canCreateMarket) {
-      throw new Error("Missing inputs")
-    }
+  //   const creator = {
+  //     pubKey: $publicKey,
+  //     payoutAddress: $address
+  //   }
 
-    const creator = {
-      pubKey: $publicKey,
-      payoutAddress: $address
-    }
+  //   const oracles = [
+  //     {
+  //       pubKey: BigInt(oracle),
+  //       votes: 100
+  //     }
+  //   ]
 
-    const oracles = [
-      {
-        pubKey: BigInt(oracle),
-        votes: 100
-      }
-    ]
+  //   const market = bp.pm.getNewMarket(
+  //     {
+  //       resolve,
+  //       details,
+  //       options
+  //     },
+  //     entry,
+  //     oracles,
+  //     creator,
+  //     creatorFee,
+  //     100
+  //   )
 
-    const market = bp.pm.getNewMarket(
-      {
-        resolve,
-        details,
-        options
-      },
-      entry,
-      oracles,
-      creator,
-      creatorFee,
-      100
-    )
+  //   return market
+  // }
 
-    console.log(market)
-
-    // const tx = buildTx(market)
+  async function postMarket() {
+    // console.log(tx)
 
     // // console.log(market.miners)
     // // console.log(bp.transaction.getMinerDetails(tx.outputs[0].script))
-    // const utxos = await getUtxos($address.toString(), $testnet)
+    // const utxos = await getUtxos($address, $testnet)
 
-    // const fundedTx = fundTx(tx, $privateKey, $address, utxos)
-    // const rawtx = fundedTx.checkedSerialize() // FIXME: throws if not enough sats
+    if ($satBalance < tx.outputs[0].satoshis) {
+      throw new Error("Not enough funds")
+      return
+    }
 
-    // const postRes = await postMarketTx(rawtx, [entry], $testnet)
-    // console.log(postRes)
+    const fundedTx = fundTx(tx, $privateKey, $address, $utxos)
+    const rawtx = fundedTx.checkedSerialize()
+
+    console.log(fundedTx)
+
+    const postRes = await postMarketTx(rawtx, [entry], $testnet)
+    console.log(postRes)
   }
 
   let retryRawtx
@@ -99,7 +100,42 @@
   $: canComplete1 = options.length >= 2 && !options.some(option => !option.name)
   $: canComplete2 = !!oracle
   $: canComplete3 = creatorFee >= 0
-  $: canCreateMarket = canComplete0 && canComplete1 && canComplete2 && canComplete3 && liquidity >= 0
+  $: canCreateMarket =
+    canComplete0 && canComplete1 && canComplete2 && canComplete3 && liquidity !== null && liquidity >= 0
+
+  $: entry = {
+    publicKey: $publicKey.toString(),
+    balance: {
+      shares: Array(options.length).fill(0),
+      // liquidity: liquidity >= 0 ? liquidity : 1,
+      liquidity
+    }
+  }
+
+  $: market = canCreateMarket
+    ? bp.pm.getNewMarket(
+        {
+          resolve,
+          details,
+          options
+        },
+        entry,
+        [
+          {
+            pubKey: BigInt(oracle),
+            votes: 100
+          }
+        ],
+        {
+          pubKey: $publicKey,
+          payoutAddress: $address
+        },
+        creatorFee,
+        100
+      )
+    : undefined
+  $: tx = market ? buildTx(market) : undefined
+  $: cost = tx ? (tx.outputs[0].satoshis * $price) / 100000000 : 0
 
   const completeStep0 = () => {
     if (canComplete0) {
@@ -203,7 +239,7 @@
   {:else if step === 4}
     Inital liquidity: <input type="number" bind:value={liquidity} min="1" />
     <div class="buttons">
-      <button on:click={createMarket} class="action-button">Create new market</button>
+      <button on:click={postMarket} class="action-button">Create new market for {cost}</button>
       <button on:click={stepBack}>Back</button>
     </div>
   {/if}

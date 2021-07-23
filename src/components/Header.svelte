@@ -11,7 +11,7 @@
   </div>
   <div class="menu-right">
     {#if $seed}
-      <button>${$usdBalance}</button>
+      <a href="#/wallet">${$usdBalance}</a>
     {:else}
       <a href="#/login">Log in</a>
       <a href="#/register" class="signup-button">Sign up</a>

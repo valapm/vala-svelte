@@ -47,9 +47,13 @@ export let address = derived(
 export let utxos = derived(
   [address, testnet],
   async ([$address, $testnet], set) => {
-    if ($address) {
-      set(await getUtxos($address, $testnet))
+    async function fetchUtxos() {
+      if ($address) {
+        set(await getUtxos($address, $testnet))
+      }
     }
+
+    setInterval(fetchUtxos, 5000)
   },
   []
 )
