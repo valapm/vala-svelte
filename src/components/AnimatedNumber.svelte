@@ -42,6 +42,10 @@
     inherits: false;
   }
 
+  /* :global(body) {
+    counter-set: v1 var(--v1) v2 var(--v2);
+  } */
+
   div {
     transition: --num 1s;
     --v1: max(var(--num) - 0.5, 0);

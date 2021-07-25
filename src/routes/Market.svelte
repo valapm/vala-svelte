@@ -62,6 +62,7 @@
 
   async function getMarket() {
     const res = await $gqlClient.request(marketQuery)
+    console.log(res.market[0])
     return res.market[0]
   }
 
@@ -120,6 +121,9 @@
 
   $: satPriceTotal = lmsr.lmsr(newBalance) * lmsr.SatScaling - lmsr.lmsr(balance) * lmsr.SatScaling
   $: usdPriceTotal = round((satPriceTotal / 100000000) * $price)
+  $: {
+    console.log(newBalance)
+  }
 
   $: potentialAssetsUSD = ((selectedShareChange * lmsr.SatScaling) / 100000000) * $price || 0
   $: potentialWin = potentialAssetsUSD - usdPriceTotal
@@ -128,20 +132,16 @@
   $: shares =
     market &&
     market.shares.map((share, index) => {
-      const nextPriceShares = [...newShares]
-      nextPriceShares[index] += shareChange[index] + 1
+      const nextPriceShares = [...balance.shares]
+      nextPriceShares[index] += 1
 
       const satPrice =
         lmsr.lmsr({
           shares: nextPriceShares,
-          liquidity: newLiquidity
+          liquidity: balance.liquidity
         }) *
           lmsr.SatScaling -
-        lmsr.lmsr({
-          shares: newShares,
-          liquidity: newLiquidity
-        }) *
-          lmsr.SatScaling
+        lmsr.lmsr(balance) * lmsr.SatScaling
 
       const usdPrice = round((satPrice / 100000000) * $price)
 
@@ -158,7 +158,7 @@
         publicKey: bsv.PublicKey.fromString(entry.investor.pubKey),
         balance: {
           liquidity: entry.liquidity,
-          sharesFor: entry.shares
+          shares: entry.shares
         }
       }
     })
@@ -174,23 +174,23 @@
 
     const newTx = await getUpdateTx(newBalance, entries)
 
-    const utxos = await getUtxos($address.toString(), $testnet)
+    // const utxos = await getUtxos($address, $testnet)
 
-    console.log(utxos)
+    // console.log(utxos)
 
-    if ($satBalance < newTx.outputs[0].satoshis) {
-      throw new Error("Not enough funds")
-      return
-    }
+    // if ($satBalance < newTx.outputs[0].satoshis) {
+    //   throw new Error("Not enough funds")
+    //   return
+    // }
 
-    const fundedTx = pmTx.fundTx(newTx, $privateKey, $address, utxos)
+    // const fundedTx = pmTx.fundTx(newTx, $privateKey, $address, utxos)
 
-    console.log(fundedTx.outputs[0].script.toASM().split(" ").reverse()[2])
+    // console.log(fundedTx.outputs[0].script.toASM().split(" ").reverse()[2])
 
     // console.log(pmTx.isValidMarketUpdateTx(fundedTx, currentTx, entries))
 
-    const rawtx = fundedTx.checkedSerialize()
-    console.log(fundedTx)
+    const rawtx = newTx.checkedSerialize()
+    console.log(newTx)
 
     const postRes = await postMarketTx(rawtx, [], $testnet)
     console.log(postRes)
@@ -198,18 +198,22 @@
 
   async function getUpdateTx(newBalance, entries) {
     const currentTx = await getRawTx(market.transaction.txid)
+    const feeb = $testnet ? 1 : 0.5
 
-    const utxos = await getUtxos($address.toString(), $testnet)
+    const utxos = await getUtxos($address, $testnet)
+
+    console.log(utxos)
 
     let updateTx
     if (existingEntry) {
-      updateTx = pmTx.getUpdateEntryTx(currentTx, entries, newBalance, $privateKey, $address, utxos, $privateKey)
+      console.log([currentTx, entries, newBalance, $privateKey, $address, utxos, $privateKey])
+      updateTx = pmTx.getUpdateEntryTx(currentTx, entries, newBalance, $privateKey, $address, utxos, $privateKey, feeb)
     } else {
       const newEntry = {
         balance: newBalance,
         publicKey: $publicKey
       }
-      updateTx = pmTx.getAddEntryTx(currentTx, entries, newEntry, $address, utxos, $privateKey)
+      updateTx = pmTx.getAddEntryTx(currentTx, entries, newEntry, $address, utxos, $privateKey, feeb)
     }
 
     return updateTx
@@ -230,7 +234,9 @@
     <div>{Math.round(usdTotal)} $ total</div>
 
     <div class="chart">
-      <Chart {market} />
+      <div>
+        <Chart {market} />
+      </div>
     </div>
     <!-- <AnimatedNumber {num} />
     <button on:click={() => (num = num + 1000)}> Increase </button> -->
@@ -251,55 +257,58 @@
               }}
             />
             <div class="modal-container">
-              <h3>{market.options[selectedShare].name}</h3>
-              {market.options[selectedShare].details}
-              Balance: {balance.shares[selectedShare]}.
+              <div class="modal-content">
+                <h3>{market.options[selectedShare].name}</h3>
+                {market.options[selectedShare].details}
+                Balance: {balance.shares[selectedShare]}.
 
-              {#if !isValidBalance}
-                Outside smart contract limits. Add more market liquidity or increase limits.
-              {/if}
-              <div id="shareSelector">
-                <button
-                  data-action="decrement"
-                  on:click={() => {
-                    if (selectedShareChange >= 1) selectedShareChange -= 1
-                  }}
-                >
-                  <span>−</span>
-                </button>
-                <input
-                  type="number"
-                  bind:value={selectedShareChange}
-                  style="-moz-appearance: textfield;"
-                  id="shareInput"
-                  min="0"
-                  on:input={() => {
-                    if (selectedShareChange < 0) selectedShareChange = 0
-                  }}
-                />
-                <button
-                  data-action="increment"
-                  on:click={() => {
-                    selectedShareChange += 1
-                  }}
-                >
-                  <span>+</span>
-                </button>
+                {#if !isValidBalance}
+                  Outside smart contract limits. Add more market liquidity or increase limits.
+                {/if}
+                <div id="shareSelector">
+                  <button
+                    data-action="decrement"
+                    on:click={() => {
+                      if (selectedShareChange >= 1) selectedShareChange -= 1
+                    }}
+                  >
+                    <span>−</span>
+                  </button>
+                  <input
+                    type="number"
+                    bind:value={selectedShareChange}
+                    style="-moz-appearance: textfield;"
+                    id="shareInput"
+                    min="0"
+                    on:input={() => {
+                      if (selectedShareChange < 0) selectedShareChange = 0
+                    }}
+                  />
+                  <button
+                    data-action="increment"
+                    on:click={() => {
+                      selectedShareChange += 1
+                    }}
+                  >
+                    <span>+</span>
+                  </button>
+                </div>
+
+                <div>
+                  $<AnimatedNumber num={usdPriceTotal} />
+                </div>
+
+                Potential win ${round(potentialWin)}
+                {round(potentialX)}x
               </div>
-
-              <div>
-                <AnimatedNumber num={usdPriceTotal} /> $
+              <div class="modal-buttons">
+                <button on:click={updateMarket}>BUY</button>
+                <button
+                  on:click={() => {
+                    selectedShare = undefined
+                  }}>Cancel</button
+                >
               </div>
-
-              Potential win ${potentialWin}
-              {potentialX}x
-
-              <button on:click={updateMarket}>BUY</button>
-              <button
-                on:click={() => {
-                  selectedShare = undefined
-                }}>Cancel</button
-              >
             </div>
           </div>
         {/if}
@@ -325,9 +334,9 @@
     <input type="number" min="1" />
     <button on:click={updateMarket}>Add</button> -->
 
-    <div style="white-space: break-spaces;">
+    <!-- <div style="white-space: break-spaces;">
       {JSON.stringify(market, null, "\t")}
-    </div>
+    </div> -->
   </div>
 {:else}
   loading...
@@ -381,6 +390,21 @@
     display: flex;
     flex-direction: column;
     gap: 2rem;
+    border-radius: 10px;
+  }
+
+  .modal-content {
+    padding: 1rem;
+  }
+
+  .modal-buttons {
+    display: flex;
+    justify-content: space-around;
+    border-top: 1px solid grey;
+  }
+
+  .modal-buttons > button {
+    padding: 0.5rem 1.5rem;
   }
 
   h1 {
@@ -430,5 +454,14 @@
 
   .options h3 {
     font-size: 1.5rem;
+  }
+
+  .chart > * {
+    width: min(80%, 70rem);
+  }
+
+  .chart {
+    display: flex;
+    justify-content: center;
   }
 </style>

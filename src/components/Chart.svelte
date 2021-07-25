@@ -1,6 +1,7 @@
 <script>
   import { onMount } from "svelte"
-  import Chart from "chart.js"
+  // import { Chart, LineElement, LineController } from "chart.js"
+  import Chart from "chart.js/auto"
   import { gql } from "graphql-request"
   import { gqlClient } from "../store/graphql"
   import { lmsr } from "bitcoin-predict"
@@ -24,7 +25,6 @@
 
     const shareData = new Array(market.optionLength).fill([])
 
-    console.log(shareData)
     for (const marketState of marketData.market) {
       const balance = {
         shares: marketState.shares,
@@ -32,14 +32,18 @@
       }
 
       for (const [shareIndex, share] of marketState.shares.entries()) {
-        shareData[shareIndex].push(lmsr.getProbability(balance, share))
+        console.log("Pushing", lmsr.getProbability(balance, share), "to", JSON.stringify(shareData),"at pos", shareIndex )
+        shareData[shareIndex] = shareData[shareIndex].concat([lmsr.getProbability(balance, share)])
+        console.log("Result", JSON.stringify(shareData))
       }
     }
 
     const datasets = shareData.map((data, index) => {
       return {
         label: market.options[index].name,
-        data: shareData[index]
+        data: shareData[index],
+        fill: false,
+        cubicInterpolationMode: "monotone"
         // backgroundColor: ["rgba(255, 99, 132, 0.2)"],
         // borderColor: ["rgba(255, 99, 132, 1)"],
         // borderWidth: 1
@@ -47,6 +51,8 @@
     })
 
     const labels = marketData.market.map(market => market.stateCount)
+
+    // Chart.register(LineElement)
 
     new Chart(ctx, {
       type: "line",
@@ -71,15 +77,12 @@
           // ],
           y: {
             // display: true,
+            min: 0,
             max: 1,
-            min: 0
             // position: "left",
-            // ticks: {
-            //   beginAtZero: true
-            // },
-            // gridLines: {
-            //   display: false
-            // }
+            grid: {
+              display: false
+            }
           }
         }
       }
