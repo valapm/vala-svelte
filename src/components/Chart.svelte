@@ -32,9 +32,9 @@
       }
 
       for (const [shareIndex, share] of marketState.shares.entries()) {
-        console.log("Pushing", lmsr.getProbability(balance, share), "to", JSON.stringify(shareData),"at pos", shareIndex )
+        // console.log("Pushing", lmsr.getProbability(balance, share), "to", JSON.stringify(shareData),"at pos", shareIndex )
         shareData[shareIndex] = shareData[shareIndex].concat([lmsr.getProbability(balance, share)])
-        console.log("Result", JSON.stringify(shareData))
+        // console.log("Result", JSON.stringify(shareData))
       }
     }
 

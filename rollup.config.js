@@ -6,6 +6,7 @@ import { terser } from "rollup-plugin-terser"
 import json from "@rollup/plugin-json"
 import nodePolyfills from "rollup-plugin-node-polyfills"
 import postcss from "rollup-plugin-postcss"
+import autoprefixer from "autoprefixer"
 // import css from "rollup-plugin-css-only"
 import sveltePreprocess from "svelte-preprocess"
 import typescript from "@rollup/plugin-typescript"
@@ -71,6 +72,7 @@ export default {
       crypto: "crypto-browserify"
     }),
     postcss({
+      plugins: [autoprefixer],
       extract: "bundle.css",
       sourceMap: !production,
       minimize: production

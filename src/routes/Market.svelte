@@ -219,6 +219,8 @@
     return updateTx
   }
 
+  $: console.log(balance)
+
   onMount(async () => {
     market = await getMarket()
   })
@@ -269,7 +271,7 @@
                   <button
                     data-action="decrement"
                     on:click={() => {
-                      if (selectedShareChange >= 1) selectedShareChange -= 1
+                      if ((balance.shares[selectedShare] + selectedShareChange) >= 1) selectedShareChange -= 1
                     }}
                   >
                     <span>−</span>
@@ -279,9 +281,8 @@
                     bind:value={selectedShareChange}
                     style="-moz-appearance: textfield;"
                     id="shareInput"
-                    min="0"
                     on:input={() => {
-                      if (selectedShareChange < 0) selectedShareChange = 0
+                      if ((balance.shares[selectedShare] + selectedShareChange) < 0) selectedShareChange = 0
                     }}
                   />
                   <button
@@ -298,8 +299,10 @@
                   $<AnimatedNumber num={usdPriceTotal} />
                 </div>
 
-                Potential win ${round(potentialWin)}
-                {round(potentialX)}x
+                {#if selectedShareChange > 0}
+                  Potential win ${round(potentialWin)}
+                  {round(potentialX)}x
+                {/if}
               </div>
               <div class="modal-buttons">
                 <button on:click={updateMarket}>BUY</button>
