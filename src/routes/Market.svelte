@@ -17,32 +17,33 @@
   export let params
 
   const marketQuery = gql`
-    {
-      market(limit: 1, order_by: {stateCount: desc}, where: {marketByFirststateid: {transaction: {txid: {_eq: "${params.firstTxTxid}"}}}}) {
-        decided
-        decision
-        marketByFirststateid {
+  {
+      market(where: {marketStateByFirststateid: {transaction: {txid: {_eq: "${params.firstTxTxid}"}}}}) {
+        market_state {
+          transaction {
+            txid
+          }
+          decided
+          decision
+          shares
+          liquidity
+          entries {
+            liquidity
+            shares
+            investor {
+              pubKey
+            }
+          }
+        }
+        marketStateByFirststateid {
           transaction {
             txid
           }
         }
         resolve
-        shares
-        liquidity
-        transaction {
-          txid
-        }
-        optionLength
         options {
           name
           details
-        }
-        entries {
-          liquidity
-          shares
-          investor {
-            pubKey
-          }
         }
       }
     }
@@ -74,9 +75,11 @@
     return tx
   }
 
+  $: console.log($publicKey.toString())
+
   $: marketBalance = {
-    shares: market ? market.shares : [],
-    liquidity: market ? market.liquidity : 0
+    shares: market ? market.market_state.shares : [],
+    liquidity: market ? market.market_state.liquidity : 0
   }
 
   $: marketSats = lmsr.getLmsrSats(marketBalance)
@@ -84,9 +87,10 @@
   $: bsvTotal = marketSats / 100000000
   $: usdTotal = bsvTotal * $price
 
-  $: existingEntry = market && market.entries.find(entry => entry.investor.pubKey === $publicKey.toString())
+  $: existingEntry =
+    market && market.market_state.entries.find(entry => entry.investor.pubKey === $publicKey.toString())
   $: balance = existingEntry || {
-    shares: new Array(market ? market.optionLength : 0).fill(0),
+    shares: new Array(market ? market.options.length : 0).fill(0),
     liquidity: 0
   }
 
@@ -131,7 +135,7 @@
 
   $: shares =
     market &&
-    market.shares.map((share, index) => {
+    market.market_state.shares.map((share, index) => {
       const nextPriceShares = [...balance.shares]
       nextPriceShares[index] += 1
 
@@ -153,7 +157,7 @@
     })
 
   function getEntries() {
-    return market.entries.map(entry => {
+    return market.market_state.entries.map(entry => {
       return {
         publicKey: bsv.PublicKey.fromString(entry.investor.pubKey),
         balance: {
@@ -197,7 +201,7 @@
   }
 
   async function getUpdateTx(newBalance, entries) {
-    const currentTx = await getRawTx(market.transaction.txid)
+    const currentTx = await getRawTx(market.market_state.transaction.txid)
     const feeb = $testnet ? 1 : 0.5
 
     const utxos = await getUtxos($address, $testnet)
@@ -243,7 +247,7 @@
     <!-- <AnimatedNumber {num} />
     <button on:click={() => (num = num + 1000)}> Increase </button> -->
 
-    <h3>{market.marketByFirststateid.transaction.txid}</h3>
+    <h3>{market.marketStateByFirststateid.transaction.txid}</h3>
     <div class="totalAssets">{round(bsvTotal)} BSV ({round(usdTotal)} $)</div>
 
     {#if market}
@@ -271,7 +275,7 @@
                   <button
                     data-action="decrement"
                     on:click={() => {
-                      if ((balance.shares[selectedShare] + selectedShareChange) >= 1) selectedShareChange -= 1
+                      if (balance.shares[selectedShare] + selectedShareChange >= 1) selectedShareChange -= 1
                     }}
                   >
                     <span>−</span>
@@ -282,7 +286,7 @@
                     style="-moz-appearance: textfield;"
                     id="shareInput"
                     on:input={() => {
-                      if ((balance.shares[selectedShare] + selectedShareChange) < 0) selectedShareChange = 0
+                      if (balance.shares[selectedShare] + selectedShareChange < 0) selectedShareChange = 0
                     }}
                   />
                   <button

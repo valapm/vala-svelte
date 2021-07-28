@@ -12,7 +12,7 @@
 
   const priceQuery = gql`
   {
-    market(where: {marketByFirststateid: {transactionTxid: {_eq: "${market.marketByFirststateid.transaction.txid}"}}}, order_by: {stateCount: asc}) {
+    market_state(where: {market: { marketStateByFirststateid: {transactionTxid: {_eq: "${market.marketStateByFirststateid.transaction.txid}"}}}}, order_by: {stateCount: asc}) {
       shares
       liquidity
       stateCount
@@ -23,9 +23,9 @@
   onMount(async () => {
     const marketData = await $gqlClient.request(priceQuery)
 
-    const shareData = new Array(market.optionLength).fill([])
+    const shareData = new Array(market.options.length).fill([])
 
-    for (const marketState of marketData.market) {
+    for (const marketState of marketData.market_state) {
       const balance = {
         shares: marketState.shares,
         liquidity: marketState.liquidity
@@ -50,7 +50,7 @@
       }
     })
 
-    const labels = marketData.market.map(market => market.stateCount)
+    const labels = marketData.market_state.map(market => market.stateCount)
 
     // Chart.register(LineElement)
 

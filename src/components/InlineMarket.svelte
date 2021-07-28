@@ -7,20 +7,22 @@
   export let market
 
   $: balance = {
-    shares: market.shares,
-    liquidity: market.liquidity
+    shares: market.market_state.shares,
+    liquidity: market.market_state.liquidity
   }
+
+  $: txid = market.marketStateByFirststateid.transaction.txid
 
   $: marketSats = lmsr.getLmsrSats(balance)
 
-  $: shares = market.shares.map((share, index) => {
-    const newShares = [...market.shares]
+  $: shares = market.market_state.shares.map((share, index) => {
+    const newShares = [...market.market_state.shares]
     newShares[index] += 1
 
     const satPrice =
       lmsr.getLmsrSats({
         shares: newShares,
-        liquidity: market.liquidity
+        liquidity: market.market_state.liquidity
       }) - lmsr.getLmsrSats(balance)
 
     const usdPrice = round((satPrice / 100000000) * $price)
@@ -39,8 +41,8 @@
   }
 </script>
 
-<a href="#/market/{market.marketByFirststateid.transaction.txid}">
-  <h3>{market.marketByFirststateid.transaction.txid}</h3>
+<a href="#/market/{txid}">
+  <h3>{txid}</h3>
   <div>
     <div>{market.resolve}</div>
   </div>
