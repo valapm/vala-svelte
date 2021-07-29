@@ -1,5 +1,5 @@
-import { writable } from "svelte-persistent-store/dist/local"
-import { derived } from "svelte/store"
+import { writable, derived as persistentDerived } from "svelte-persistent-store/dist/local"
+import { derived, Readable } from "svelte/store"
 import { bsv } from "bitcoin-predict"
 import Mnemonic from "../utils/mnemonic"
 import { testnet } from "./options"
@@ -44,24 +44,24 @@ export let address = derived(
   null
 )
 
-export let utxos = derived(
-  [address, testnet],
-  async ([$address, $testnet], set) => {
-    async function fetchUtxos() {
-      if ($address) {
-        set(await getUtxos($address, $testnet))
-      }
+export let utxos: Readable<any[]> = derived([address, testnet], async ([$address, $testnet], set) => {
+  async function fetchUtxos() {
+    if ($address) {
+      const utxos = await getUtxos($address, $testnet)
+      set(utxos)
     }
+  }
 
-    setInterval(fetchUtxos, 5000)
-  },
-  []
-)
+  setInterval(fetchUtxos, 3000)
+})
 
-export let satBalance = derived(
+export let satBalance = persistentDerived(
+  "balance",
   utxos,
-  $utxos => {
-    return $utxos.reduce((sats, output) => output.satoshis + sats, 0)
+  ($utxos, set) => {
+    if ($utxos) {
+      set($utxos.reduce((sats, output) => output.satoshis + sats, 0))
+    }
   },
   0
 )

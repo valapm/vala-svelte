@@ -20,6 +20,12 @@
   {
       market(where: {marketStateByFirststateid: {transaction: {txid: {_eq: "${params.firstTxTxid}"}}}}) {
         market_state {
+          market_oracles {
+            committed
+            oracle {
+              name
+            }
+          }
           transaction {
             txid
           }
@@ -249,9 +255,17 @@
 
     <h3>{market.marketStateByFirststateid.transaction.txid}</h3>
     <div class="totalAssets">{round(bsvTotal)} BSV ({round(usdTotal)} $)</div>
+    <div>
+      {#if market}
+        {#each market.market_state.market_oracles as market_oracle}
+          <div>{market_oracle.oracle.name}</div>
+          <div>{market_oracle.committed}</div>
+        {/each}
+      {/if}
+    </div>
 
     {#if market}
-      {#if market.decided}
+      {#if market.market_state.decided}
         Market has been resolved ({market.decision})
       {:else}
         {#if selectedShare !== undefined}
