@@ -24,13 +24,16 @@
 
   const undecidedMarketQuery = gql`
     {
-      market(where: { market_state: { market_oracles: { oraclePubKey: {_eq: "${$rabinPubKey.toString()}"}, committed: {_eq: true}}, market_state: { decided: {_eq: false}}}}) {
+      market(where: { market_state: { market_oracles: { oraclePubKey: {_eq: "${$rabinPubKey.toString()}"}, committed: {_eq: true}}, decided: {_eq: false}}}) {
         marketStateByFirststateid {
           transaction {
             txid
           }
         }
         resolve
+        options {
+          name
+        }
         market_state {
           transactionTxid
           shares
@@ -42,7 +45,7 @@
 
   const decidedMarketQuery = gql`
       {
-      market(where: { market_state: { market_oracles: {oraclePubKey: {_eq: "${$rabinPubKey.toString()}"}, committed: {_eq: true}}, market_state: { decided: {_eq: true}}}}) {
+      market(where: { market_state: { market_oracles: {oraclePubKey: {_eq: "${$rabinPubKey.toString()}"}, committed: {_eq: true}}, decided: {_eq: true}}}) {
         marketStateByFirststateid {
           transaction {
             txid
@@ -58,7 +61,7 @@
 
   const uncommittedMarketQuery = gql`
     {
-      market(where: { market_state: { market_oracles: {oraclePubKey: {_eq: "${$rabinPubKey.toString()}"}, committed: {_eq: false}}, market_state: { decided: {_eq: false}}}}) {
+      market(where: { market_state: { market_oracles: {oraclePubKey: {_eq: "${$rabinPubKey.toString()}"}, committed: {_eq: false}},  decided: {_eq: false}}}) {
         marketStateByFirststateid {
           transaction {
             txid
@@ -131,49 +134,13 @@
     return tx
   }
 
-  const Interp = bsv.Script.Interpreter
+  async function resolveMarket(market, vote: number) {
+    const currentTx = await getRawTx(market.market_state.transactionTxid)
 
-  export const DEFAULT_FLAGS =
-    Interp.SCRIPT_ENABLE_MAGNETIC_OPCODES |
-    Interp.SCRIPT_ENABLE_MONOLITH_OPCODES | // TODO: to be removed after upgrade to bsv 2.0
-    Interp.SCRIPT_VERIFY_STRICTENC |
-    Interp.SCRIPT_ENABLE_SIGHASH_FORKID |
-    Interp.SCRIPT_VERIFY_LOW_S |
-    Interp.SCRIPT_VERIFY_NULLFAIL |
-    Interp.SCRIPT_VERIFY_DERSIG |
-    Interp.SCRIPT_VERIFY_MINIMALDATA |
-    Interp.SCRIPT_VERIFY_NULLDUMMY |
-    Interp.SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_NOPS |
-    Interp.SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY |
-    Interp.SCRIPT_VERIFY_CHECKSEQUENCEVERIFY
+    console.log([currentTx, vote, $rabinPrivKey, $address, $utxos, $privateKey])
 
-  async function resolveMarket(market, decision: 0 | 1) {
-    const currentTx = await getRawTx(market.transaction.txid)
-
-    const sig = bp.oracle.getSignature(decision, $rabinPrivKey)
-
-    console.log(sig)
-
-    const newTx = await bp.transaction.getDecideTx(currentTx, decision, [sig])
-
-    const utxos = await getUtxos($address.toString(), $testnet)
-
-    const fundedTx = bp.transaction.fundTx(newTx, $privateKey, $address, utxos)
-
-    const rawtx = fundedTx.checkedSerialize() // FIXME: throws if not enough sats
-
-    // const interpreter = bsv.Script.Interpreter()
-
-    // console.log(
-    //   interpreter.verify(
-    //     fundedTx.inputs[0].script,
-    //     currentTx.outputs[0].script,
-    //     fundedTx,
-    //     0,
-    //     DEFAULT_FLAGS,
-    //     currentTx.outputs[0].satoshisBN
-    //   )
-    // )
+    const newTx = await bp.transaction.getOracleVoteTx(currentTx, vote, $rabinPrivKey, $address, $utxos, $privateKey)
+    const rawtx = newTx.checkedSerialize() // FIXME: throws if not enough sats
 
     const postRes = await postMarketTx(rawtx, [], $testnet)
     console.log(postRes)
@@ -237,8 +204,12 @@
     {#if res.market.length > 0}
       <h2>Running Markets</h2>
       {#each res.market as market}
-        {market.resolve} <button on:click={() => resolveMarket(market, 1)}>VOTE YES</button>
-        <button on:click={() => resolveMarket(market, 0)}>VOTE NO</button>
+        {market.resolve}
+        <div>
+          {#each market.options as option, index}
+            <button on:click={() => resolveMarket(market, index)}>Vote for {option.name}</button>
+          {/each}
+        </div>
       {/each}
     {/if}
   {/await}

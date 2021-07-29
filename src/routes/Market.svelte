@@ -266,7 +266,7 @@
 
     {#if market}
       {#if market.market_state.decided}
-        Market has been resolved ({market.decision})
+        Market has been resolved ({market.options[market.market_state.decision].name})
       {:else}
         {#if selectedShare !== undefined}
           <div class="modal">
