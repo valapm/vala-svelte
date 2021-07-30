@@ -19,6 +19,7 @@
   const marketQuery = gql`
   {
       market(where: {marketStateByFirststateid: {transaction: {txid: {_eq: "${params.firstTxTxid}"}}}}) {
+        creatorPubKey
         market_state {
           market_oracles {
             committed
@@ -81,8 +82,6 @@
     return tx
   }
 
-  $: console.log($publicKey.toString())
-
   $: marketBalance = {
     shares: market ? market.market_state.shares : [],
     liquidity: market ? market.market_state.liquidity : 0
@@ -131,9 +130,6 @@
 
   $: satPriceTotal = lmsr.lmsr(newBalance) * lmsr.SatScaling - lmsr.lmsr(balance) * lmsr.SatScaling
   $: usdPriceTotal = round((satPriceTotal / 100000000) * $price)
-  $: {
-    console.log(newBalance)
-  }
 
   $: potentialAssetsUSD = ((selectedShareChange * lmsr.SatScaling) / 100000000) * $price || 0
   $: potentialWin = potentialAssetsUSD - usdPriceTotal
@@ -184,27 +180,36 @@
 
     const newTx = await getUpdateTx(newBalance, entries)
 
-    // const utxos = await getUtxos($address, $testnet)
-
-    // console.log(utxos)
-
-    // if ($satBalance < newTx.outputs[0].satoshis) {
-    //   throw new Error("Not enough funds")
-    //   return
-    // }
-
-    // const fundedTx = pmTx.fundTx(newTx, $privateKey, $address, utxos)
-
-    // console.log(fundedTx.outputs[0].script.toASM().split(" ").reverse()[2])
-
-    // console.log(pmTx.isValidMarketUpdateTx(fundedTx, currentTx, entries))
-
     const rawtx = newTx.checkedSerialize()
     console.log(newTx)
 
     const postRes = await postMarketTx(rawtx, [], $testnet)
     console.log(postRes)
   }
+
+  $: redeemSats =
+    market && market.market_state.decided
+      ? lmsr.lmsr({
+          shares: market.market_state.shares,
+          liquidity: market.market_state.liquidity
+        }) -
+        lmsr.lmsr({
+          shares: market.market_state.shares.map((share, i) => (i === market.market_state.decision ? share : 0)),
+          liquidity: market.market_state.liquidity
+        })
+      : 0
+
+  // async function redeemInvalid() {
+  //   const entries = getEntries()
+
+  //   const newTx = await getUpdateTx(newBalance, entries)
+
+  //   const rawtx = newTx.checkedSerialize()
+  //   console.log(newTx)
+
+  //   const postRes = await postMarketTx(rawtx, [], $testnet)
+  //   console.log(postRes)
+  // }
 
   async function getUpdateTx(newBalance, entries) {
     const currentTx = await getRawTx(market.market_state.transaction.txid)
@@ -228,8 +233,6 @@
 
     return updateTx
   }
-
-  $: console.log(balance)
 
   onMount(async () => {
     market = await getMarket()
@@ -267,6 +270,18 @@
     {#if market}
       {#if market.market_state.decided}
         Market has been resolved ({market.options[market.market_state.decision].name})
+
+        {#if market.creatorPubKey === $publicKey.toString() && redeemSats >= 0}
+          <button>Redeem invalid shares ({redeemSats}) </button>
+        {/if}
+
+        {#if balance.shares[market.market_state.decision]}
+          <button>Sell winning shares</button>
+        {/if}
+
+        {#if balance.liquidity}
+          <button>Extract liquidity</button>
+        {/if}
       {:else}
         {#if selectedShare !== undefined}
           <div class="modal">
