@@ -3,7 +3,7 @@
 </script>
 
 <nav>
-  <img src="./Logo.svg" alt="vala-logo" />
+  <a href="#/"><img src="./Logo.svg" alt="vala-logo" /></a>
   <div class="menu-center">
     <a href="#/">Markets</a>
     <a href="#/oracles">Oracles</a>

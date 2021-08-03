@@ -25,6 +25,7 @@
           }
         }
         resolve
+        details
         options {
           name
         }
@@ -44,22 +45,41 @@
 
 <Header />
 
-<div class="flex w-full h-20 items-center space-x-8 p-7 justify-end">
-  {#if $seed}
-    <a href="#/create" class="button px-4 rounded-sm h-8 flex items-center text-lg bg-blue-500 text-white font-semibold"
-      >Create Market</a
-    >
-  {/if}
+{#if $seed}
+  <div id="create-market-button">
+    <a href="#/create">Create Market</a>
+  </div>
+{/if}
+
+<div class="markets">
+  {#await getMarkets()}
+    loading...
+  {:then res}
+    {#each res.market as market}
+      <InlineMarket {market} />
+    {/each}
+  {/await}
 </div>
 
-<div class="h-screen w-full flex justify-center">
-  <div class="w-2/3 h-full flex flex-col space-y-8 mt-10">
-    {#await getMarkets()}
-      loading...
-    {:then res}
-      {#each res.market as market}
-        <InlineMarket {market} />
-      {/each}
-    {/await}
-  </div>
-</div>
+<style>
+  .markets {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  #create-market-button {
+    display: flex;
+    justify-content: right;
+    margin: 0rem 2rem;
+  }
+
+  #create-market-button > a {
+    color: white;
+    padding: 0.3rem 0.5rem;
+    background-color: #1b3fbc;
+    border-radius: 6px;
+    font-weight: bold;
+  }
+</style>

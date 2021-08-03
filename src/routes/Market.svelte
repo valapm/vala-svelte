@@ -284,8 +284,10 @@
 
 <Header />
 
-{#if market}
-  <div class="market">
+<div class="market">
+  <div class="nav"><a href="#/"><img src="./icons/angle-double-left.svg" alt="back" /></a> {params.firstTxTxid}</div>
+
+  {#if market}
     <h1>
       {market.resolve}
     </h1>
@@ -299,7 +301,6 @@
     <!-- <AnimatedNumber {num} />
     <button on:click={() => (num = num + 1000)}> Increase </button> -->
 
-    <h3>{market.marketStateByFirststateid.transaction.txid}</h3>
     <div class="totalAssets">{round(bsvTotal)} BSV ({round(usdTotal)} $)</div>
     <div>
       {#if market}
@@ -416,10 +417,10 @@
     <!-- <div style="white-space: break-spaces;">
       {JSON.stringify(market, null, "\t")}
     </div> -->
-  </div>
-{:else}
-  loading...
-{/if}
+  {:else}
+    loading...
+  {/if}
+</div>
 
 <style>
   #shareInput::-webkit-outer-spin-button,
@@ -542,5 +543,16 @@
   .chart {
     display: flex;
     justify-content: center;
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    justify-content: center;
+  }
+
+  .nav img {
+    height: 2rem;
   }
 </style>
