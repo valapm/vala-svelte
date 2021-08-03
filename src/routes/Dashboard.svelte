@@ -17,6 +17,7 @@
           decided
           shares
           liquidity
+          decision
         }
         marketStateByFirststateid {
           transaction {
@@ -24,6 +25,9 @@
           }
         }
         resolve
+        options {
+          name
+        }
       }
     }
   `

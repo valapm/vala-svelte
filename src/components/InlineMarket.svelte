@@ -46,9 +46,13 @@
   <div>
     <div>{market.resolve}</div>
   </div>
-  <div>{round(bsvTotal)} BSV ({round(usdTotal)} $)</div>
-  {#each shares as share}
-    <div>{share.probability * 100}%</div>
-    <div>${share.usdPrice}</div>
-  {/each}
+  {#if market.market_state.decided}
+    Market resolved to {market.options[market.market_state.decision].name}
+  {:else}
+    <div>{round(bsvTotal)} BSV ({round(usdTotal)} $)</div>
+    {#each shares as share}
+      <div>{share.probability * 100}%</div>
+      <div>${share.usdPrice}</div>
+    {/each}
+  {/if}
 </a>

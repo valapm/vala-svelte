@@ -175,16 +175,71 @@
     return Math.round(n * factor) / factor
   }
 
-  async function updateMarket() {
+  /**
+   * Creates and broadcasts market update transaction
+   *
+   * @param balance New Balance
+   */
+  async function updateMarket(balance) {
     const entries = getEntries()
 
-    const newTx = await getUpdateTx(newBalance, entries)
+    const newTx = await getUpdateTx(balance, entries)
 
     const rawtx = newTx.checkedSerialize()
     console.log(newTx)
 
     const postRes = await postMarketTx(rawtx, [], $testnet)
     console.log(postRes)
+  }
+
+  /**
+   * Sells winning shares after market is resolved
+   */
+  async function sellWinningShares() {
+    if (!market.market_state.decided) {
+      throw new Error("Market not resolved")
+    }
+    if (!balance.shares[market.market_state.decision]) {
+      throw new Error("User has no winning shares")
+    }
+    const newBalance = {
+      shares: [...balance.shares],
+      liquidity: balance.liquidity
+    }
+
+    newBalance.shares[market.market_state.decision] = 0
+
+    updateMarket(newBalance)
+  }
+
+  /**
+   * Lets market creator redeem all loosing shares
+   */
+  async function redeemInvalidShares() {
+    if (!market.market_state.decided) {
+      throw new Error("Market not resolved")
+    }
+    if (market.creatorPubKey !== $publicKey.toString()) {
+      throw new Error("User is not market creator")
+    }
+    if (redeemSats <= 0) {
+      throw new Error("Nothing to redeem")
+    }
+    updateMarket(balance)
+  }
+
+  /**
+   * Sells all liquidity
+   */
+  async function extractLiquidity() {
+    if (balance.liquidity <= 0) {
+      throw new Error("No liquidity to extract")
+    }
+    const newBalance = {
+      shares: [...balance.shares],
+      liquidity: 0
+    }
+    updateMarket(newBalance)
   }
 
   $: redeemSats =
@@ -198,18 +253,6 @@
           liquidity: market.market_state.liquidity
         })
       : 0
-
-  // async function redeemInvalid() {
-  //   const entries = getEntries()
-
-  //   const newTx = await getUpdateTx(newBalance, entries)
-
-  //   const rawtx = newTx.checkedSerialize()
-  //   console.log(newTx)
-
-  //   const postRes = await postMarketTx(rawtx, [], $testnet)
-  //   console.log(postRes)
-  // }
 
   async function getUpdateTx(newBalance, entries) {
     const currentTx = await getRawTx(market.market_state.transaction.txid)
@@ -271,16 +314,16 @@
       {#if market.market_state.decided}
         Market has been resolved ({market.options[market.market_state.decision].name})
 
-        {#if market.creatorPubKey === $publicKey.toString() && redeemSats >= 0}
-          <button>Redeem invalid shares ({redeemSats}) </button>
+        {#if market.creatorPubKey === $publicKey.toString() && redeemSats > 0}
+          <button on:click={redeemInvalidShares}>Redeem invalid shares ({redeemSats}) </button>
         {/if}
 
         {#if balance.shares[market.market_state.decision]}
-          <button>Sell winning shares</button>
+          <button on:click={sellWinningShares}>Sell winning shares</button>
         {/if}
 
         {#if balance.liquidity}
-          <button>Extract liquidity</button>
+          <button on:click={extractLiquidity}>Extract liquidity</button>
         {/if}
       {:else}
         {#if selectedShare !== undefined}
@@ -338,7 +381,7 @@
                 {/if}
               </div>
               <div class="modal-buttons">
-                <button on:click={updateMarket}>BUY</button>
+                <button on:click={() => updateMarket(newBalance)}>BUY</button>
                 <button
                   on:click={() => {
                     selectedShare = undefined
