@@ -1,5 +1,5 @@
-import { writable, derived as persistentDerived } from "svelte-persistent-store/dist/local"
-import { derived, Readable } from "svelte/store"
+import { writable as persistentWritable, derived as persistentDerived } from "svelte-persistent-store/dist/local"
+import { writable, readable, derived, Readable } from "svelte/store"
 import { bsv } from "bitcoin-predict"
 import Mnemonic from "../utils/mnemonic"
 import { testnet } from "./options"
@@ -10,7 +10,7 @@ import { price } from "./price"
 
 const derivationPath = "m/44'/0'/0'/0/0"
 
-export let seed = writable("seed", null)
+export let seed = persistentWritable("seed", null)
 
 export let hdPrivateKey = derived(
   [seed, testnet],
@@ -44,7 +44,7 @@ export let address = derived(
   null
 )
 
-export let utxos: Readable<any[]> = derived([address, testnet], async ([$address, $testnet], set) => {
+export let utxos: Readable<any[]> = derived([address, testnet], ([$address, $testnet], set) => {
   async function fetchUtxos() {
     if ($address) {
       const utxos = await getUtxos($address, $testnet)
@@ -52,7 +52,11 @@ export let utxos: Readable<any[]> = derived([address, testnet], async ([$address
     }
   }
 
-  setInterval(fetchUtxos, 3000)
+  const interval = setInterval(fetchUtxos, 3000)
+
+  return function stop() {
+    clearInterval(interval)
+  }
 })
 
 export let satBalance = persistentDerived(

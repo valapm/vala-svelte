@@ -16,6 +16,7 @@
       <a href="#/login">Log in</a>
       <a href="#/register" class="signup-button">Sign up</a>
     {/if}
+    <a href="#/options"><img class="dropdown" src="./icons/bars.svg" alt="dropdown" /></a>
   </div>
 </nav>
 
@@ -42,6 +43,7 @@
   .menu-right {
     display: flex;
     gap: 1rem;
+    align-items: center;
   }
 
   .signup-button {
@@ -50,5 +52,10 @@
     color: white;
     padding: 0.1rem 0.5rem;
     font-weight: bold;
+  }
+
+  .dropdown {
+    height: 1.5rem;
+    /* filter: invert(17%) sepia(90%) saturate(2821%) hue-rotate(225deg) brightness(89%) contrast(97%); */
   }
 </style>

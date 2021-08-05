@@ -5,6 +5,7 @@ import OracleDashboard from "./routes/OracleDashboard.svelte"
 import Login from "./routes/Login.svelte"
 import Register from "./routes/Register.svelte"
 import Wallet from "./routes/Wallet.svelte"
+import Options from "./routes/Options.svelte"
 
 export const routes = {
   "/": Dashboard,
@@ -13,5 +14,6 @@ export const routes = {
   "/oracle": OracleDashboard,
   "/login": Login,
   "/register": Register,
-  "/wallet": Wallet
+  "/wallet": Wallet,
+  "/options": Options
 }
