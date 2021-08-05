@@ -37,6 +37,12 @@ export async function postBoostJobTx(rawtx, content, testnet = false) {
   // return await post.json()
 }
 
+export async function postBurnTx(rawtx, testnet = false) {
+  const host = testnet ? BACKEND_HOST_TESTNET : BACKEND_HOST
+
+  return await post(host + "/burnSats", { rawtx })
+}
+
 export async function postBoostProofTx(rawtx, testnet = false) {
   const host = testnet ? BACKEND_HOST_TESTNET : BACKEND_HOST
 

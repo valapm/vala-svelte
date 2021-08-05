@@ -8,7 +8,7 @@
   import { testnet } from "../store/options"
   import { gql } from "graphql-request"
   import { gqlClient } from "../store/graphql"
-  import { postBoostJobTx, postOracleDetails, postMarketTx } from "../apis/web"
+  import { postBoostJobTx, postOracleDetails, postMarketTx, postBurnTx } from "../apis/web"
   import { onMount } from "svelte"
   import Header from "../components/Header.svelte"
 
@@ -103,6 +103,42 @@
     console.log(`Boosted with difficulty ${model.getDiff()} for ${sats} sats`)
   }
 
+  async function burn() {
+    let tx: bsv.Transaction
+
+    if (oracle.burnTxTxid) {
+      const txQuery = gql`
+        {
+          transaction(where: { txid: { _eq: "${oracle.burnTxTxid}" } }) {
+            hex
+          }
+        }
+      `
+      const res = await $gqlClient.request(txQuery)
+      const prevTxHex = res.transaction[0].hex
+      const prevTx = new bsv.Transaction()
+      prevTx.fromString(prevTxHex)
+
+      tx = bp.transaction.getOracleBurnUpdateTx(prevTx, burnSats)
+    } else {
+      console.log([$rabinPubKey, burnSats])
+      tx = bp.transaction.buildOracleBurnTx($rabinPubKey, burnSats)
+      console.log(tx)
+    }
+
+    console.log($address)
+    const utxos = await getUtxos($address, $testnet)
+
+    console.log([tx, $privateKey, $address, utxos])
+    bp.transaction.fundTx(tx, $privateKey, $address, utxos)
+
+    const rawtx = tx.checkedSerialize()
+    console.log(tx)
+
+    const postRes = await postBurnTx(rawtx, $testnet)
+    console.log(postRes)
+  }
+
   async function update() {
     const details = {
       name: oracleName
@@ -159,37 +195,50 @@
     console.log(postRes)
   }
 
-  onMount(async () => {
-    const oracleQuery = gql`
+  const oracleQuery = gql`
     query {
       oracle(where: {pubKey: {_eq: "${$rabinPubKey}"}}) {
         name
+        burnedSats
+        burnTxTxid
       }
     }`
 
-    const oracleData = await $gqlClient.request(oracleQuery)
-    const oracle = oracleData.oracle[0]
+  let oracle
+  let burnSats
 
-    registered = !!oracle
+  onMount(async () => {
+    const oracleData = await $gqlClient.request(oracleQuery)
+    oracle = oracleData.oracle[0]
 
     if (oracle) oracleName = oracle.name
+
+    console.log($rabinPubKey)
   })
 </script>
 
 <Header />
 
-{#if !registered}
+{#if !oracle || !oracle.name}
   Become an Oracle and earn money
   <input bind:value={oracleName} placeholder="Set a name for yourself" type="text" />
   <button on:click={update}>Save</button>
 {:else}
-  {$rabinPubKey}
+  {oracle.name}
   <br />
+  {oracle.burnedSats} sats burned.
+  <br />
+  Burn Sats:
+  <input bind:value={burnSats} type="number" min="0" />
+  <br />
+  <button on:click={burn}>Burn</button>
+
+  <!-- <br />
   {price} bsv
   <br />
   <input bind:value={diff} type="number" min="0" />
   <br />
-  <button on:click={boost}> Add PoW Reputation </button>
+  <button on:click={boost}> Add PoW Reputation </button> -->
 
   {#await $gqlClient.request(uncommittedMarketQuery) then res}
     {#if res.market.length > 0}
