@@ -1,18 +1,18 @@
 <script>
-  import { bsv } from "bitcoin-predict"
   import { gql } from "graphql-request"
-  import InlineMarket from "../components/InlineMarket.svelte"
   import { gqlClient } from "../store/graphql"
-  import { address, seed, satBalance } from "../store/wallet"
-  import Qr from "../components/Qr.svelte"
-  import Mnemonic from "../utils/mnemonic"
-  import Header from "../components/Header.svelte"
-  import { onMount } from "svelte"
-  import { push } from "svelte-spa-router"
+  import { seed } from "../store/wallet"
 
-  const marketQuery = gql`
+  import Header from "../components/Header.svelte"
+  import InlineMarket from "../components/InlineMarket.svelte"
+  import Searchbar from "../components/Searchbar.svelte"
+
+  let markets = []
+  let search = ""
+
+  $: marketQuery = gql`
     {
-      market(order_by: { market_state: { liquidity: desc } }) {
+      market(order_by: { market_state: { liquidity: desc } }, where: { resolve: {_ilike: "%${search}%"}}) {
         market_state {
           decided
           shares
@@ -32,33 +32,26 @@
       }
     }
   `
-  async function getMarkets() {
-    return $gqlClient.request(marketQuery)
-  }
 
-  onMount(() => {
-    if (!$seed) {
-      push("#/login")
-    }
-  })
+  $: $gqlClient.request(marketQuery).then(res => (markets = res.market))
 </script>
 
 <Header />
 
-{#if $seed}
-  <div id="create-market-button">
-    <a href="#/create">Create Market</a>
-  </div>
-{/if}
+<div class="container">
+  {#if $seed}
+    <div id="create-market-button">
+      <a href="#/create">Create Market</a>
+    </div>
+  {/if}
 
-<div class="markets">
-  {#await getMarkets()}
-    loading...
-  {:then res}
-    {#each res.market as market}
+  <Searchbar bind:value={search} />
+
+  <div class="markets">
+    {#each markets as market}
       <InlineMarket {market} />
     {/each}
-  {/await}
+  </div>
 </div>
 
 <style>
@@ -67,6 +60,10 @@
     flex-direction: column;
     gap: 2rem;
     align-items: center;
+  }
+
+  .container {
+    gap: 1rem;
   }
 
   #create-market-button {

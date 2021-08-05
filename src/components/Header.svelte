@@ -27,6 +27,7 @@
     height: 5rem;
     padding: 2rem;
     justify-content: space-between;
+    margin-bottom: 4rem;
   }
 
   nav img {

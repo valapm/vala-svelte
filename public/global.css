@@ -11,6 +11,16 @@
   width: max-content;
 }
 
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container > * {
+  width: min(90%, 50rem);
+}
+
 body {
   background-color: #f4f4f6;
 }

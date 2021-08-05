@@ -75,7 +75,7 @@
     background-color: white;
     border-radius: 10px;
     box-shadow: 3px 3px 5px #95959587;
-    width: min(90%, 50rem);
+    width: 100%;
   }
 
   .txid {

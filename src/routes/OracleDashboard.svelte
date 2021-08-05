@@ -11,6 +11,7 @@
   import { postBoostJobTx, postOracleDetails, postMarketTx, postBurnTx } from "../apis/web"
   import { onMount } from "svelte"
   import Header from "../components/Header.svelte"
+  import { price } from "../store/price"
 
   const diffMultiplier = 0.00002
   const feeb = 0.5
@@ -20,7 +21,7 @@
   let registered
 
   let diff = 1
-  $: price = diff * diffMultiplier
+  // $: price = diff * diffMultiplier
 
   const undecidedMarketQuery = gql`
     {
@@ -104,6 +105,10 @@
   }
 
   async function burn() {
+    const burnSats = Math.ceil((100000000 * burnUSD) / $price)
+
+    console.log(burnSats)
+
     let tx: bsv.Transaction
 
     if (oracle.burnTxTxid) {
@@ -205,7 +210,7 @@
     }`
 
   let oracle
-  let burnSats
+  let burnUSD
 
   onMount(async () => {
     const oracleData = await $gqlClient.request(oracleQuery)
@@ -226,10 +231,10 @@
 {:else}
   {oracle.name}
   <br />
-  {oracle.burnedSats} sats burned.
+  {(oracle.burnedSats * $price) / 100000000} $ burned.
   <br />
-  Burn Sats:
-  <input bind:value={burnSats} type="number" min="0" />
+  Burn $:
+  <input bind:value={burnUSD} type="number" min="0" />$
   <br />
   <button on:click={burn}>Burn</button>
 
