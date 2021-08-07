@@ -373,7 +373,8 @@
                 </div>
 
                 <div>
-                  $<AnimatedNumber num={usdPriceTotal} />
+                  ${usdPriceTotal}
+                  <!-- $<AnimatedNumber num={usdPriceTotal} /> -->
                 </div>
 
                 {#if selectedShareChange > 0}
@@ -470,7 +471,9 @@
     display: flex;
     flex-direction: column;
     gap: 2rem;
-    border-radius: 10px;
+    /* border-radius: 10px; */
+    border: 1px solid grey;
+    width: 20rem;
   }
 
   .modal-content {
@@ -479,12 +482,18 @@
 
   .modal-buttons {
     display: flex;
-    justify-content: space-around;
+    /* justify-content: space-around; */
     border-top: 1px solid grey;
   }
 
   .modal-buttons > button {
     padding: 0.5rem 1.5rem;
+    flex-grow: 1;
+    width: 5rem;
+  }
+
+  .modal-buttons > button + button {
+    border-left: 1px solid grey;
   }
 
   h1 {
