@@ -1,5 +1,9 @@
 <script>
   import { seed, usdBalance } from "../store/wallet"
+
+  import Dropdown from "./Dropdown.svelte"
+
+  let dropdown = false
 </script>
 
 <nav>
@@ -16,9 +20,12 @@
       <a href="#/login">Log in</a>
       <a href="#/register" class="signup-button">Sign up</a>
     {/if}
-    <a href="#/options"><img class="dropdown" src="./icons/bars.svg" alt="dropdown" /></a>
+    <!-- <a href="#/options"><img class="dropdown" src="./icons/bars.svg" alt="dropdown" /></a> -->
+    <button on:click={() => (dropdown = true)}><img class="dropdown" src="./icons/bars.svg" alt="dropdown" /></button>
   </div>
 </nav>
+
+<Dropdown bind:show={dropdown} />
 
 <style>
   nav {

@@ -6,8 +6,10 @@
 
 <Header />
 
-{#if $seed}
-  <div>Balance: ${$usdBalance}</div>
-  <div>{$address.toString()}</div>
-  <Qr value={$address.toString()} />
-{/if}
+<div class="container">
+  {#if $seed}
+    <div>Balance: ${$usdBalance}</div>
+    <div>{$address.toString()}</div>
+    <Qr value={$address.toString()} />
+  {/if}
+</div>

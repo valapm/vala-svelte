@@ -1,8 +1,10 @@
 <script>
   import { seed } from "../store/wallet"
+  import { username as usernameSave } from "../store/profile"
   import { push } from "svelte-spa-router"
   import Mnemonic from "../utils/mnemonic"
   import Header from "../components/Header.svelte"
+  import Loader from "../components/Loader.svelte"
   import { AUTH_HOST } from "../config"
 
   let valaauth
@@ -11,6 +13,7 @@
 
   let username
   let password
+  let loading = false
 
   let error
 
@@ -18,7 +21,8 @@
     console.debug("vala-auth loaded")
   }
 
-  async function login() {
+  async function login(username, password) {
+    loading = true
     let savedSeed
     try {
       savedSeed = await window.valaauth.login(username, password, AUTH_HOST)
@@ -28,7 +32,9 @@
       } else {
         error = unspecificErrorMessage
       }
+      console.log([username, password, AUTH_HOST])
       console.log(e)
+      loading = false
       return
     }
 
@@ -38,10 +44,14 @@
       Mnemonic.fromString(savedSeed)
     } catch (e) {
       error = unspecificErrorMessage
+      loading = false
       return
     }
 
     $seed = savedSeed
+    $usernameSave = username
+
+    loading = false
     push("/")
   }
 
@@ -63,23 +73,29 @@
 
 <Header />
 
-<div class="login">
-  <h1>Login to Vala</h1>
+{#if loading}
+  <Loader message="Decrypting wallet..." />
+{:else}
+  <div class="login">
+    <h1>Login to Vala</h1>
 
-  <form>
-    <input placeholder="Username" name="username" bind:value={username} />
-    <input type="password" placeholder="Password" name="password" bind:value={password} />
-  </form>
+    <form>
+      <input placeholder="Username" name="username" bind:value={username} />
+      <input type="password" placeholder="Password" name="password" bind:value={password} />
+    </form>
 
-  {#if error}
-    {error}
-  {/if}
+    {#if error}
+      {error}
+    {/if}
 
-  <div class="buttons">
-    <button class="action-button" on:click={login} disabled={!username || !password}>Login</button>
-    <!-- <a href="#/register">Register</a> -->
+    <div class="buttons">
+      <button class="action-button" on:click={() => login(username, password)} disabled={!username || !password}
+        >Login</button
+      >
+      <a href="#/register">Create a new account</a>
+    </div>
   </div>
-</div>
+{/if}
 
 <style>
   .login {
@@ -110,5 +126,18 @@
   h1 {
     font-size: 2rem;
     /* margin-bottom: 1rem; */
+  }
+
+  .buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .buttons a {
+    padding: 0.3rem;
+    border: 1px solid grey;
+    background-color: white;
   }
 </style>
