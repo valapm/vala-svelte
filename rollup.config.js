@@ -117,9 +117,10 @@ export default {
         { src: "node_modules/vala-auth/dist/*", dest: "public/includes" },
         {
           src: "node_modules/@shoelace-style/shoelace/dist/assets",
-          dest: "dist/shoelace"
+          dest: "public/includes/shoelace"
         }
-      ]
+      ],
+      copyOnce: true // Needed because of a bug resulting in horrible performance with shoelace
     }),
 
     // In dev mode, call `npm run start` once
@@ -128,7 +129,7 @@ export default {
 
     // Watch the `public` directory and refresh the
     // browser on changes when not in production
-    !production && livereload("public"),
+    !production && livereload("public/"),
 
     // If we're building for production (npm run build
     // instead of npm run dev), minify

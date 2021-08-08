@@ -55,7 +55,7 @@
 
 <div class="container">
   {#if $seed}
-    <a href="#/create"><sl-button type="primary">Create Market</sl-button></a>
+    <a href="#/create" style="width: auto"><sl-button type="primary">Create Market</sl-button></a>
   {/if}
 
   <sl-input placeholder="Search" bind:this={search_input} value={search} />

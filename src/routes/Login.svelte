@@ -6,35 +6,59 @@
   import Header from "../components/Header.svelte"
   import Loader from "../components/Loader.svelte"
   import { AUTH_HOST } from "../config"
+  import { onMount } from "svelte"
+
+  import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
+  import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js"
+  import SlAlert from "@shoelace-style/shoelace/dist/components/alert/alert.js"
 
   let valaauth
 
-  const unspecificErrorMessage = "Something went wrong. Please try again or contact Support."
+  const unspecificErrorMessage = { title: "Something went wrong", details: "Please try again or contact Support." }
 
-  let username
-  let password
+  let username = ""
+  let password = ""
   let loading = false
 
-  let error
+  let username_input
+  let password_input
+  let login_button
+  let error_alert
+
+  let error = {}
 
   function initAuth() {
     console.debug("vala-auth loaded")
+  }
+
+  async function loginDefault() {
+    // Necessary bc can't pass variables to shoelace
+    return login(username, password)
   }
 
   async function login(username, password) {
     loading = true
     let savedSeed
     try {
+      console.log("what")
+      console.log([username, password, AUTH_HOST])
       savedSeed = await window.valaauth.login(username, password, AUTH_HOST)
+      console.log("this")
     } catch (e) {
-      if (e.message === "User not found" || e.message === "Invalid credentials") {
-        error = e.message
+      if (e.message === "User not found") {
+        error = {
+          title: "User not found"
+        }
+      } else if (e.message === "Invalid credentials") {
+        error = {
+          title: "Invalid credentials"
+        }
       } else {
         error = unspecificErrorMessage
       }
-      console.log([username, password, AUTH_HOST])
       console.log(e)
       loading = false
+      error_alert.toast()
       return
     }
 
@@ -45,6 +69,7 @@
     } catch (e) {
       error = unspecificErrorMessage
       loading = false
+      error_alert.toast()
       return
     }
 
@@ -59,10 +84,19 @@
     if (event.keyCode === 13) {
       event.preventDefault()
       if (username && password) {
-        login()
+        loginDefault()
       }
     }
   }
+
+  onMount(() => {
+    username_input.addEventListener("sl-input", () => {
+      username = username_input.value
+    })
+    password_input.addEventListener("sl-input", () => {
+      password = password_input.value
+    })
+  })
 </script>
 
 <svelte:head>
@@ -71,31 +105,40 @@
 
 <svelte:window on:keydown={handleKeydown} />
 
+<sl-alert type="danger" duration="3000" bind:this={error_alert} closable>
+  <sl-icon slot="icon" name="exclamation-octagon" />
+  <strong>{error.title}</strong><br />
+  {error.details || ""}
+</sl-alert>
+
 <Header />
 
-{#if loading}
-  <Loader message="Decrypting wallet..." />
-{:else}
-  <div class="login">
-    <h1>Login to Vala</h1>
+<div class="login">
+  <h1>Login to Vala</h1>
 
-    <form>
-      <input placeholder="Username" name="username" bind:value={username} />
-      <input type="password" placeholder="Password" name="password" bind:value={password} />
-    </form>
+  <form>
+    <sl-input placeholder="Username" name="username" bind:this={username_input} value={username} />
+    <sl-input
+      placeholder="Password"
+      type="password"
+      name="password"
+      bind:this={password_input}
+      value={password}
+      toggle-password
+    />
+  </form>
 
-    {#if error}
-      {error}
-    {/if}
-
-    <div class="buttons">
-      <button class="action-button" on:click={() => login(username, password)} disabled={!username || !password}
-        >Login</button
-      >
-      <a href="#/register">Create a new account</a>
-    </div>
+  <div class="buttons">
+    <sl-button
+      type="primary"
+      on:click={loginDefault}
+      bind:this={login_button}
+      disabled={!username || !password}
+      {loading}>Login</sl-button
+    >
+    <a href="#/register"><sl-button>Create a new account</sl-button></a>
   </div>
-{/if}
+</div>
 
 <style>
   .login {
@@ -117,12 +160,6 @@
     gap: 1rem;
   }
 
-  .login form input {
-    width: 100%;
-    padding: 0.4rem;
-    border: 1px solid lightgray;
-    border-radius: 5px;
-  }
   h1 {
     font-size: 2rem;
     /* margin-bottom: 1rem; */
@@ -133,11 +170,5 @@
     flex-direction: column;
     gap: 1rem;
     align-items: center;
-  }
-
-  .buttons a {
-    padding: 0.3rem;
-    border: 1px solid grey;
-    background-color: white;
   }
 </style>
