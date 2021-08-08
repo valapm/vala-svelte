@@ -2,17 +2,26 @@
   import { gql } from "graphql-request"
   import { gqlClient } from "../store/graphql"
   import { seed } from "../store/wallet"
+  import { onMount } from "svelte"
 
   import Header from "../components/Header.svelte"
   import InlineMarket from "../components/InlineMarket.svelte"
-  import Searchbar from "../components/Searchbar.svelte"
+
+  import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
+  import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js"
 
   let markets = []
   let search = ""
+  let search_input
 
   $: marketQuery = gql`
     {
       market(order_by: { market_state: { liquidity: desc } }, where: { resolve: {_ilike: "%${search}%"}}) {
+        market_oracles_oracles {
+          oracle {
+            name
+          }
+        }
         market_state {
           decided
           shares
@@ -34,18 +43,22 @@
   `
 
   $: $gqlClient.request(marketQuery).then(res => (markets = res.market))
+
+  onMount(() => {
+    search_input.addEventListener("sl-input", () => {
+      search = search_input.value
+    })
+  })
 </script>
 
 <Header />
 
 <div class="container">
   {#if $seed}
-    <div id="create-market-button">
-      <a href="#/create">Create Market</a>
-    </div>
+    <a href="#/create"><sl-button type="primary">Create Market</sl-button></a>
   {/if}
 
-  <Searchbar bind:value={search} />
+  <sl-input placeholder="Search" bind:this={search_input} value={search} />
 
   <div class="markets">
     {#each markets as market}
@@ -64,19 +77,5 @@
 
   .container {
     gap: 1rem;
-  }
-
-  #create-market-button {
-    display: flex;
-    justify-content: right;
-    margin: 0rem 2rem;
-  }
-
-  #create-market-button > a {
-    color: white;
-    padding: 0.3rem 0.5rem;
-    background-color: #1b3fbc;
-    border-radius: 6px;
-    font-weight: bold;
   }
 </style>

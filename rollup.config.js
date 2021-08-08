@@ -104,8 +104,8 @@ export default {
     commonjs(),
     json(),
     nodePolyfills({
-      include: ["node_modules"], //, "../bitcoin-predict/lib"],
-      exclude: ["node_modules/bsv"]
+      include: ["node_modules/bitcoin-predict"] //, "../bitcoin-predict/lib"],
+      // exclude: ["node_modules/bsv"]
       // crypto: true
     }),
     typescript({
@@ -113,7 +113,13 @@ export default {
       inlineSources: !production
     }),
     copy({
-      targets: [{ src: "node_modules/vala-auth/dist/*", dest: "public/includes" }]
+      targets: [
+        { src: "node_modules/vala-auth/dist/*", dest: "public/includes" },
+        {
+          src: "node_modules/@shoelace-style/shoelace/dist/assets",
+          dest: "dist/shoelace"
+        }
+      ]
     }),
 
     // In dev mode, call `npm run start` once
