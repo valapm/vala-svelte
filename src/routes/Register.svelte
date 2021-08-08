@@ -4,7 +4,6 @@
   import { push } from "svelte-spa-router"
   import Mnemonic from "../utils/mnemonic"
   import { AUTH_HOST } from "../config"
-  import Header from "../components/Header.svelte"
   import Loader from "../components/Loader.svelte"
   import { onMount } from "svelte"
 
@@ -127,8 +126,6 @@
   <p class="warning-message">If you loose your password, you will loose access to your wallet!</p>
   <sl-button slot="footer" type="primary" on:click={registerDefault} {loading}>Finish Registration</sl-button>
 </sl-dialog>
-
-<Header />
 
 <div class="login">
   <h1>Register</h1>

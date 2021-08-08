@@ -10,7 +10,6 @@
   import { gqlClient } from "../store/graphql"
   import { postBoostJobTx, postOracleDetails, postMarketTx, postBurnTx } from "../apis/web"
   import { onMount } from "svelte"
-  import Header from "../components/Header.svelte"
   import { price } from "../store/price"
 
   const diffMultiplier = 0.00002
@@ -221,8 +220,6 @@
     console.log($rabinPubKey)
   })
 </script>
-
-<Header />
 
 {#if !oracle || !oracle.name}
   Become an Oracle and earn money

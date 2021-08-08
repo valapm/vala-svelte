@@ -4,7 +4,6 @@
   import { seed } from "../store/wallet"
   import { onMount } from "svelte"
 
-  import Header from "../components/Header.svelte"
   import InlineMarket from "../components/InlineMarket.svelte"
 
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
@@ -50,8 +49,6 @@
     })
   })
 </script>
-
-<Header />
 
 <div class="container">
   {#if $seed}

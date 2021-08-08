@@ -12,7 +12,6 @@
   import { testnet } from "../store/options"
   import AnimatedNumber from "../components/AnimatedNumber.svelte"
   import Chart from "../components/Chart.svelte"
-  import Header from "../components/Header.svelte"
 
   export let params
 
@@ -93,7 +92,7 @@
   $: usdTotal = bsvTotal * $price
 
   $: existingEntry =
-    market && market.market_state.entries.find(entry => entry.investor.pubKey === $publicKey.toString())
+    market && market.market_state.entries.find(entry => entry.investor.pubKey === $publicKey && $publicKey.toString())
   $: balance = existingEntry || {
     shares: new Array(market ? market.options.length : 0).fill(0),
     liquidity: 0
@@ -281,8 +280,6 @@
     market = await getMarket()
   })
 </script>
-
-<Header />
 
 <div class="market">
   <div class="nav"><a href="#/"><img src="./icons/angle-double-left.svg" alt="back" /></a> {params.firstTxTxid}</div>

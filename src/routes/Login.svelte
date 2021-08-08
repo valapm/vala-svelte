@@ -3,7 +3,6 @@
   import { username as usernameSave } from "../store/profile"
   import { push } from "svelte-spa-router"
   import Mnemonic from "../utils/mnemonic"
-  import Header from "../components/Header.svelte"
   import Loader from "../components/Loader.svelte"
   import { AUTH_HOST } from "../config"
   import { onMount } from "svelte"
@@ -110,8 +109,6 @@
   <strong>{error.title}</strong><br />
   {error.details || ""}
 </sl-alert>
-
-<Header />
 
 <div class="login">
   <h1>Login to Vala</h1>

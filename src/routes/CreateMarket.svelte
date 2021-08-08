@@ -7,7 +7,6 @@
   import { postMarketTx } from "../apis/web"
   import { gql } from "graphql-request"
   import { gqlClient } from "../store/graphql"
-  import Header from "../components/Header.svelte"
   import { price } from "../store/price"
   import { satBalance, utxos } from "../store/wallet"
 
@@ -184,8 +183,6 @@
     ]
   }
 </script>
-
-<Header />
 
 <h1>Create new Market</h1>
 

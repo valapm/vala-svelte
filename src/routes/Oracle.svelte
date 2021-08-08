@@ -4,7 +4,6 @@
   import { price } from "../store/price"
   import { onMount } from "svelte"
 
-  import Header from "../components/Header.svelte"
   import Backbutton from "../components/Backbutton.svelte"
 
   export let params
@@ -37,8 +36,6 @@
     loading = false
   })
 </script>
-
-<Header />
 
 <Backbutton to="#/oracles" />
 

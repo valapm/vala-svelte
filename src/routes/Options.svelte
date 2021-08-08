@@ -1,9 +1,6 @@
 <script>
   import { testnet } from "../store/options"
-  import Header from "../components/Header.svelte"
 </script>
-
-<Header />
 
 <div class="options">
   <div>

@@ -2,7 +2,6 @@
   import { gql } from "graphql-request"
   import { gqlClient } from "../store/graphql"
 
-  import Header from "../components/Header.svelte"
   import InlineOracle from "../components/InlineOracle.svelte"
   import Searchbar from "../components/Searchbar.svelte"
 
@@ -22,8 +21,6 @@
   $: oracles = []
   $: $gqlClient.request(oracleQuery).then(res => (oracles = res.oracle))
 </script>
-
-<Header />
 
 <div class="container">
   <div class="oracle-list">
