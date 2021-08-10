@@ -10,8 +10,18 @@
   import { postMarketTx } from "../apis/web"
   // import { mattercloudKey } from "../store/apis"
   import { testnet } from "../store/options"
+
+  import OracleCard from "../components/OracleCard.svelte"
   import AnimatedNumber from "../components/AnimatedNumber.svelte"
   import Chart from "../components/Chart.svelte"
+  import OutcomeCard from "../components/OutcomeCard.svelte"
+  import PaymentModal from "../components/PaymentModal.svelte"
+
+  import SlCard from "@shoelace-style/shoelace/dist/components/card/card.js"
+  import SlFormatNumber from "@shoelace-style/shoelace/dist/components/format-number/format-number"
+  import SlFormatDate from "@shoelace-style/shoelace/dist/components/format-date/format-date"
+
+  import Property from "../components/Property.svelte"
 
   export let params
 
@@ -19,11 +29,15 @@
   {
       market(where: {marketStateByFirststateid: {transaction: {txid: {_eq: "${params.firstTxTxid}"}}}}) {
         creatorPubKey
+        creatorFee
+        version
         market_state {
           market_oracles {
             committed
             oracle {
               name
+              burnedSats
+              pubKey
             }
           }
           transaction {
@@ -44,6 +58,7 @@
         marketStateByFirststateid {
           transaction {
             txid
+            minerTimestamp
           }
         }
         resolve
@@ -90,9 +105,10 @@
 
   $: bsvTotal = marketSats / 100000000
   $: usdTotal = bsvTotal * $price
+  $: usdLiquidity = (marketBalance.liquidity * lmsr.SatScaling * $price) / 100000000
 
   $: existingEntry =
-    market && market.market_state.entries.find(entry => entry.investor.pubKey === $publicKey && $publicKey.toString())
+    $publicKey && market && market.market_state.entries.find(entry => entry.investor.pubKey === $publicKey.toString())
   $: balance = existingEntry || {
     shares: new Array(market ? market.options.length : 0).fill(0),
     liquidity: 0
@@ -152,7 +168,7 @@
 
       return {
         usdPrice,
-        probability: lmsr.getProbability(balance, share) * 100,
+        probability: lmsr.getProbability(marketBalance, share) * 100,
         potentialX: lmsr.SatScaling / satPrice
       }
     })
@@ -241,6 +257,8 @@
     updateMarket(newBalance)
   }
 
+  $: creationDate = market && new Date(market.marketStateByFirststateid.transaction.minerTimestamp).toISOString()
+
   $: redeemSats =
     market && market.market_state.decided
       ? lmsr.lmsr({
@@ -288,7 +306,6 @@
     <h1>
       {market.resolve}
     </h1>
-    <div>{Math.round(usdTotal)} $ total</div>
 
     <div class="chart">
       <div>
@@ -298,21 +315,42 @@
     <!-- <AnimatedNumber {num} />
     <button on:click={() => (num = num + 1000)}> Increase </button> -->
 
-    <div class="totalAssets">{round(bsvTotal)} BSV ({round(usdTotal)} $)</div>
-    <div>
-      {#if market}
-        {#each market.market_state.market_oracles as market_oracle}
-          <div>{market_oracle.oracle.name}</div>
-          <div>{market_oracle.committed}</div>
-        {/each}
-      {/if}
-    </div>
+    <sl-card>
+      <div slot="header">Details</div>
+      <div class="properties">
+        <Property label="Total assets">
+          <sl-format-number type="currency" currency="USD" value={round(usdTotal)} locale="en-US" />
+        </Property>
+        <Property label="Liquidity">
+          <sl-format-number type="currency" currency="USD" value={round(usdLiquidity)} locale="en-US" />
+        </Property>
+        <Property label="Market Fee">
+          <sl-format-number type="percent" value={round(market.creatorFee / 100)} />
+        </Property>
+        <Property label="Developer Fee">
+          <sl-format-number type="percent" value={round(pm.getMarketVersion(market.version).devFee / 100)} />
+        </Property>
+        <Property label="Created">
+          <sl-format-date date={creationDate} />
+        </Property>
+      </div>
+    </sl-card>
+
+    <sl-card>
+      <div slot="header">Liquidity</div>
+      <sl-format-number type="currency" currency="USD" value={round(usdLiquidity)} locale="en-US" />
+      <sl-button slot="footer">Add Liquidity</sl-button>
+    </sl-card>
+
+    <OracleCard market_oracles={market.market_state.market_oracles} />
+
+    <OutcomeCard {market} {balance} on:buy={e => console.log("buy", e.detail.option)} />
 
     {#if market}
       {#if market.market_state.decided}
         Market has been resolved ({market.options[market.market_state.decision].name})
 
-        {#if market.creatorPubKey === $publicKey.toString() && redeemSats > 0}
+        {#if $publicKey && market.creatorPubKey === $publicKey.toString() && redeemSats > 0}
           <button on:click={redeemInvalidShares}>Redeem invalid shares ({redeemSats}) </button>
         {/if}
 
@@ -560,5 +598,11 @@
 
   .nav img {
     height: 2rem;
+  }
+
+  .properties {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
   }
 </style>

@@ -52,6 +52,8 @@
   $: bsvLiquidity = (balance.liquidity * lmsr.SatScaling) / 100000000
   $: usdLiquidity = bsvLiquidity * $price
 
+  $: status = market.market_state.decided ? "Resolved" : "Open"
+
   function round(n) {
     return Math.round(n * 100) / 100
   }
@@ -64,6 +66,9 @@
         {market.resolve}
       </div>
       <div class="properties">
+        <Property label="Status">
+          {status}
+        </Property>
         {#if !market.market_state.decided}
           <Property label="Volume">
             <sl-format-number
@@ -90,19 +95,22 @@
         </Property>
       </div>
 
-      <div class="options" slot="footer">
+      <table class="options" slot="footer">
         {#each market.options as option, index}
-          <div class="option">
-            <label for="option-{txid}-{index}">{option.name}</label>
-            <sl-progress-bar
-              id="option-{txid}-{index}"
-              class={market.market_state.decided ? (market.market_state.decision === index ? "won" : "") : ""}
-              type="success"
-              percentage={shares[index].probability * 100}>{shares[index].probability * 100}%</sl-progress-bar
+          <tr class="option">
+            <th>{option.name}</th>
+            <td
+              ><sl-progress-bar
+                id="option-{txid}-{index}"
+                class={market.market_state.decided ? (market.market_state.decision === index ? "won" : "") : ""}
+                type="success"
+                percentage={shares[index].probability * 100}
+                >{Math.round(shares[index].probability * 100)}%</sl-progress-bar
+              ></td
             >
-          </div>
+          </tr>
         {/each}
-      </div>
+      </table>
     </sl-card>
   </a>
   <a href={`https://${$testnet ? "test." : ""}whatsonchain.com/tx/${txid}`} class="txid">{txid.slice(0, 20)}...</a>
@@ -121,27 +129,14 @@
   }
 
   .options {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-  }
-
-  .option {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
     width: 100%;
   }
 
-  .option > label {
+  .option th {
     font-size: var(--sl-font-size-small);
     font-weight: bold;
-    /* width: 10rem;
-    text-align: right; */
-  }
-
-  .option > sl-progress-bar {
-    flex-grow: 1;
+    text-align: left;
+    max-width: 0.8rem;
   }
 
   .won {
