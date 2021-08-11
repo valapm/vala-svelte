@@ -10,15 +10,8 @@
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
   import SlButtonGroup from "@shoelace-style/shoelace/dist/components/button-group/button-group.js"
 
-  import PaymentModal from "../components/PaymentModal.svelte"
-
   export let market
   export let balance
-
-  let payment_modal
-
-  let action = "buy"
-  let selectedOption = 0
 
   const dispatch = createEventDispatcher()
 
@@ -33,12 +26,6 @@
   $: potentials = satPrices.map(sats => lmsr.SatScaling / sats)
   $: satBalances = balance.shares.map(shares => shares * lmsr.SatScaling)
   $: usdBalances = satBalances.map(sats => round((sats / 100000000) * $price))
-
-  function showModal(newAction: "buy" | "sell", option: number) {
-    action = newAction
-    selectedOption = option
-    payment_modal.show()
-  }
 </script>
 
 <sl-card class="outcomes">
@@ -65,16 +52,16 @@
         {/if}
         <td>
           <sl-button-group>
-            <sl-button on:click={() => showModal("buy", index)}>Buy</sl-button>
-            <sl-button on:click={() => showModal("sell", index)} disabled={!balance.shares[index]}>Sell</sl-button>
+            <sl-button on:click={() => dispatch("buy", { option: index })}>Buy</sl-button>
+            <sl-button on:click={() => dispatch("sell", { option: index })} disabled={!balance.shares[index]}
+              >Sell</sl-button
+            >
           </sl-button-group>
         </td>
       </tr>
     {/each}
   </table>
 </sl-card>
-
-<PaymentModal {market} bind:this={payment_modal} option={selectedOption} bind:action {balance} />
 
 <style>
   .outcomes::part(body) {

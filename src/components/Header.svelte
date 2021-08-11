@@ -88,14 +88,6 @@
     align-items: center;
   }
 
-  .signup-button {
-    border-radius: 3px;
-    background-color: #1b3fbc;
-    color: white;
-    padding: 0.1rem 0.5rem;
-    font-weight: bold;
-  }
-
   sl-icon-button {
     font-size: 1.5rem;
     /* filter: invert(17%) sepia(90%) saturate(2821%) hue-rotate(225deg) brightness(89%) contrast(97%); */

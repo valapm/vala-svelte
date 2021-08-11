@@ -3,8 +3,8 @@
 
   import SlIcon from "@shoelace-style/shoelace/dist/components/icon/icon"
 
-  export let number = 0
-  export let min = 0
+  export let number = 1
+  export let min = 1
   export let max
 
   function increase() {
@@ -20,12 +20,12 @@
     if (number < min) number = min
   }
 
-  $: validateNumber() && min && max
+  $: validateNumber() && min && max && number
 </script>
 
 <div class="counter">
   <span class="input-number-decrement" on:click={decrease}><sl-icon name="dash" /></span>
-  <input class="input-number" type="number" {min} bind:value={number} />
+  <input class="input-number" type="number" {min} {max} bind:value={number} />
   <span class="input-number-increment" on:click={increase}><sl-icon name="plus" /></span>
 </div>
 
@@ -43,6 +43,8 @@
   }
 
   .input-number {
+    width: 10rem;
+    flex-grow: 1;
     vertical-align: top;
     text-align: center;
     outline: none;
@@ -67,6 +69,7 @@
 
   .input-number-decrement,
   .input-number-increment {
+    flex-shrink: 0;
     display: flex;
     justify-content: center;
     align-items: center;

@@ -1,18 +1,18 @@
 <script lang="ts">
-  import { lmsr, bsv, transaction as pmTx, pm } from "bitcoin-predict"
+  import { lmsr, transaction as pmTx, bsv } from "bitcoin-predict"
   import { price } from "../store/price"
   import { gql } from "graphql-request"
   import { gqlClient } from "../store/graphql"
   import { onMount } from "svelte"
-  import { publicKey, privateKey, seed, address, satBalance } from "../store/wallet"
+  import { publicKey, privateKey, address } from "../store/wallet"
   import { getUtxos } from "../utils/utxo"
-  import { getTx } from "../apis/txq"
+  import { getTx } from "../apis/web"
   import { postMarketTx } from "../apis/web"
-  // import { mattercloudKey } from "../store/apis"
   import { testnet } from "../store/options"
+  import { getEntries } from "../utils/pm"
+  import { round } from "../utils/format"
 
   import OracleCard from "../components/OracleCard.svelte"
-  import AnimatedNumber from "../components/AnimatedNumber.svelte"
   import Chart from "../components/Chart.svelte"
   import OutcomeCard from "../components/OutcomeCard.svelte"
   import PaymentModal from "../components/PaymentModal.svelte"
@@ -21,8 +21,7 @@
   import SlFormatNumber from "@shoelace-style/shoelace/dist/components/format-number/format-number"
   import SlFormatDate from "@shoelace-style/shoelace/dist/components/format-date/format-date"
 
-  import Property from "../components/Property.svelte"
-
+  import MarketDetailsCard from "../components/MarketDetailsCard.svelte"
   export let params
 
   const marketQuery = gql`
@@ -70,41 +69,14 @@
     }
   `
 
-  function getTxQuery(txid) {
-    return gql`
-    {
-      transaction(where: { txid: { _eq: "${txid}" } }) {
-        hex
-      }
-    }
-  `
-  }
+  let payment_modal
 
   let market
-
-  async function getMarket() {
-    const res = await $gqlClient.request(marketQuery)
-    console.log(res.market[0])
-    return res.market[0]
-  }
-
-  async function getRawTx(txid) {
-    const res = await $gqlClient.request(getTxQuery(txid))
-    const hex = res.transaction[0].hex
-    const tx = new bsv.Transaction()
-    tx.fromString(hex)
-    return tx
-  }
 
   $: marketBalance = {
     shares: market ? market.market_state.shares : [],
     liquidity: market ? market.market_state.liquidity : 0
   }
-
-  $: marketSats = lmsr.getLmsrSats(marketBalance)
-
-  $: bsvTotal = marketSats / 100000000
-  $: usdTotal = bsvTotal * $price
   $: usdLiquidity = (marketBalance.liquidity * lmsr.SatScaling * $price) / 100000000
 
   $: existingEntry =
@@ -113,81 +85,22 @@
     shares: new Array(market ? market.options.length : 0).fill(0),
     liquidity: 0
   }
-
-  let selectedShare // Only one share can be bought/sold at a time
-  let selectedShareChange = 0
-  $: {
-    if (selectedShare === undefined) selectedShareChange = 0
-  } // Reset shareChange when selection changes
-  let liquidityChange = 0
-
-  let newShares
-  $: {
-    newShares = [...balance.shares]
-    if (selectedShare !== undefined) newShares[selectedShare] += selectedShareChange
-  }
-  $: newLiquidity = balance.liquidity + liquidityChange
-  $: newBalance = {
-    shares: newShares,
-    liquidity: newLiquidity
-  }
-  $: shareChange = balance.shares.map((s, i) => s - newShares[i])
-
-  let isValidBalance = true
-  $: {
-    try {
-      lmsr.getLmsrSats(newBalance)
-      isValidBalance = true
-    } catch (e) {
-      isValidBalance = false
-    }
-  }
-
-  $: satPriceTotal = lmsr.lmsr(newBalance) * lmsr.SatScaling - lmsr.lmsr(balance) * lmsr.SatScaling
-  $: usdPriceTotal = round((satPriceTotal / 100000000) * $price)
-
-  $: potentialAssetsUSD = ((selectedShareChange * lmsr.SatScaling) / 100000000) * $price || 0
-  $: potentialWin = potentialAssetsUSD - usdPriceTotal
-  $: potentialX = potentialAssetsUSD / usdPriceTotal
-
-  $: shares =
-    market &&
-    market.market_state.shares.map((share, index) => {
-      const nextPriceShares = [...balance.shares]
-      nextPriceShares[index] += 1
-
-      const satPrice =
+  $: redeemSats =
+    market && market.market_state.decided
+      ? lmsr.lmsr({
+          shares: market.market_state.shares,
+          liquidity: market.market_state.liquidity
+        }) -
         lmsr.lmsr({
-          shares: nextPriceShares,
-          liquidity: balance.liquidity
-        }) *
-          lmsr.SatScaling -
-        lmsr.lmsr(balance) * lmsr.SatScaling
+          shares: market.market_state.shares.map((share, i) => (i === market.market_state.decision ? share : 0)),
+          liquidity: market.market_state.liquidity
+        })
+      : 0
 
-      const usdPrice = round((satPrice / 100000000) * $price)
-
-      return {
-        usdPrice,
-        probability: lmsr.getProbability(marketBalance, share) * 100,
-        potentialX: lmsr.SatScaling / satPrice
-      }
-    })
-
-  function getEntries() {
-    return market.market_state.entries.map(entry => {
-      return {
-        publicKey: bsv.PublicKey.fromString(entry.investor.pubKey),
-        balance: {
-          liquidity: entry.liquidity,
-          shares: entry.shares
-        }
-      }
-    })
-  }
-
-  function round(n, decimals = 2) {
-    const factor = 10 ** decimals
-    return Math.round(n * factor) / factor
+  async function getMarket() {
+    const res = await $gqlClient.request(marketQuery)
+    console.log(res.market[0])
+    return res.market[0]
   }
 
   /**
@@ -195,16 +108,24 @@
    *
    * @param balance New Balance
    */
-  async function updateMarket(balance) {
-    const entries = getEntries()
+  async function updateMarket(newBalance: lmsr.balance) {
+    const entries = getEntries(market)
 
-    const newTx = await getUpdateTx(balance, entries)
+    const newTx = await getUpdateTx(newBalance, entries)
 
     const rawtx = newTx.checkedSerialize()
     console.log(newTx)
 
     const postRes = await postMarketTx(rawtx, [], $testnet)
     console.log(postRes)
+  }
+
+  async function buySell(option: number, shareChange: number) {
+    const newBalance = {
+      shares: balance.shares.map((shares, i) => (i === option ? shares + shareChange : shares)),
+      liquidity: balance.liquidity
+    }
+    updateMarket(newBalance)
   }
 
   /**
@@ -257,22 +178,8 @@
     updateMarket(newBalance)
   }
 
-  $: creationDate = market && new Date(market.marketStateByFirststateid.transaction.minerTimestamp).toISOString()
-
-  $: redeemSats =
-    market && market.market_state.decided
-      ? lmsr.lmsr({
-          shares: market.market_state.shares,
-          liquidity: market.market_state.liquidity
-        }) -
-        lmsr.lmsr({
-          shares: market.market_state.shares.map((share, i) => (i === market.market_state.decision ? share : 0)),
-          liquidity: market.market_state.liquidity
-        })
-      : 0
-
   async function getUpdateTx(newBalance, entries) {
-    const currentTx = await getRawTx(market.market_state.transaction.txid)
+    const currentTx = await getTx(market.market_state.transaction.txid, $gqlClient)
     const feeb = $testnet ? 1 : 0.5
 
     const utxos = await getUtxos($address, $testnet)
@@ -315,26 +222,7 @@
     <!-- <AnimatedNumber {num} />
     <button on:click={() => (num = num + 1000)}> Increase </button> -->
 
-    <sl-card>
-      <div slot="header">Details</div>
-      <div class="properties">
-        <Property label="Total assets">
-          <sl-format-number type="currency" currency="USD" value={round(usdTotal)} locale="en-US" />
-        </Property>
-        <Property label="Liquidity">
-          <sl-format-number type="currency" currency="USD" value={round(usdLiquidity)} locale="en-US" />
-        </Property>
-        <Property label="Market Fee">
-          <sl-format-number type="percent" value={round(market.creatorFee / 100)} />
-        </Property>
-        <Property label="Developer Fee">
-          <sl-format-number type="percent" value={round(pm.getMarketVersion(market.version).devFee / 100)} />
-        </Property>
-        <Property label="Created">
-          <sl-format-date date={creationDate} />
-        </Property>
-      </div>
-    </sl-card>
+    <MarketDetailsCard {market} />
 
     <sl-card>
       <div slot="header">Liquidity</div>
@@ -344,240 +232,48 @@
 
     <OracleCard market_oracles={market.market_state.market_oracles} />
 
-    <OutcomeCard {market} {balance} on:buy={e => console.log("buy", e.detail.option)} />
+    <OutcomeCard
+      {market}
+      {balance}
+      on:buy={e => payment_modal.show("buy", e.detail.option)}
+      on:sell={e => payment_modal.show("sell", e.detail.option)}
+    />
 
-    {#if market}
-      {#if market.market_state.decided}
-        Market has been resolved ({market.options[market.market_state.decision].name})
+    <PaymentModal
+      {market}
+      bind:this={payment_modal}
+      {balance}
+      on:buy={e => buySell(e.detail.option, e.detail.amount)}
+      on:sell={e => buySell(e.detail.option, -e.detail.amount)}
+    />
 
-        {#if $publicKey && market.creatorPubKey === $publicKey.toString() && redeemSats > 0}
-          <button on:click={redeemInvalidShares}>Redeem invalid shares ({redeemSats}) </button>
-        {/if}
+    {#if market.market_state.decided}
+      Market has been resolved ({market.options[market.market_state.decision].name})
 
-        {#if balance.shares[market.market_state.decision]}
-          <button on:click={sellWinningShares}>Sell winning shares</button>
-        {/if}
+      {#if $publicKey && market.creatorPubKey === $publicKey.toString() && redeemSats > 0}
+        <button on:click={redeemInvalidShares}>Redeem invalid shares ({redeemSats}) </button>
+      {/if}
 
-        {#if balance.liquidity}
-          <button on:click={extractLiquidity}>Extract liquidity</button>
-        {/if}
-      {:else}
-        {#if selectedShare !== undefined}
-          <div class="modal">
-            <div
-              class="modal-bg"
-              on:click={() => {
-                selectedShare = undefined
-              }}
-            />
-            <div class="modal-container">
-              <div class="modal-content">
-                <h3>{market.options[selectedShare].name}</h3>
-                {market.options[selectedShare].details}
-                Balance: {balance.shares[selectedShare]}.
+      {#if balance.shares[market.market_state.decision]}
+        <button on:click={sellWinningShares}>Sell winning shares</button>
+      {/if}
 
-                {#if !isValidBalance}
-                  Outside smart contract limits. Add more market liquidity or increase limits.
-                {/if}
-                <div id="shareSelector">
-                  <button
-                    data-action="decrement"
-                    on:click={() => {
-                      if (balance.shares[selectedShare] + selectedShareChange >= 1) selectedShareChange -= 1
-                    }}
-                  >
-                    <span>−</span>
-                  </button>
-                  <input
-                    type="number"
-                    bind:value={selectedShareChange}
-                    style="-moz-appearance: textfield;"
-                    id="shareInput"
-                    on:input={() => {
-                      if (balance.shares[selectedShare] + selectedShareChange < 0) selectedShareChange = 0
-                    }}
-                  />
-                  <button
-                    data-action="increment"
-                    on:click={() => {
-                      selectedShareChange += 1
-                    }}
-                  >
-                    <span>+</span>
-                  </button>
-                </div>
-
-                <div>
-                  ${usdPriceTotal}
-                  <!-- $<AnimatedNumber num={usdPriceTotal} /> -->
-                </div>
-
-                {#if selectedShareChange > 0}
-                  Potential win ${round(potentialWin)}
-                  {round(potentialX)}x
-                {/if}
-              </div>
-              <div class="modal-buttons">
-                <button on:click={() => updateMarket(newBalance)}>BUY</button>
-                <button
-                  on:click={() => {
-                    selectedShare = undefined
-                  }}>Cancel</button
-                >
-              </div>
-            </div>
-          </div>
-        {/if}
-
-        <div class="options">
-          {#each shares as share, index}
-            <button
-              on:click={() => {
-                if (!liquidityChange && selectedShare === undefined) selectedShare = index
-              }}
-            >
-              <h3>{market.options[index].name}</h3>
-              <div>${share.usdPrice}</div>
-              <div>{share.probability}% - {share.potentialX}x</div>
-              <div>Balance: {balance.shares[index]}</div>
-            </button>
-          {/each}
-        </div>
+      {#if balance.liquidity}
+        <button on:click={extractLiquidity}>Extract liquidity</button>
       {/if}
     {/if}
-    <!--
-    <h3>Add liquidity</h3>
-    <input type="number" min="1" />
-    <button on:click={updateMarket}>Add</button> -->
-
-    <!-- <div style="white-space: break-spaces;">
-      {JSON.stringify(market, null, "\t")}
-    </div> -->
   {:else}
     loading...
   {/if}
 </div>
 
 <style>
-  #shareInput::-webkit-outer-spin-button,
-  #shareInput::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  #shareSelector input {
-    outline: none !important;
-  }
-
-  #shareSelector button {
-    outline: none !important;
-  }
-
-  .modal {
-    position: fixed;
-    width: 100vw;
-    height: 100vh;
-    transition: all 0.3s ease;
-    top: 0;
-    left: 0;
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
-  }
-
-  .modal-bg {
-    position: absolute;
-    background: rgb(186, 186, 186, 0.6);
-    width: 100%;
-    height: 100%;
-  }
-
-  .modal-container {
-    max-width: 95%;
-    max-height: 90vh;
-    background: #fff;
-    position: relative;
-    overflow-y: auto;
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    /* border-radius: 10px; */
-    border: 1px solid grey;
-    width: 20rem;
-  }
-
-  .modal-content {
-    padding: 1rem;
-  }
-
-  .modal-buttons {
-    display: flex;
-    /* justify-content: space-around; */
-    border-top: 1px solid grey;
-  }
-
-  .modal-buttons > button {
-    padding: 0.5rem 1.5rem;
-    flex-grow: 1;
-    width: 5rem;
-  }
-
-  .modal-buttons > button + button {
-    border-left: 1px solid grey;
-  }
-
   h1 {
     font-size: 2.5rem;
     text-align: center;
   }
   .market {
     margin-top: 4rem;
-  }
-
-  .options {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-  }
-  .options > button {
-    /* border: 1px solid grey; */
-    padding: 0.5rem;
-    width: 15rem;
-    background-color: #fff;
-    border-radius: 5px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-  }
-
-  .options > button::after {
-    content: "";
-    border-radius: 5px;
-    position: absolute;
-    z-index: -1;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    opacity: 0;
-    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-  }
-
-  .options > button:hover {
-    transform: scale(1.25, 1.25);
-  }
-
-  .options > button:hover::after {
-    opacity: 1;
-  }
-
-  .options h3 {
-    font-size: 1.5rem;
   }
 
   .chart > * {
@@ -598,11 +294,5 @@
 
   .nav img {
     height: 2rem;
-  }
-
-  .properties {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 1rem;
   }
 </style>

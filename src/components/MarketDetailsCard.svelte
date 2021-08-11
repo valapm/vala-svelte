@@ -1,0 +1,57 @@
+<script>
+  import { round } from "../utils/format"
+  import { pm, lmsr } from "bitcoin-predict"
+  import { price } from "../store/price"
+
+  import SlCard from "@shoelace-style/shoelace/dist/components/card/card.js"
+  import SlFormatNumber from "@shoelace-style/shoelace/dist/components/format-number/format-number"
+  import SlFormatDate from "@shoelace-style/shoelace/dist/components/format-date/format-date"
+
+  import Property from "./Property.svelte"
+
+  export let market
+
+  $: marketBalance = {
+    shares: market ? market.market_state.shares : [],
+    liquidity: market ? market.market_state.liquidity : 0
+  }
+
+  $: marketSats = lmsr.getLmsrSats(marketBalance)
+  $: bsvTotal = marketSats / 100000000
+  $: usdTotal = bsvTotal * $price
+  $: usdLiquidity = (marketBalance.liquidity * lmsr.SatScaling * $price) / 100000000
+  $: status = market && market.market_state.decided ? "Resolved" : "Open"
+  $: creationDate = market && new Date(market.marketStateByFirststateid.transaction.minerTimestamp).toISOString()
+</script>
+
+<sl-card>
+  <div slot="header">Details</div>
+  <div class="properties">
+    <Property label="Status">
+      {status}
+    </Property>
+    <Property label="Total assets">
+      <sl-format-number type="currency" currency="USD" value={round(usdTotal)} locale="en-US" />
+    </Property>
+    <Property label="Liquidity">
+      <sl-format-number type="currency" currency="USD" value={round(usdLiquidity)} locale="en-US" />
+    </Property>
+    <Property label="Market Fee">
+      <sl-format-number type="percent" value={round(market.creatorFee / 100)} />
+    </Property>
+    <Property label="Developer Fee">
+      <sl-format-number type="percent" value={round(pm.getMarketVersion(market.version).devFee / 100)} />
+    </Property>
+    <Property label="Created">
+      <sl-format-date date={creationDate} />
+    </Property>
+  </div>
+</sl-card>
+
+<style>
+  .properties {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+  }
+</style>
