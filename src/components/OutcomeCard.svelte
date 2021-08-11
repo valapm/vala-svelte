@@ -38,8 +38,8 @@
       <th>Potential X</th>
       {#if $seed}
         <th>Balance</th>
+        <th />
       {/if}
-      <th />
     </tr>
     {#each market.market_state.shares as shares, index}
       <tr>
@@ -49,15 +49,15 @@
         <td>{round(potentials[index])}x</td>
         {#if $seed}
           <td><sl-format-number type="currency" currency="USD" value={usdBalances[index]} locale="en-US" /></td>
+          <td>
+            <sl-button-group>
+              <sl-button on:click={() => dispatch("buy", { option: index })}>Buy</sl-button>
+              <sl-button on:click={() => dispatch("sell", { option: index })} disabled={!balance.shares[index]}
+                >Sell</sl-button
+              >
+            </sl-button-group>
+          </td>
         {/if}
-        <td>
-          <sl-button-group>
-            <sl-button on:click={() => dispatch("buy", { option: index })}>Buy</sl-button>
-            <sl-button on:click={() => dispatch("sell", { option: index })} disabled={!balance.shares[index]}
-              >Sell</sl-button
-            >
-          </sl-button-group>
-        </td>
       </tr>
     {/each}
   </table>
@@ -88,9 +88,19 @@
     border-top: 1px solid var(--sl-color-gray-200);
   }
 
-  table th,
-  table td {
+  th {
+    white-space: nowrap;
+  }
+  th,
+  td {
     padding: 1rem;
     text-align: left;
+  }
+
+  @media screen and (max-width: 750px) {
+    th,
+    td {
+      padding: 0.6rem !important;
+    }
   }
 </style>

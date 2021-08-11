@@ -4,7 +4,7 @@
   import { gql } from "graphql-request"
   import { gqlClient } from "../store/graphql"
   import { onMount } from "svelte"
-  import { publicKey, privateKey, address } from "../store/wallet"
+  import { publicKey, privateKey, address, seed } from "../store/wallet"
   import { getUtxos } from "../utils/utxo"
   import { getTx } from "../apis/web"
   import { postMarketTx } from "../apis/web"
@@ -20,6 +20,9 @@
   import SlCard from "@shoelace-style/shoelace/dist/components/card/card.js"
   import SlFormatNumber from "@shoelace-style/shoelace/dist/components/format-number/format-number"
   import SlFormatDate from "@shoelace-style/shoelace/dist/components/format-date/format-date"
+  import SlMenu from "@shoelace-style/shoelace/dist/components/menu/menu"
+  import SlMenuItem from "@shoelace-style/shoelace/dist/components/menu-item/menu-item"
+  import SlMenuLabel from "@shoelace-style/shoelace/dist/components/menu-label/menu-label"
 
   import MarketDetailsCard from "../components/MarketDetailsCard.svelte"
   export let params
@@ -215,53 +218,61 @@
     </h1>
 
     <div class="chart">
-      <div>
-        <Chart {market} />
-      </div>
+      <Chart {market} />
     </div>
     <!-- <AnimatedNumber {num} />
     <button on:click={() => (num = num + 1000)}> Increase </button> -->
 
-    <MarketDetailsCard {market} />
-
-    <sl-card>
-      <div slot="header">Liquidity</div>
-      <sl-format-number type="currency" currency="USD" value={round(usdLiquidity)} locale="en-US" />
-      <sl-button slot="footer">Add Liquidity</sl-button>
-    </sl-card>
-
-    <OracleCard market_oracles={market.market_state.market_oracles} />
-
-    <OutcomeCard
-      {market}
-      {balance}
-      on:buy={e => payment_modal.show("buy", e.detail.option)}
-      on:sell={e => payment_modal.show("sell", e.detail.option)}
-    />
-
-    <PaymentModal
-      {market}
-      bind:this={payment_modal}
-      {balance}
-      on:buy={e => buySell(e.detail.option, e.detail.amount)}
-      on:sell={e => buySell(e.detail.option, -e.detail.amount)}
-    />
-
-    {#if market.market_state.decided}
-      Market has been resolved ({market.options[market.market_state.decision].name})
-
-      {#if $publicKey && market.creatorPubKey === $publicKey.toString() && redeemSats > 0}
-        <button on:click={redeemInvalidShares}>Redeem invalid shares ({redeemSats}) </button>
-      {/if}
-
-      {#if balance.shares[market.market_state.decision]}
-        <button on:click={sellWinningShares}>Sell winning shares</button>
-      {/if}
-
-      {#if balance.liquidity}
-        <button on:click={extractLiquidity}>Extract liquidity</button>
-      {/if}
+    {#if !$seed}
+      <a href="#/login"><sl-button type="primary">Login to trade</sl-button></a>
     {/if}
+
+    <div class="container">
+      <div class="cards">
+        <div class="card-wide">
+          <MarketDetailsCard {market} />
+        </div>
+
+        <OracleCard market_oracles={market.market_state.market_oracles} />
+
+        {#if $seed}
+          <sl-menu class="menu">
+            <sl-menu-label>Options</sl-menu-label>
+            <sl-menu-item value="undo">Add Liquidity</sl-menu-item>
+            {#if market.market_state.decided}
+              {#if $publicKey && market.creatorPubKey === $publicKey.toString() && redeemSats > 0}
+                <sl-menu-item value="redeem" on:click={redeemInvalidShares}
+                  >Redeem invalid shares ({redeemSats})
+                </sl-menu-item>
+              {/if}
+
+              {#if balance.shares[market.market_state.decision]}
+                <sl-menu-item value="sellWinning" on:click={sellWinningShares}>Sell winning shares</sl-menu-item>
+              {/if}
+
+              {#if balance.liquidity}
+                <sl-menu-item value="extractLiquidity" on:click={extractLiquidity}>Extract liquidity</sl-menu-item>
+              {/if}
+            {/if}
+          </sl-menu>
+        {/if}
+      </div>
+
+      <OutcomeCard
+        {market}
+        {balance}
+        on:buy={e => payment_modal.show("buy", e.detail.option)}
+        on:sell={e => payment_modal.show("sell", e.detail.option)}
+      />
+
+      <PaymentModal
+        {market}
+        bind:this={payment_modal}
+        {balance}
+        on:buy={e => buySell(e.detail.option, e.detail.amount)}
+        on:sell={e => buySell(e.detail.option, -e.detail.amount)}
+      />
+    </div>
   {:else}
     loading...
   {/if}
@@ -273,16 +284,15 @@
     text-align: center;
   }
   .market {
-    margin-top: 4rem;
-  }
-
-  .chart > * {
-    width: min(80%, 70rem);
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin: 4rem 0;
+    align-items: center;
   }
 
   .chart {
-    display: flex;
-    justify-content: center;
+    width: min(80%, 70rem);
   }
 
   .nav {
@@ -294,5 +304,25 @@
 
   .nav img {
     height: 2rem;
+  }
+
+  .menu {
+    background-color: var(--sl-color-white);
+    max-width: 200px;
+    border: solid 1px var(--sl-panel-border-color);
+    border-radius: var(--sl-border-radius-medium);
+  }
+
+  .cards {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  }
+  .card-wide {
+    grid-column: span 2 / auto;
+  }
+
+  .container {
+    gap: 1rem;
   }
 </style>

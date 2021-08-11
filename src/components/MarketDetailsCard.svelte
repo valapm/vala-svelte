@@ -54,4 +54,8 @@
     grid-template-columns: 1fr 1fr 1fr;
     gap: 1rem;
   }
+
+  sl-card {
+    width: 100%;
+  }
 </style>
