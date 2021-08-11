@@ -5,10 +5,14 @@
   import { gql } from "graphql-request"
   import { gqlClient } from "../store/graphql"
   import { lmsr } from "bitcoin-predict"
+  // import "chartjs-adapter-date-fns"
+  import "chartjs-adapter-moment"
 
   export let market
 
   let ctx
+
+  const colors = ["#ff6384", "#36a2eb", "#4bc0c0", "#ffcd56", "#ff9f40", "#9966ff"]
 
   const priceQuery = gql`
   {
@@ -16,6 +20,10 @@
       shares
       liquidity
       stateCount
+      transaction {
+        minerTimestamp
+        broadcastedAt
+     }
     }
   }
 `
@@ -33,7 +41,16 @@
 
       for (const [shareIndex, share] of marketState.shares.entries()) {
         // console.log("Pushing", lmsr.getProbability(balance, share), "to", JSON.stringify(shareData),"at pos", shareIndex )
-        shareData[shareIndex] = shareData[shareIndex].concat([lmsr.getProbability(balance, share)])
+
+        const timestamp = new Date(
+          marketState.transaction.broadcastedAt || marketState.transaction.minerTimestamp
+        ).valueOf()
+        shareData[shareIndex] = shareData[shareIndex].concat([
+          {
+            x: timestamp,
+            y: lmsr.getProbability(balance, share)
+          }
+        ])
         // console.log("Result", JSON.stringify(shareData))
       }
     }
@@ -43,16 +60,18 @@
         label: market.options[index].name,
         data: shareData[index],
         fill: false,
-        cubicInterpolationMode: "monotone"
-        // backgroundColor: ["rgba(255, 99, 132, 0.2)"],
-        // borderColor: ["rgba(255, 99, 132, 1)"],
-        // borderWidth: 1
+        cubicInterpolationMode: "monotone",
+        borderColor: [colors[index % 6]]
       }
     })
 
     const labels = marketData.market_state.map(market => market.stateCount)
 
     // Chart.register(LineElement)
+
+    const firstTimestamp = new Date(
+      marketData.market_state[0].transaction.broadcastedAt || marketData.market_state[0].transaction.minerTimestamp
+    ).valueOf()
 
     new Chart(ctx, {
       type: "line",
@@ -65,6 +84,16 @@
           display: false
         },
         scales: {
+          x: {
+            min: firstTimestamp,
+            type: "time",
+            bounds: "data",
+            time: {
+              // parser: "YYYY-MM-DDTHH:mm:ss",
+              // Luxon format string
+              // tooltipFormat: "dd T"
+            }
+          },
           // yAxes: [
           //   {
           //     ticks: {
