@@ -30,7 +30,6 @@
   <sl-tab-group class="menu-center">
     <sl-tab slot="nav" on:click={() => push("#/")} active={/(\/$)|(\/market.*)/gm.test($location)}>Markets</sl-tab>
     <sl-tab slot="nav" on:click={() => push("#/oracles")} active={/\/oracle.*/gm.test($location)}>Oracles</sl-tab>
-    <sl-tab slot="nav" on:click={() => push("#/about")} active={$location === "/about"}>About</sl-tab>
   </sl-tab-group>
   <div class="menu-right">
     {#if $seed}
