@@ -23,6 +23,7 @@
   import SlMenu from "@shoelace-style/shoelace/dist/components/menu/menu"
   import SlMenuItem from "@shoelace-style/shoelace/dist/components/menu-item/menu-item"
   import SlMenuLabel from "@shoelace-style/shoelace/dist/components/menu-label/menu-label"
+  import SlIconButton from "@shoelace-style/shoelace/dist/components/icon-button/icon-button"
 
   import MarketDetailsCard from "../components/MarketDetailsCard.svelte"
   export let params
@@ -210,11 +211,16 @@
 </script>
 
 <div class="market">
-  <div class="nav"><a href="#/"><img src="./icons/angle-double-left.svg" alt="back" /></a> {params.firstTxTxid}</div>
-
   {#if market}
+    <nav class="nav container">
+      <a href="#/"><sl-icon-button name="arrow-left" label="Back" /></a>
+    </nav>
+
     <h1>
       {market.resolve}
+      <a href={`https://${$testnet ? "test." : ""}whatsonchain.com/tx/${params.firstTxTxid}`} class="txid"
+        >{params.firstTxTxid.slice(0, 20)}...</a
+      >
     </h1>
 
     <div class="chart">
@@ -282,6 +288,9 @@
   h1 {
     font-size: 2.5rem;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
   .market {
     display: flex;
@@ -297,13 +306,12 @@
 
   .nav {
     display: flex;
-    align-items: center;
     font-size: 0.9rem;
-    justify-content: center;
+    justify-content: left;
   }
 
-  .nav img {
-    height: 2rem;
+  .nav sl-icon-button {
+    font-size: 1.5rem;
   }
 
   .menu {
@@ -324,5 +332,11 @@
 
   .container {
     gap: 1rem;
+  }
+
+  .txid {
+    font-size: var(--sl-font-size-x-small);
+    color: var(--sl-color-gray-400);
+    margin: 0.2rem;
   }
 </style>
