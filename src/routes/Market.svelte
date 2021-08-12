@@ -16,6 +16,8 @@
   import Chart from "../components/Chart.svelte"
   import OutcomeCard from "../components/OutcomeCard.svelte"
   import PaymentModal from "../components/PaymentModal.svelte"
+  import MarketDetailsCard from "../components/MarketDetailsCard.svelte"
+  import MarketMenu from "../components/MarketMenu.svelte"
 
   import SlCard from "@shoelace-style/shoelace/dist/components/card/card.js"
   import SlFormatNumber from "@shoelace-style/shoelace/dist/components/format-number/format-number"
@@ -25,7 +27,6 @@
   import SlMenuLabel from "@shoelace-style/shoelace/dist/components/menu-label/menu-label"
   import SlIconButton from "@shoelace-style/shoelace/dist/components/icon-button/icon-button"
 
-  import MarketDetailsCard from "../components/MarketDetailsCard.svelte"
   export let params
 
   const marketQuery = gql`
@@ -77,29 +78,12 @@
 
   let market
 
-  $: marketBalance = {
-    shares: market ? market.market_state.shares : [],
-    liquidity: market ? market.market_state.liquidity : 0
-  }
-  $: usdLiquidity = (marketBalance.liquidity * lmsr.SatScaling * $price) / 100000000
-
   $: existingEntry =
     $publicKey && market && market.market_state.entries.find(entry => entry.investor.pubKey === $publicKey.toString())
   $: balance = existingEntry || {
     shares: new Array(market ? market.options.length : 0).fill(0),
     liquidity: 0
   }
-  $: redeemSats =
-    market && market.market_state.decided
-      ? lmsr.lmsr({
-          shares: market.market_state.shares,
-          liquidity: market.market_state.liquidity
-        }) -
-        lmsr.lmsr({
-          shares: market.market_state.shares.map((share, i) => (i === market.market_state.decision ? share : 0)),
-          liquidity: market.market_state.liquidity
-        })
-      : 0
 
   async function getMarket() {
     const res = await $gqlClient.request(marketQuery)
@@ -125,60 +109,16 @@
   }
 
   async function buySell(option: number, shareChange: number) {
-    const newBalance = {
-      shares: balance.shares.map((shares, i) => (i === option ? shares + shareChange : shares)),
-      liquidity: balance.liquidity
-    }
-    updateMarket(newBalance)
-  }
-
-  /**
-   * Sells winning shares after market is resolved
-   */
-  async function sellWinningShares() {
-    if (!market.market_state.decided) {
-      throw new Error("Market not resolved")
-    }
-    if (!balance.shares[market.market_state.decision]) {
-      throw new Error("User has no winning shares")
-    }
-    const newBalance = {
-      shares: [...balance.shares],
-      liquidity: balance.liquidity
-    }
-
-    newBalance.shares[market.market_state.decision] = 0
-
-    updateMarket(newBalance)
-  }
-
-  /**
-   * Lets market creator redeem all loosing shares
-   */
-  async function redeemInvalidShares() {
-    if (!market.market_state.decided) {
-      throw new Error("Market not resolved")
-    }
-    if (market.creatorPubKey !== $publicKey.toString()) {
-      throw new Error("User is not market creator")
-    }
-    if (redeemSats <= 0) {
-      throw new Error("Nothing to redeem")
-    }
-    updateMarket(balance)
-  }
-
-  /**
-   * Sells all liquidity
-   */
-  async function extractLiquidity() {
-    if (balance.liquidity <= 0) {
-      throw new Error("No liquidity to extract")
-    }
-    const newBalance = {
-      shares: [...balance.shares],
-      liquidity: 0
-    }
+    const newBalance =
+      option === -1
+        ? {
+            shares: balance.shares,
+            liquidity: balance.liquidity + shareChange
+          }
+        : {
+            shares: balance.shares.map((shares, i) => (i === option ? shares + shareChange : shares)),
+            liquidity: balance.liquidity
+          }
     updateMarket(newBalance)
   }
 
@@ -242,25 +182,13 @@
         <OracleCard market_oracles={market.market_state.market_oracles} />
 
         {#if $seed}
-          <sl-menu class="menu">
-            <sl-menu-label>Options</sl-menu-label>
-            <sl-menu-item value="undo">Add Liquidity</sl-menu-item>
-            {#if market.market_state.decided}
-              {#if $publicKey && market.creatorPubKey === $publicKey.toString() && redeemSats > 0}
-                <sl-menu-item value="redeem" on:click={redeemInvalidShares}
-                  >Redeem invalid shares ({redeemSats})
-                </sl-menu-item>
-              {/if}
-
-              {#if balance.shares[market.market_state.decision]}
-                <sl-menu-item value="sellWinning" on:click={sellWinningShares}>Sell winning shares</sl-menu-item>
-              {/if}
-
-              {#if balance.liquidity}
-                <sl-menu-item value="extractLiquidity" on:click={extractLiquidity}>Extract liquidity</sl-menu-item>
-              {/if}
-            {/if}
-          </sl-menu>
+          <MarketMenu
+            {balance}
+            {market}
+            on:update={e => updateMarket(e.detail.balance)}
+            on:buy={e => payment_modal.show("buy", e.detail.option)}
+            on:sell={e => payment_modal.show("sell", e.detail.option)}
+          />
         {/if}
       </div>
 
@@ -312,13 +240,6 @@
 
   .nav sl-icon-button {
     font-size: 1.5rem;
-  }
-
-  .menu {
-    background-color: var(--sl-color-white);
-    max-width: 200px;
-    border: solid 1px var(--sl-panel-border-color);
-    border-radius: var(--sl-border-radius-medium);
   }
 
   .cards {

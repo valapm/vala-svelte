@@ -13,6 +13,8 @@
   import SlButtonGroup from "@shoelace-style/shoelace/dist/components/button-group/button-group.js"
   import SlFormatNumber from "@shoelace-style/shoelace/dist/components/format-number/format-number"
 
+  const dispatch = createEventDispatcher()
+
   export let market
   export let option = 0
   export let action: "buy" | "sell" = "buy"
@@ -23,8 +25,6 @@
     action = newAction
     dialog.show()
   }
-
-  const dispatch = createEventDispatcher()
 
   let dialog
 
@@ -45,24 +45,40 @@
   $: potentialWin = Math.abs(potentialAssetsUSD - usdPrice)
   $: potentialX = potentialAssetsUSD / usdPrice
   $: insideLimits = isInsideLimits(marketBalance, option, change)
+
+  $: actionLabel = action === "buy" ? (option === -1 ? "Add" : "Buy") : option === -1 ? "Remove" : "Sell"
 </script>
 
-<sl-dialog label={market.options[option].name} bind:this={dialog}>
-  <!-- <div slot="header"><h2>{market.options[option].name}</h2></div> -->
-  <p>{market.options[option].details}</p>
+<sl-dialog label={option === -1 ? "Liquidity" : market.options[option].name} bind:this={dialog}>
+  {#if option !== -1}
+    <p>{market.options[option].details}</p>
+  {/if}
+
   <div class="action-select">
     <sl-button-group>
-      <sl-button class={action === "buy" ? "active" : ""} on:click={() => (action = "buy")}>Buy</sl-button>
+      <sl-button class={action === "buy" ? "active" : ""} on:click={() => (action = "buy")}
+        >{option === -1 ? "Add" : "Buy"}</sl-button
+      >
       <sl-button
         class={action === "sell" ? "active" : ""}
         on:click={() => (action = "sell")}
-        disabled={!balance.shares[option]}>Sell</sl-button
+        disabled={option === -1 ? !balance.liquidity : !balance.shares[option]}
+        >{option === -1 ? "Remove" : "Sell"}</sl-button
       >
     </sl-button-group>
   </div>
-  <CounterInput bind:number={amount} max={action === "sell" ? balance.shares[option] : undefined} />
+
+  <CounterInput
+    bind:number={amount}
+    max={action === "sell" ? (option === -1 ? balance.liquidity : balance.shares[option]) : undefined}
+  />
+
   {#if action === "sell"}
-    <div>Max: <span on:click={() => (amount = balance.shares[option])}>{balance.shares[option]}</span></div>
+    <div>
+      Max: <span on:click={() => (amount = option === -1 ? balance.liquidity : balance.shares[option])}
+        >{option === -1 ? balance.liquidity : balance.shares[option]}</span
+      >
+    </div>
   {/if}
 
   {#if !insideLimits}
@@ -73,17 +89,19 @@
   {/if}
 
   <div class="properties">
-    {#if action === "buy"}
-      <Property label="Potential Win">
-        <sl-format-number type="currency" currency="USD" value={potentialWin} locale="en-US" />
-        ({round(potentialX)}x)
-      </Property>
+    {#if option !== -1}
+      {#if action === "buy"}
+        <Property label="Potential Win">
+          <sl-format-number type="currency" currency="USD" value={potentialWin} locale="en-US" />
+          ({round(potentialX)}x)
+        </Property>
+      {/if}
     {/if}
   </div>
 
   <sl-format-number class="price {action}" type="currency" currency="USD" value={usdPrice} locale="en-US" />
   <sl-button slot="footer" type="primary" disabled={!insideLimits} on:click={() => dispatch(action, { amount, option })}
-    >{action.toUpperCase()}</sl-button
+    >{actionLabel.toUpperCase()}</sl-button
   >
 </sl-dialog>
 
