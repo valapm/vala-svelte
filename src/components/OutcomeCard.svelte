@@ -20,7 +20,9 @@
     liquidity: market.market_state.liquidity
   }
 
-  $: probabilities = marketBalance.shares.map(shares => lmsr.getProbability(marketBalance, shares))
+  $: probabilities = market.market_state.decided
+    ? marketBalance.shares.map((shares, i) => (i === market.market_state.decision ? 1 : 0))
+    : marketBalance.shares.map(shares => lmsr.getProbability(marketBalance, shares))
   $: satPrices = marketBalance.shares.map((_, index) => getSharePrice(marketBalance, index, 1))
   $: usdPrices = satPrices.map(sats => round((sats / 100000000) * $price))
   $: potentials = satPrices.map(sats => lmsr.SatScaling / sats)
@@ -33,30 +35,51 @@
   <table>
     <tr>
       <th>Name</th>
-      <th>Price</th>
+      {#if market.market_state.decided}
+        <th style="text-align: left;">Details</th>
+      {/if}
+      {#if !market.market_state.decided}
+        <th>Price</th>
+      {/if}
       <th>Probability</th>
-      <th>Potential X</th>
+
+      {#if !market.market_state.decided}
+        <th>Potential X</th>
+      {/if}
       {#if $seed}
         <th>Balance</th>
-        <th />
+        {#if !market.market_state.decided}
+          <th />
+        {/if}
       {/if}
     </tr>
     {#each market.market_state.shares as shares, index}
       <tr>
         <th>{market.options[index].name}</th>
-        <td><sl-format-number type="currency" currency="USD" value={usdPrices[index]} locale="en-US" /></td>
+        {#if market.market_state.decided}
+          <td style="text-align: left;">{market.options[index].details}</td>
+        {/if}
+        {#if !market.market_state.decided}
+          <td><sl-format-number type="currency" currency="USD" value={usdPrices[index]} locale="en-US" /></td>
+        {/if}
         <td> <sl-format-number type="percent" value={probabilities[index]} /></td>
-        <td>{round(potentials[index])}x</td>
+
+        {#if !market.market_state.decided}
+          <td>{round(potentials[index])}x</td>
+        {/if}
         {#if $seed}
           <td><sl-format-number type="currency" currency="USD" value={usdBalances[index]} locale="en-US" /></td>
-          <td>
-            <sl-button-group>
-              <sl-button on:click={() => dispatch("buy", { option: index })}>Buy</sl-button>
-              <sl-button on:click={() => dispatch("sell", { option: index })} disabled={!balance.shares[index]}
-                >Sell</sl-button
-              >
-            </sl-button-group>
-          </td>
+
+          {#if !market.market_state.decided}
+            <td>
+              <sl-button-group>
+                <sl-button on:click={() => dispatch("buy", { option: index })}>Buy</sl-button>
+                <sl-button on:click={() => dispatch("sell", { option: index })} disabled={!balance.shares[index]}
+                  >Sell</sl-button
+                >
+              </sl-button-group>
+            </td>
+          {/if}
         {/if}
       </tr>
     {/each}
@@ -80,7 +103,8 @@
     background-color: var(--sl-color-gray-50);
   }
 
-  table td:nth-child(n + 2) {
+  table td:nth-child(n + 2),
+  table th:nth-child(n + 2) {
     text-align: right;
   }
 

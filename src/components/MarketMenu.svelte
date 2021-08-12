@@ -2,6 +2,7 @@
   import { publicKey } from "../store/wallet"
   import { createEventDispatcher } from "svelte"
   import { getSharePrice } from "../utils/lmsr"
+  import { lmsr } from "bitcoin-predict"
 
   import SlMenu from "@shoelace-style/shoelace/dist/components/menu/menu"
   import SlMenuItem from "@shoelace-style/shoelace/dist/components/menu-item/menu-item"
