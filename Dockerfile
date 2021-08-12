@@ -1,6 +1,12 @@
-FROM node:16 AS build
+FROM node:16.6-alpine3.14 AS build
 
 WORKDIR /code
+
+ARG BACKEND_HOST
+ARG BACKEND_HOST_TESTNET
+ARG GRAPHQL_HOST
+ARG GRAPHQL_HOST_TESTNET
+ARG AUTH_HOST
 
 COPY package.json ./
 COPY package-lock.json ./
