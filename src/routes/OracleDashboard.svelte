@@ -1,6 +1,6 @@
 <script type="ts">
   import { BoostPowJobModel } from "../utils/boostPow"
-  import { bsv, rabin } from "bitcoin-predict"
+  import { bsv, rabin as rab } from "bitcoin-predict"
   import * as bp from "bitcoin-predict"
   import { rabinPubKey, rabinPrivKey } from "../store/oracle"
   import { address, privateKey, utxos } from "../store/wallet"
@@ -11,6 +11,8 @@
   import { postBoostJobTx, postOracleDetails, postMarketTx, postBurnTx } from "../apis/web"
   import { onMount } from "svelte"
   import { price } from "../store/price"
+
+  const rabin = new rab.RabinSignature()
 
   const diffMultiplier = 0.00002
   const feeb = 0.5
