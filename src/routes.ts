@@ -8,9 +8,11 @@ import Wallet from "./routes/Wallet.svelte"
 import Options from "./routes/Options.svelte"
 import Oracles from "./routes/Oracles.svelte"
 import Oracle from "./routes/Oracle.svelte"
+import Landingpage from "./routes/Landingpage.svelte"
 
 export const routes = {
-  "/": Dashboard,
+  "/": Landingpage,
+  "/markets": Dashboard,
   "/market/:firstTxTxid": Market,
   "/create": CreateMarket,
   "/oracles": Oracles,

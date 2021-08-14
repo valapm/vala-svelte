@@ -153,7 +153,7 @@
 <div class="market">
   {#if market}
     <nav class="nav container">
-      <a href="#/"><sl-icon-button name="arrow-left" label="Back" /></a>
+      <a href="#/markets"><sl-icon-button name="arrow-left" label="Back" /></a>
     </nav>
 
     <h1>

@@ -25,12 +25,12 @@
 </script>
 
 <nav>
-  <a href="#/"><img src="./Logo.svg" alt="vala-logo" /></a>
+  <a href={$seed ? "#/markets" : "#/"}><img src="./Logo.svg" alt="vala-logo" /></a>
 
-  <sl-tab-group class="menu-center">
-    <sl-tab slot="nav" on:click={() => push("#/")} active={/(\/$)|(\/market.*)/gm.test($location)}>Markets</sl-tab>
-    <sl-tab slot="nav" on:click={() => push("#/oracles")} active={/\/oracle.*/gm.test($location)}>Oracles</sl-tab>
-  </sl-tab-group>
+  <div class="menu-center">
+    <sl-tab on:click={() => push("#/markets")} active={/\/market.*/gm.test($location)}>Markets</sl-tab>
+    <sl-tab on:click={() => push("#/oracles")} active={/\/oracle.*/gm.test($location)}>Oracles</sl-tab>
+  </div>
   <div class="menu-right">
     {#if $seed}
       <a href="#/wallet">
@@ -72,6 +72,10 @@
 
   nav img {
     height: 2rem;
+  }
+
+  sl-tab::part(base):focus {
+    box-shadow: none;
   }
 
   .menu-center {
