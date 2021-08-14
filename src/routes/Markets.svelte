@@ -3,6 +3,7 @@
   import { gqlClient } from "../store/graphql"
   import { seed } from "../store/wallet"
   import { onMount } from "svelte"
+  import { pm } from "bitcoin-predict"
 
   import InlineMarket from "../components/InlineMarket.svelte"
 
@@ -13,9 +14,13 @@
   let search = ""
   let search_input
 
+  const versions = pm.versions.map(v => v.identifier)
+
   $: marketQuery = gql`
     {
-      market(order_by: { market_state: { liquidity: desc } }, where: { resolve: {_ilike: "%${search}%"}}) {
+      market(order_by: { market_state: { liquidity: desc } }, where: { resolve: {_ilike: "%${search}%"}, version: { _in: ${JSON.stringify(
+    versions
+  )}}}) {
         market_oracles_oracles {
           oracle {
             name

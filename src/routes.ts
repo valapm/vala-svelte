@@ -1,6 +1,6 @@
 import Market from "./routes/Market.svelte"
 import CreateMarket from "./routes/CreateMarket.svelte"
-import Dashboard from "./routes/Dashboard.svelte"
+import Markets from "./routes/Markets.svelte"
 import OracleDashboard from "./routes/OracleDashboard.svelte"
 import Login from "./routes/Login.svelte"
 import Register from "./routes/Register.svelte"
@@ -12,7 +12,7 @@ import Landingpage from "./routes/Landingpage.svelte"
 
 export const routes = {
   "/": Landingpage,
-  "/markets": Dashboard,
+  "/markets": Markets,
   "/market/:firstTxTxid": Market,
   "/create": CreateMarket,
   "/oracles": Oracles,
