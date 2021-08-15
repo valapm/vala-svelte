@@ -16,3 +16,4 @@ RUN npm run build
 
 FROM nginx:1.19-alpine
 COPY --from=build /code/public /usr/share/nginx/html
+COPY nginx/mime.types /etc/nginx/
