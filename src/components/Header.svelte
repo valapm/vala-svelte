@@ -46,9 +46,11 @@
       <sl-dropdown>
         <sl-icon-button slot="trigger" name="list" label="Menu" />
         <sl-menu>
-          <sl-menu-item><a href="#/wallet"> {$username}</a><sl-icon slot="prefix" name="wallet" /></sl-menu-item>
-          <sl-menu-item
-            ><a href="#/options"> Options</a>
+          <sl-menu-item on:click={() => push("#/wallet")}
+            >{$username}<sl-icon slot="prefix" name="wallet" /></sl-menu-item
+          >
+          <sl-menu-item on:click={() => push("#/options")}
+            >Options
             <sl-icon slot="prefix" name="gear" /></sl-menu-item
           >
           <sl-menu-item
