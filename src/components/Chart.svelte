@@ -175,6 +175,4 @@
   }
 </script>
 
-<button on:click={updateMarketData}>Fetch</button>
-<button on:click={() => (datasets = datasets)}>Update</button>
 <canvas bind:this={ctx} width="400" height="200" />
