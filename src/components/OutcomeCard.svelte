@@ -6,12 +6,18 @@
   import { seed } from "../store/wallet"
   import { createEventDispatcher } from "svelte"
 
+  import Property from "./Property.svelte"
+
   import SlFormatNumber from "@shoelace-style/shoelace/dist/components/format-number/format-number"
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
   import SlButtonGroup from "@shoelace-style/shoelace/dist/components/button-group/button-group.js"
 
   export let market
   export let balance
+
+  let width
+
+  $: smallScreen = width <= 700
 
   const dispatch = createEventDispatcher()
 
@@ -30,63 +36,142 @@
   $: usdBalances = satBalances.map(sats => round((sats / 100000000) * $price))
 </script>
 
+<svelte:window bind:innerWidth={width} />
+
 <sl-card class="outcomes">
   <div slot="header">Outcomes</div>
-  <table>
-    <tr>
-      <th>Name</th>
-      {#if market.market_state.decided}
-        <th style="text-align: left;">Details</th>
-      {/if}
-      {#if !market.market_state.decided}
-        <th>Price</th>
-      {/if}
-      <th>Probability</th>
 
-      {#if !market.market_state.decided}
-        <th>Potential X</th>
-      {/if}
-      {#if $seed}
-        <th>Balance</th>
-        {#if !market.market_state.decided}
-          <th />
-        {/if}
-      {/if}
-    </tr>
-    {#each market.market_state.shares as shares, index}
+  {#if !smallScreen}
+    <table>
       <tr>
-        <th>{market.options[index].name}</th>
+        <th>Name</th>
         {#if market.market_state.decided}
-          <td style="text-align: left;">{market.options[index].details}</td>
+          <th style="text-align: left;">Details</th>
         {/if}
         {#if !market.market_state.decided}
-          <td><sl-format-number type="currency" currency="USD" value={usdPrices[index]} locale="en-US" /></td>
+          <th>Price</th>
         {/if}
-        <td> <sl-format-number type="percent" value={probabilities[index]} /></td>
+        <th>Probability</th>
 
         {#if !market.market_state.decided}
-          <td>{round(potentials[index])}x</td>
+          <th>Potential X</th>
         {/if}
         {#if $seed}
-          <td><sl-format-number type="currency" currency="USD" value={usdBalances[index]} locale="en-US" /></td>
+          <th>Balance</th>
+          {#if !market.market_state.decided}
+            <th />
+          {/if}
+        {/if}
+      </tr>
+      {#each market.market_state.shares as shares, index}
+        <tr>
+          <th>{market.options[index].name}</th>
+          {#if market.market_state.decided}
+            <td style="text-align: left;">{market.options[index].details}</td>
+          {/if}
+          {#if !market.market_state.decided}
+            <td><sl-format-number type="currency" currency="USD" value={usdPrices[index]} locale="en-US" /></td>
+          {/if}
+          <td> <sl-format-number type="percent" value={probabilities[index]} /></td>
 
           {#if !market.market_state.decided}
-            <td>
+            <td>{round(potentials[index])}x</td>
+          {/if}
+          {#if $seed}
+            <td><sl-format-number type="currency" currency="USD" value={usdBalances[index]} locale="en-US" /></td>
+
+            {#if !market.market_state.decided}
+              <td>
+                <sl-button-group>
+                  <sl-button on:click={() => dispatch("buy", { option: index })}>Buy</sl-button>
+                  <sl-button on:click={() => dispatch("sell", { option: index })} disabled={!balance.shares[index]}
+                    >Sell</sl-button
+                  >
+                </sl-button-group>
+              </td>
+            {/if}
+          {/if}
+        </tr>
+      {/each}
+    </table>
+  {:else}
+    <div class="cards">
+      {#each market.market_state.shares as shares, index}
+        <div>
+          <h3>{market.options[index].name}</h3>
+          {#if !market.market_state.decided}
+            {market.options[index].details}
+          {/if}
+          <div class="properties">
+            <Property label="Price">
+              <sl-format-number type="currency" currency="USD" value={usdPrices[index]} locale="en-US" />
+            </Property>
+
+            <Property label="Probability">
+              <sl-format-number type="percent" value={probabilities[index]} />
+            </Property>
+
+            {#if !market.market_state.decided}
+              <Property label="Potential X">
+                {round(potentials[index])}x
+              </Property>
+            {/if}
+            {#if $seed}
+              <Property label="Balance">
+                <sl-format-number type="currency" currency="USD" value={usdBalances[index]} locale="en-US" />
+              </Property>
+            {/if}
+          </div>
+          {#if $seed}
+            {#if !market.market_state.decided}
               <sl-button-group>
                 <sl-button on:click={() => dispatch("buy", { option: index })}>Buy</sl-button>
                 <sl-button on:click={() => dispatch("sell", { option: index })} disabled={!balance.shares[index]}
                   >Sell</sl-button
                 >
               </sl-button-group>
-            </td>
+            {/if}
           {/if}
-        {/if}
-      </tr>
-    {/each}
-  </table>
+        </div>
+      {/each}
+    </div>
+  {/if}
 </sl-card>
 
 <style>
+  .cards > div {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .cards > div:nth-child(2n) {
+    background-color: var(--sl-color-gray-50);
+  }
+
+  .properties {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: space-evenly;
+    width: 100%;
+  }
+
+  .cards h3 {
+    font-weight: bold;
+  }
+
+  .cards sl-button-group {
+    width: 15rem;
+    justify-content: center;
+  }
+
+  .cards sl-button {
+    flex-grow: 1;
+  }
+
   .outcomes::part(body) {
     padding: 0;
   }

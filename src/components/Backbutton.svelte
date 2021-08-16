@@ -16,7 +16,7 @@
     height: 1.6rem;
     display: flex;
     justify-content: center;
-    margin: 1rem 0rem;
+    margin-top: -3rem;
   }
 
   nav > div {

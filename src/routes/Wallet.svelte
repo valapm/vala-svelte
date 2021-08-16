@@ -91,12 +91,14 @@
   .container {
     align-items: center;
     gap: 3rem;
+    margin-bottom: 5rem;
   }
 
   .balances {
     display: flex;
     justify-content: center;
     gap: 3rem;
+    flex-wrap: wrap;
   }
 
   .balances label {

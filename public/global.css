@@ -16,6 +16,7 @@
 body {
   background-color: #f4f4f6;
   font-family: var(--sl-font-sans);
+  min-height: 100vh;
 }
 
 /* Shoelace colors */
@@ -31,4 +32,8 @@ body {
   --sl-color-primary-800: #1035bc !important;
   --sl-color-primary-900: #0d2b99 !important;
   --sl-color-primary-950: #0a2176 !important;
+}
+
+sl-dialog::part(body) {
+  overflow-x: hidden;
 }

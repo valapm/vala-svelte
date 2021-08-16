@@ -163,6 +163,16 @@
   <strong>Successfully updated market</strong>
 </sl-alert>
 
+{#if market && $seed}
+  <PaymentModal
+    {market}
+    bind:this={payment_modal}
+    {balance}
+    on:buy={e => buySell(e.detail.option, e.detail.amount)}
+    on:sell={e => buySell(e.detail.option, -e.detail.amount)}
+  />
+{/if}
+
 <div class="market">
   {#if market}
     <Backbutton />
@@ -209,14 +219,6 @@
         on:buy={e => payment_modal.show("buy", e.detail.option)}
         on:sell={e => payment_modal.show("sell", e.detail.option)}
       />
-
-      <PaymentModal
-        {market}
-        bind:this={payment_modal}
-        {balance}
-        on:buy={e => buySell(e.detail.option, e.detail.amount)}
-        on:sell={e => buySell(e.detail.option, -e.detail.amount)}
-      />
     </div>
   {:else}
     loading...
@@ -225,11 +227,12 @@
 
 <style>
   h1 {
-    font-size: 2.5rem;
+    font-size: 2.3rem;
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: min(90%, 50rem);
   }
   .market {
     display: flex;
@@ -240,7 +243,7 @@
   }
 
   .chart {
-    width: min(80%, 70rem);
+    width: min(95%, 70rem);
   }
 
   .cards {

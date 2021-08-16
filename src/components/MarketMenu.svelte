@@ -116,4 +116,8 @@
     border: solid 1px var(--sl-panel-border-color);
     border-radius: var(--sl-border-radius-medium);
   }
+
+  sl-menu-item::part(label) {
+    white-space: normal;
+  }
 </style>
