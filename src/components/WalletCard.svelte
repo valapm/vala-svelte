@@ -19,16 +19,19 @@
   let cardCenterY
 
   function handleMousemove(event) {
-    if (isTimeToUpdate(event)) {
-      update(event)
-    }
+    // if (isTimeToUpdate(event)) {
+    update(event)
+    // }
   }
 
   function handleMouseleave(event) {
-    card.style = ""
+    // card.style = ""
+    card.style.transition = "all 0.5s ease"
+    card.style.transform = `rotateY(0deg) rotateX(0deg)`
   }
 
-  async function handleMounseenter(event) {
+  async function handleMouseenter(event) {
+    card.style.transition = "none"
     update(event)
   }
 
@@ -43,16 +46,26 @@
     card.style.mozTransform = style
     card.style.msTransform = style
     card.style.oTransform = style
+
+    // let xAxis = (window.innerWidth / 2 - event.pageX) / 25
+    // let yAxis = (window.innerHeight / 2 - event.pageY) / 25
+    // card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`
   }
 
   onMount(async () => {
     await tick()
+    recenter()
+  })
+
+  function recenter() {
     cardCenterX = card.offsetLeft + Math.floor(card.offsetWidth / 2)
     cardCenterY = card.offsetTop + Math.floor(card.offsetHeight / 2)
-  })
+  }
 </script>
 
-<svelte:body on:mousemove={handleMousemove} />
+<svelte:body on:mousemove={handleMousemove} on:mouseenter={handleMouseenter} on:mouseleave={handleMouseleave} />
+
+<svelte:window on:resize={recenter} />
 
 <div class="container">
   <sl-card bind:this={card}>
@@ -77,6 +90,7 @@
 
   :global(body) {
     min-height: 100vh;
+    perspective: 1000px;
   }
 
   sl-card {
@@ -91,6 +105,11 @@
     width: 21.9rem;
     border-radius: 0.6rem;
     background-image: linear-gradient(to right bottom, #fd696b, #fa616e, #f65871, #f15075, #ec4879);
+  }
+
+  sl-card::part(body) {
+    border-radius: 0.6rem;
+    box-shadow: 0 1rem 1rem rgba(0, 0, 0, 0.15), 0px 0px 50px rgba(0, 0, 0, 0.15);
   }
 
   .footer {
