@@ -1,4 +1,5 @@
 import { bsv } from "bitcoin-predict"
+import { post } from "./fetch"
 
 export function fundTx(tx: bsv.Transaction, utxos) {
   utxos.map(utxo =>
@@ -9,4 +10,10 @@ export function fundTx(tx: bsv.Transaction, utxos) {
     })
   )
   return tx
+}
+
+export async function broadcast(tx: bsv.Transaction, testnet = false) {
+  return await post(`https://api.whatsonchain.com/v1/bsv/${testnet ? "test" : "main"}/tx/raw`, {
+    txhex: tx.uncheckedSerialize()
+  })
 }
