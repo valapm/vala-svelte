@@ -100,7 +100,6 @@
   // }
 
   function getDataSets() {
-    console.log("Updating datasets")
     const shareData = new Array(market.options.length).fill([])
 
     for (const [stateIndex, marketState] of marketData.market_state.entries()) {

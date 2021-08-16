@@ -9,6 +9,7 @@
   import { gqlClient } from "../store/graphql"
   import { price } from "../store/price"
   import { satBalance, utxos } from "../store/wallet"
+  import { push } from "svelte-spa-router"
 
   const { fundTx, buildTx } = bp.transaction
 
@@ -67,7 +68,12 @@
   //   return market
   // }
 
+  let loading = false
+  let error
+  let error_alert
+
   async function postMarket() {
+    loading = true
     // console.log(tx)
 
     // // console.log(market.miners)
@@ -75,7 +81,9 @@
     // const utxos = await getUtxos($address, $testnet)
 
     if ($satBalance < tx.outputs[0].satoshis) {
-      throw new Error("Not enough funds")
+      loading = false
+      error = "Not enough funds"
+      error_dialog.toast()
       return
     }
 
@@ -86,6 +94,14 @@
 
     const postRes = await postMarketTx(rawtx, [entry], $testnet)
     console.log(postRes)
+
+    loading = false
+    if (postRes.message === "success") {
+      push(`#/market/${fundedTx.hash}`)
+    } else {
+      error = postRes.message
+      error_alert.toast()
+    }
   }
 
   let retryRawtx
@@ -184,6 +200,12 @@
   }
 </script>
 
+<sl-alert type="danger" duration="3000" bind:this={error_alert} closable>
+  <sl-icon slot="icon" name="exclamation-octagon" />
+  <strong>Failed to broadcast transaction</strong><br />
+  {error}
+</sl-alert>
+
 <h1>Create new Market</h1>
 
 <div class="content">
@@ -236,7 +258,7 @@
   {:else if step === 4}
     Inital liquidity: <input type="number" bind:value={liquidity} min="1" />
     <div class="buttons">
-      <button on:click={postMarket} class="action-button">Create new market for {cost}</button>
+      <button on:click={postMarket} class="action-button" {loading}>Create new market for {cost}</button>
       <button on:click={stepBack}>Back</button>
     </div>
   {/if}
