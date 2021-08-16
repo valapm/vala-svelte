@@ -17,7 +17,7 @@
 
   $: entryQuery = gql`
       {
-        entry(where: { market_state: {market_states: {}}, investorPubKey: { _eq: "${$publicKey.toString()}"}}) {
+        entry(where: { _not: { market_state: {market_states: {}} }, investorPubKey: { _eq: "${$publicKey.toString()}"}}) {
           liquidity
           shares
           market_state {
