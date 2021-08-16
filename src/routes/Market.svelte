@@ -18,6 +18,7 @@
   import PaymentModal from "../components/PaymentModal.svelte"
   import MarketDetailsCard from "../components/MarketDetailsCard.svelte"
   import MarketMenu from "../components/MarketMenu.svelte"
+  import Backbutton from "../components/Backbutton.svelte"
 
   import SlCard from "@shoelace-style/shoelace/dist/components/card/card.js"
   import SlFormatNumber from "@shoelace-style/shoelace/dist/components/format-number/format-number"
@@ -152,9 +153,7 @@
 
 <div class="market">
   {#if market}
-    <nav class="nav container">
-      <a href="#/markets"><sl-icon-button name="arrow-left" label="Back" /></a>
-    </nav>
+    <Backbutton />
 
     <h1>
       {market.resolve}

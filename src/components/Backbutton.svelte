@@ -1,10 +1,12 @@
 <script>
-  export let to
+  import { pop } from "svelte-spa-router"
+
+  import SlIconButton from "@shoelace-style/shoelace/dist/components/icon-button/icon-button"
 </script>
 
 <nav>
   <div>
-    <a href={to}><img src="./icons/arrow-circle-left.svg" alt="back" /></a>
+    <sl-icon-button name="arrow-left" label="Go back" on:click={pop} />
   </div>
 </nav>
 
@@ -23,7 +25,7 @@
     justify-content: start;
   }
 
-  img {
-    height: 1.6rem;
+  sl-icon-button {
+    font-size: 1.6rem;
   }
 </style>

@@ -37,7 +37,7 @@
   })
 </script>
 
-<Backbutton to="#/oracles" />
+<Backbutton />
 
 {#if loading}
   loading...
