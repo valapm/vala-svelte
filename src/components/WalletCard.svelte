@@ -67,29 +67,29 @@
 
 <svelte:window on:resize={recenter} />
 
-<div class="container">
-  <sl-card bind:this={card}>
-    <div class="body">
-      <div class="info">
-        <div class="label">ADDRESS</div>
-        <div class="address">{address.toUpperCase()}</div>
+<div class="wrapper">
+  <div class="container">
+    <sl-card bind:this={card}>
+      <div class="body">
+        <div class="info">
+          <div class="label">ADDRESS</div>
+          <div class="address">{address.toUpperCase()}</div>
+        </div>
+        <sl-qr-code value={address} fill="white" background="transparent" />
       </div>
-      <sl-qr-code value={address} fill="white" background="transparent" />
-    </div>
-    <div class="footer">
-      <span>{username.toUpperCase()}</span>
-      <div class="logo-wrapper">
-        <img src="./bitcoinsv_white.png" alt="Bitcoin SV" />
+      <div class="footer">
+        <span>{username.toUpperCase()}</span>
+        <div class="logo-wrapper">
+          <img src="./bitcoinsv_white.png" alt="Bitcoin SV" />
+        </div>
       </div>
-    </div>
-  </sl-card>
+    </sl-card>
+  </div>
 </div>
 
 <style>
   @import url("https://fonts.googleapis.com/css2?family=Overpass+Mono&display=swap");
-
-  :global(body) {
-    min-height: 100vh;
+  .wrapper {
     perspective: 1000px;
   }
 
@@ -98,6 +98,7 @@
     font-family: "Overpass Mono", monospace;
     width: 21.9rem;
     transition: transform 0.3s;
+    perspective: 1000px;
   }
 
   sl-card::part(base) {
