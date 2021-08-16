@@ -97,7 +97,6 @@
     color: white;
     font-family: "Overpass Mono", monospace;
     width: 21.9rem;
-    transition: transform 0.3s;
     perspective: 1000px;
   }
 
