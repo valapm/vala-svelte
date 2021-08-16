@@ -33,7 +33,7 @@
 
     const shareData = new Array(market.options.length).fill([])
 
-    for (const marketState of marketData.market_state) {
+    for (const [stateIndex, marketState] of marketData.market_state.entries()) {
       const balance = {
         shares: marketState.shares,
         liquidity: marketState.liquidity
@@ -42,9 +42,8 @@
       for (const [shareIndex, share] of marketState.shares.entries()) {
         // console.log("Pushing", lmsr.getProbability(balance, share), "to", JSON.stringify(shareData),"at pos", shareIndex )
 
-        const timestamp = new Date(
-          marketState.transaction.broadcastedAt || marketState.transaction.minerTimestamp
-        ).valueOf()
+        const date = new Date((marketState.transaction.broadcastedAt || marketState.transaction.minerTimestamp) + "Z")
+        const timestamp = date.valueOf()
         shareData[shareIndex] = shareData[shareIndex].concat([
           {
             x: timestamp,
@@ -52,6 +51,16 @@
           }
         ])
         // console.log("Result", JSON.stringify(shareData))
+
+        // Add current time to the end
+        if (stateIndex === marketData.market_state.length - 1) {
+          shareData[shareIndex] = shareData[shareIndex].concat([
+            {
+              x: new Date().valueOf(),
+              y: lmsr.getProbability(balance, share)
+            }
+          ])
+        }
       }
     }
 
@@ -70,7 +79,8 @@
     // Chart.register(LineElement)
 
     const firstTimestamp = new Date(
-      marketData.market_state[0].transaction.broadcastedAt || marketData.market_state[0].transaction.minerTimestamp
+      (marketData.market_state[0].transaction.broadcastedAt || marketData.market_state[0].transaction.minerTimestamp) +
+        "Z"
     ).valueOf()
 
     new Chart(ctx, {
