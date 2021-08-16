@@ -26,6 +26,10 @@
     dialog.show()
   }
 
+  export function hide() {
+    dialog.hide()
+  }
+
   let dialog
 
   let amount = 0

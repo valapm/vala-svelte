@@ -28,9 +28,79 @@
   }
 `
 
-  onMount(async () => {
-    const marketData = await $gqlClient.request(priceQuery)
+  let marketData
+  $: if (market) updateMarketData()
+  $: datasets = marketData && getDataSets()
+  $: labels = marketData && marketData.market_state.map(market => market.stateCount)
+  $: firstTimestamp =
+    marketData &&
+    new Date(
+      (marketData.market_state[0].transaction.broadcastedAt || marketData.market_state[0].transaction.minerTimestamp) +
+        "Z"
+    ).valueOf()
 
+  let chart
+
+  $: if (datasets) updateChart()
+
+  function updateChart() {
+    if (!chart) {
+      chart = getChart()
+      console.log("Initialized chart")
+    } else {
+      chart.data.labels = labels
+      chart.data.datasets = datasets
+      chart.update()
+      console.log("Updated chart")
+    }
+  }
+
+  async function updateMarketData() {
+    console.log("Fetching price history")
+    marketData = await $gqlClient.request(priceQuery)
+    console.log(marketData.market_state.length)
+  }
+
+  // function updateDataSets() {
+  //   const newStates = marketData.market_state.slice(datasets[0].data.length, marketData.marketState.length -1)
+
+  //   for (const [index, _] of chart.data.datasets.entries()) {
+  //     const set = chart.data.datasets[index]
+  //     delete set[set.length -1]
+  //   }
+
+  //   for (const [stateIndex, marketState] of newStates.entries()) {
+  //     const balance = {
+  //       shares: marketState.shares,
+  //       liquidity: marketState.liquidity
+  //     }
+
+  //     for (const [shareIndex, share] of marketState.shares.entries()) {
+  //       const date = new Date((marketState.transaction.broadcastedAt || marketState.transaction.minerTimestamp) + "Z")
+  //       const timestamp = date.valueOf()
+  //       chart.data.datasets[shareIndex].data.push(
+  //         {
+  //           x: timestamp,
+  //           y: lmsr.getProbability(balance, share)
+  //         }
+  //       )
+  //       // console.log("Result", JSON.stringify(shareData))
+
+  //       // Add current time to the end
+  //       if (stateIndex === marketData.market_state.length - 1) {
+  //         shareData[shareIndex] = shareData[shareIndex].concat([
+  //           {
+  //             x: new Date().valueOf(),
+  //             y: lmsr.getProbability(balance, share)
+  //           }
+  //         ])
+  //       }
+  //     }
+  //   }
+  // }
+
+  function getDataSets() {
+    console.log("Updating datasets")
     const shareData = new Array(market.options.length).fill([])
 
     for (const [stateIndex, marketState] of marketData.market_state.entries()) {
@@ -64,7 +134,7 @@
       }
     }
 
-    const datasets = shareData.map((data, index) => {
+    return shareData.map((data, index) => {
       return {
         label: market.options[index].name,
         data: shareData[index],
@@ -73,20 +143,13 @@
         borderColor: [colors[index % 6]]
       }
     })
+  }
 
-    const labels = marketData.market_state.map(market => market.stateCount)
-
-    // Chart.register(LineElement)
-
-    const firstTimestamp = new Date(
-      (marketData.market_state[0].transaction.broadcastedAt || marketData.market_state[0].transaction.minerTimestamp) +
-        "Z"
-    ).valueOf()
-
-    new Chart(ctx, {
+  function getChart() {
+    return new Chart(ctx, {
       type: "line",
       data: {
-        labels: labels,
+        labels,
         datasets
       },
       options: {
@@ -97,28 +160,11 @@
           x: {
             min: firstTimestamp,
             type: "time",
-            bounds: "data",
-            time: {
-              // parser: "YYYY-MM-DDTHH:mm:ss",
-              // Luxon format string
-              // tooltipFormat: "dd T"
-            }
+            bounds: "data"
           },
-          // yAxes: [
-          //   {
-          //     ticks: {
-          //       beginAtZero: true
-          //     },
-          //     gridLines: {
-          //       display: false
-          //     }
-          //   }
-          // ],
           y: {
-            // display: true,
             min: 0,
             max: 1,
-            // position: "left",
             grid: {
               display: false
             }
@@ -126,7 +172,9 @@
         }
       }
     })
-  })
+  }
 </script>
 
+<button on:click={updateMarketData}>Fetch</button>
+<button on:click={() => (datasets = datasets)}>Update</button>
 <canvas bind:this={ctx} width="400" height="200" />

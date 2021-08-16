@@ -76,6 +76,7 @@
   `
 
   let payment_modal
+  let success_alert
 
   let market
 
@@ -107,6 +108,12 @@
 
     const postRes = await postMarketTx(rawtx, [], $testnet)
     console.log(postRes)
+
+    if (postRes.message === "success") {
+      payment_modal.hide()
+      success_alert.toast()
+      market = await getMarket()
+    }
   }
 
   async function buySell(option: number, shareChange: number) {
@@ -150,6 +157,11 @@
     market = await getMarket()
   })
 </script>
+
+<sl-alert type="success" duration="3000" bind:this={success_alert} closable>
+  <sl-icon slot="icon" name="exclamation-octagon" />
+  <strong>Successfully updated market</strong>
+</sl-alert>
 
 <div class="market">
   {#if market}
@@ -229,16 +241,6 @@
 
   .chart {
     width: min(80%, 70rem);
-  }
-
-  .nav {
-    display: flex;
-    font-size: 0.9rem;
-    justify-content: left;
-  }
-
-  .nav sl-icon-button {
-    font-size: 1.5rem;
   }
 
   .cards {
