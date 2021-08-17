@@ -3,7 +3,7 @@
   import { getSharePrice, isInsideLimits } from "../utils/lmsr"
   import { price as bsvPrice } from "../store/price"
   import { round } from "../utils/format"
-  import { lmsr } from "bitcoin-predict"
+  import { lmsr, pm } from "bitcoin-predict"
   import { createEventDispatcher } from "svelte"
 
   import Property from "./Property.svelte"
@@ -34,6 +34,7 @@
 
   let amount = 0
 
+  $: marketVersion = pm.getMarketVersion(market.version)
   $: marketBalance = market && {
     shares: market.market_state.shares,
     liquidity: market.market_state.liquidity
@@ -78,9 +79,9 @@
   />
 
   {#if action === "sell"}
-    <div>
-      Max: <span on:click={() => (amount = option === -1 ? balance.liquidity : balance.shares[option])}
-        >{option === -1 ? balance.liquidity : balance.shares[option]}</span
+    <div class="max">
+      <span on:click={() => (amount = option === -1 ? balance.liquidity : balance.shares[option])}
+        >Max: {option === -1 ? balance.liquidity : balance.shares[option]}</span
       >
     </div>
   {/if}
@@ -99,11 +100,31 @@
           <sl-format-number type="currency" currency="USD" value={potentialWin} locale="en-US" />
           ({round(potentialX)}x)
         </Property>
+      {:else}
+        <Property label="Market Fee">
+          <sl-format-number
+            class="red"
+            type="currency"
+            currency="USD"
+            value={(market.creatorFee * usdPrice) / 100}
+            locale="en-US"
+          />
+        </Property>
+        <Property label="Vala Fee">
+          <sl-format-number
+            class="red"
+            type="currency"
+            currency="USD"
+            value={(marketVersion.devFee * usdPrice) / 100}
+            locale="en-US"
+          />
+        </Property>
       {/if}
     {/if}
   </div>
 
   <sl-format-number class="price {action}" type="currency" currency="USD" value={usdPrice} locale="en-US" />
+
   <sl-button slot="footer" type="primary" disabled={!insideLimits} on:click={() => dispatch(action, { amount, option })}
     >{actionLabel.toUpperCase()}</sl-button
   >
@@ -172,5 +193,16 @@
     font-size: 0.8rem;
     font-style: italic;
     color: var(--sl-color-danger-600);
+  }
+
+  .red {
+    color: var(--sl-color-danger-600);
+  }
+
+  .max {
+    font-style: italic;
+    font-size: 0.8rem;
+    text-decoration: underline;
+    cursor: pointer;
   }
 </style>
