@@ -25,7 +25,7 @@
 </script>
 
 <sl-card>
-  <div slot="header">Details</div>
+  <div slot="header">Properties</div>
   <div class="properties">
     <Property label="Status">
       {status}

@@ -35,6 +35,7 @@
       market(where: {marketStateByFirststateid: {transaction: {txid: {_eq: "${params.firstTxTxid}"}}}}) {
         creatorPubKey
         creatorFee
+        details
         version
         market_state {
           market_oracles {
@@ -219,6 +220,11 @@
         on:buy={e => payment_modal.show("buy", e.detail.option)}
         on:sell={e => payment_modal.show("sell", e.detail.option)}
       />
+
+      <sl-card>
+        <div slot="header">Details</div>
+        {market.details}</sl-card
+      >
     </div>
   {:else}
     loading...
@@ -250,6 +256,7 @@
     display: grid;
     gap: 1rem;
     grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    align-items: stretch;
   }
   .card-wide {
     grid-column: span 2 / auto;
