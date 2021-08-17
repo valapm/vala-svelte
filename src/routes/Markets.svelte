@@ -2,17 +2,16 @@
   import { gql } from "graphql-request"
   import { gqlClient } from "../store/graphql"
   import { seed } from "../store/wallet"
-  import { onMount } from "svelte"
   import { pm } from "bitcoin-predict"
 
   import InlineMarket from "../components/InlineMarket.svelte"
+  import Searchbar from "../components/Searchbar.svelte"
 
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
   import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js"
 
   let markets = []
   let search = ""
-  let search_input
 
   const versions = pm.versions.map(v => v.identifier)
 
@@ -47,12 +46,6 @@
   `
 
   $: $gqlClient.request(marketQuery).then(res => (markets = res.market))
-
-  onMount(() => {
-    search_input.addEventListener("sl-input", () => {
-      search = search_input.value
-    })
-  })
 </script>
 
 <div class="container">
@@ -60,7 +53,7 @@
     <a href="#/create" style="width: auto"><sl-button type="primary">Create Market</sl-button></a>
   {/if}
 
-  <sl-input placeholder="Search" bind:this={search_input} value={search} />
+  <Searchbar bind:value={search} />
 
   <div class="markets">
     {#each markets as market}
