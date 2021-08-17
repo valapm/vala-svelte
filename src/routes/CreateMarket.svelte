@@ -283,7 +283,7 @@
         value={creatorFee}
         min="0"
         bind:this={fee_input}
-        on:input={() => (creatorFee = fee_input.value)}
+        on:input={() => (creatorFee = parseInt(fee_input.value))}
       />
       <div class="buttons">
         <sl-button on:click={stepBack}>Back</sl-button>
@@ -298,7 +298,7 @@
         value={liquidity}
         min="1"
         bind:this={liquidity_input}
-        on:input={() => (liquidity = liquidity_input.value)}
+        on:input={() => (liquidity = parseInt(liquidity_input.value))}
       />
       <div class="price">
         <div>Total cost</div>

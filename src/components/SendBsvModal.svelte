@@ -96,7 +96,7 @@
       name="amount"
       label="USD Amount"
       bind:this={amount_input}
-      on:input={() => (amount = amount_input.value)}
+      on:input={() => (amount = parseInt(amount_input.value))}
       value={amount !== undefined ? amount : ""}
     />
     <sl-input
