@@ -73,7 +73,7 @@
       <div class="body">
         <div class="info">
           <div class="label">ADDRESS</div>
-          <div class="address">{address.toUpperCase()}</div>
+          <div class="address">{address}</div>
         </div>
         <sl-qr-code value={address} fill="white" background="transparent" />
       </div>
