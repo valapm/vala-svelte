@@ -19,7 +19,10 @@
   $: marketSats = lmsr.getLmsrSats(marketBalance)
   $: bsvTotal = marketSats / 100000000
   $: usdTotal = bsvTotal * $price
-  $: usdLiquidity = (marketBalance.liquidity * lmsr.SatScaling * $price) / 100000000
+  $: usdLiquidity =
+    (lmsr.getLmsrSats({ liquidity: marketBalance.liquidity, shares: new Array(market.options.length).fill(0) }) *
+      $price) /
+    100000000
   $: status = market && market.market_state.decided ? "Resolved" : "Open"
   $: creationDate = market && new Date(market.marketStateByFirststateid.transaction.minerTimestamp).toISOString()
 </script>

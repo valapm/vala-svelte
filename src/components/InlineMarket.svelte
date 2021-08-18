@@ -49,7 +49,8 @@
 
   $: bsvTotal = marketSats / 100000000
   $: usdTotal = bsvTotal * $price
-  $: bsvLiquidity = (balance.liquidity * lmsr.SatScaling) / 100000000
+  $: bsvLiquidity =
+    lmsr.getLmsrSats({ liquidity: balance.liquidity, shares: new Array(market.options.length).fill(0) }) / 100000000
   $: usdLiquidity = bsvLiquidity * $price
 
   $: status = market.market_state.decided ? "Resolved" : "Open"
