@@ -11,6 +11,7 @@
   import { satBalance, utxos } from "../store/wallet"
   import { push } from "svelte-spa-router"
   import { tick } from "svelte"
+  import { getNotificationsContext } from "svelte-notifications"
 
   import SlInput from "@shoelace-style/shoelace/dist/components/input/input"
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button"
@@ -24,6 +25,7 @@
   import OraclePicker from "../components/OraclePicker.svelte"
 
   const { fundTx, buildTx } = bp.transaction
+  const { addNotification } = getNotificationsContext()
 
   let resolve_input
   let detail_input
@@ -42,7 +44,6 @@
 
   let loading = false
   let error
-  let error_alert
 
   async function postMarket() {
     loading = true
@@ -50,7 +51,12 @@
     if ($satBalance < tx.outputs[0].satoshis) {
       loading = false
       error = "Not enough funds"
-      error_dialog.toast()
+      addNotification({
+        type: "danger",
+        text: "Failed to broadcast transaction",
+        description: error,
+        position: "top-right"
+      })
       return
     }
 
@@ -66,7 +72,12 @@
       push(`#/market/${fundedTx.hash}`)
     } else {
       error = postRes.message
-      error_alert.toast()
+      addNotification({
+        type: "danger",
+        text: "Failed to broadcast transaction",
+        description: error,
+        position: "top-right"
+      })
     }
   }
 
@@ -161,12 +172,6 @@
     ]
   }
 </script>
-
-<sl-alert type="danger" duration="3000" bind:this={error_alert} closable>
-  <sl-icon slot="icon" name="exclamation-octagon" />
-  <strong>Failed to broadcast transaction</strong><br />
-  {error}
-</sl-alert>
 
 <main>
   <h1>Create new Market</h1>

@@ -6,12 +6,14 @@
   import { AUTH_HOST } from "../config"
   import Loader from "../components/Loader.svelte"
   import { onMount } from "svelte"
+  import { getNotificationsContext } from "svelte-notifications"
 
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
   import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js"
   import SlAlert from "@shoelace-style/shoelace/dist/components/alert/alert.js"
   import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js"
 
+  const { addNotification } = getNotificationsContext()
   const unspecificErrorMessage = { title: "Something went wrong", details: "Please try again or contact Support." }
 
   let valaauth
@@ -39,7 +41,12 @@
   async function generateSeed() {
     if (password !== password2) {
       error = { title: "Passwords do not match" }
-      error_alert.toast()
+      addNotification({
+        type: "danger",
+        text: error.title,
+        description: error.details || "",
+        position: "top-right"
+      })
       return
     }
 
@@ -64,7 +71,12 @@
         error = unspecificErrorMessage
       }
       dialog.hide()
-      error_alert.toast()
+      addNotification({
+        type: "danger",
+        text: error.title,
+        description: error.details || "",
+        position: "top-right"
+      })
       loading = false
       return
     }
@@ -110,12 +122,6 @@
 </svelte:head>
 
 <svelte:window on:keydown={handleKeydown} />
-
-<sl-alert type="danger" duration="3000" bind:this={error_alert} closable>
-  <sl-icon slot="icon" name="exclamation-octagon" />
-  <strong>{error.title}</strong><br />
-  {error.details || ""}
-</sl-alert>
 
 <sl-dialog label="Your Wallet" bind:this={dialog}>
   This is your generated wallet seed. Your wallet is encrypted with your password and stored on our servers, we will

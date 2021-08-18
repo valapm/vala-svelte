@@ -11,6 +11,7 @@
   import { testnet } from "../store/options"
   import { getEntries } from "../utils/pm"
   import { round } from "../utils/format"
+  import { getNotificationsContext } from "svelte-notifications"
 
   import OracleCard from "../components/OracleCard.svelte"
   import Chart from "../components/Chart.svelte"
@@ -27,6 +28,8 @@
   import SlMenuItem from "@shoelace-style/shoelace/dist/components/menu-item/menu-item"
   import SlMenuLabel from "@shoelace-style/shoelace/dist/components/menu-label/menu-label"
   import SlIconButton from "@shoelace-style/shoelace/dist/components/icon-button/icon-button"
+
+  const { addNotification } = getNotificationsContext()
 
   export let params
 
@@ -77,7 +80,6 @@
   `
 
   let payment_modal
-  let success_alert
 
   let market
 
@@ -110,8 +112,23 @@
 
     if (postRes.message === "success") {
       payment_modal.hide()
-      success_alert.toast()
+      addNotification({
+        type: "success",
+        text: "Successfully updated market",
+        description: `<a href='https://${$testnet ? "test." : ""}whatsonchain.com/tx/${newTx.hash}'>${newTx.hash.slice(
+          0,
+          20
+        )}...</a>`,
+        position: "top-right"
+      })
       market = await getMarket()
+    } else {
+      addNotification({
+        type: "danger",
+        text: "Failed to updated market",
+        description: postRes.message,
+        position: "top-right"
+      })
     }
   }
 
@@ -156,11 +173,6 @@
     market = await getMarket()
   })
 </script>
-
-<sl-alert type="success" duration="3000" bind:this={success_alert} closable>
-  <sl-icon slot="icon" name="exclamation-octagon" />
-  <strong>Successfully updated market</strong>
-</sl-alert>
 
 {#if market && $seed}
   <PaymentModal

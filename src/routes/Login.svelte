@@ -6,13 +6,14 @@
   import Loader from "../components/Loader.svelte"
   import { AUTH_HOST } from "../config"
   import { onMount } from "svelte"
+  import { getNotificationsContext } from "svelte-notifications"
 
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
   import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js"
-  import SlAlert from "@shoelace-style/shoelace/dist/components/alert/alert.js"
 
   let valaauth
 
+  const { addNotification } = getNotificationsContext()
   const unspecificErrorMessage = { title: "Something went wrong", details: "Please try again or contact Support." }
 
   let username = ""
@@ -22,7 +23,6 @@
   let username_input
   let password_input
   let login_button
-  let error_alert
 
   let error = {}
 
@@ -57,7 +57,12 @@
       }
       console.log(e)
       loading = false
-      error_alert.toast()
+      addNotification({
+        type: "danger",
+        text: error.title,
+        description: error.details || "",
+        position: "top-right"
+      })
       return
     }
 
@@ -68,7 +73,12 @@
     } catch (e) {
       error = unspecificErrorMessage
       loading = false
-      error_alert.toast()
+      addNotification({
+        type: "danger",
+        text: error.title,
+        description: error.details || "",
+        position: "top-right"
+      })
       return
     }
 
@@ -103,12 +113,6 @@
 </svelte:head>
 
 <svelte:window on:keydown={handleKeydown} />
-
-<sl-alert type="danger" duration="3000" bind:this={error_alert} closable>
-  <sl-icon slot="icon" name="exclamation-octagon" />
-  <strong>{error.title}</strong><br />
-  {error.details || ""}
-</sl-alert>
 
 <div class="login">
   <h1>Login to Vala</h1>

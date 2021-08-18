@@ -37,3 +37,17 @@ body {
 sl-dialog::part(body) {
   overflow-x: hidden;
 }
+
+/* svelte-notifications */
+.default-position-style-top-left,
+.default-position-style-top-center,
+.default-position-style-top-right,
+.default-position-style-bottom-left,
+.default-position-style-bottom-center,
+.default-position-style-bottom-right {
+  width: auto !important;
+}
+
+.default-position-style-top-right {
+  top: 3rem !important;
+}

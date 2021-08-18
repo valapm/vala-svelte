@@ -5,17 +5,17 @@
   import { usdBalance } from "../store/wallet"
   import { price } from "../store/price"
   import { broadcast } from "../utils/transaction"
+  import { getNotificationsContext } from "svelte-notifications"
 
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
   import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js"
-  import SlAlert from "@shoelace-style/shoelace/dist/components/alert/alert.js"
   import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js"
+
+  const { addNotification } = getNotificationsContext()
 
   let dialog
   let recipient_input
   let amount_input
-  let error_alert
-  let success_dialog
 
   export function show() {
     dialog.show()
@@ -66,27 +66,29 @@
     } catch (e) {
       console.error(e)
       error = e.message
-      error_alert.toast()
+      addNotification({
+        type: "danger",
+        text: "Failed to broadcast transaction",
+        description: error,
+        position: "top-right"
+      })
     }
     sending = false
 
     if (success) {
       dialog.hide()
-      success_dialog.toast()
+      addNotification({
+        type: "success",
+        text: "Successfully broadcasted transaction",
+        description: `<a href='https://${$testnet ? "test." : ""}whatsonchain.com/tx/${tx.hash}'>${tx.hash.slice(
+          0,
+          20
+        )}...</a>`,
+        position: "top-right"
+      })
     }
   }
 </script>
-
-<sl-alert type="danger" duration="3000" bind:this={error_alert} closable>
-  <sl-icon slot="icon" name="exclamation-octagon" />
-  <strong>Failed to broadcast transaction</strong><br />
-  {error}
-</sl-alert>
-
-<sl-alert type="success" duration="3000" bind:this={success_dialog} closable>
-  <sl-icon slot="icon" name="exclamation-octagon" />
-  <strong>Successfully broadcasted transaction</strong><br />
-</sl-alert>
 
 <sl-dialog bind:this={dialog} label="Send BSV">
   <form>

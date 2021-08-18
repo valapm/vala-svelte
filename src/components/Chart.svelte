@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from "svelte"
+  import { onMount, onDestroy } from "svelte"
   // import { Chart, LineElement, LineController } from "chart.js"
   import Chart from "chart.js/auto"
   import { gql } from "graphql-request"
@@ -172,6 +172,10 @@
       }
     })
   }
+
+  onDestroy(() => {
+    if (chart) chart.destroy()
+  })
 </script>
 
 <canvas bind:this={ctx} width="400" height="200" />
