@@ -40,20 +40,6 @@
 
   let step = 0
 
-  $: oracleQuery = gql`
-    {
-      oracle(order_by: { burnedSats: desc }, where: { name: {_ilike: "%${oracleSearch}%"}}) {
-        pubKey
-        name
-        burnedSats
-        burnTxTxid
-      }
-    }
-  `
-
-  $: oracleResults = []
-  $: $gqlClient.request(oracleQuery).then(res => (oracleResults = res.oracle))
-
   let loading = false
   let error
   let error_alert
@@ -69,11 +55,10 @@
     }
 
     const fundedTx = fundTx(tx, $privateKey, $address, $utxos)
-    const rawtx = fundedTx.checkedSerialize()
 
     console.log(fundedTx)
 
-    const postRes = await postMarketTx(rawtx, [entry], $testnet)
+    const postRes = await postMarketTx(tx, [entry], $testnet)
     console.log(postRes)
 
     loading = false
@@ -83,13 +68,6 @@
       error = postRes.message
       error_alert.toast()
     }
-  }
-
-  let retryRawtx
-
-  async function retry() {
-    const postRes = await postMarketTx(retryRawtx, [entry], $testnet)
-    console.log(postRes)
   }
 
   $: canComplete0 = resolve || details

@@ -3,7 +3,7 @@ import { post } from "../utils/fetch"
 import { bsv } from "bitcoin-predict"
 import { gql } from "graphql-request"
 
-export async function postMarketTx(rawtx, entries = [], testnet = false) {
+export async function postMarketTx(tx: bsv.Transaction, entries = [], testnet = false) {
   const entryPayload = entries.map(entry => {
     return {
       ...entry,
@@ -11,6 +11,7 @@ export async function postMarketTx(rawtx, entries = [], testnet = false) {
     }
   })
 
+  const rawtx = tx.checkedSerialize({ disableDustOutputs: true })
   const host = testnet ? BACKEND_HOST_TESTNET : BACKEND_HOST
   console.log("posting to ", host)
 
@@ -26,7 +27,8 @@ export async function postMarketTx(rawtx, entries = [], testnet = false) {
   // return await post.json()
 }
 
-export async function postBoostJobTx(rawtx, content, testnet = false) {
+export async function postBoostJobTx(tx: bsv.Transaction, content, testnet = false) {
+  const rawtx = tx.checkedSerialize({ disableDustOutputs: true })
   const host = testnet ? BACKEND_HOST_TESTNET : BACKEND_HOST
 
   return await post(host + "/boost", { rawtx, content })
@@ -39,13 +41,15 @@ export async function postBoostJobTx(rawtx, content, testnet = false) {
   // return await post.json()
 }
 
-export async function postBurnTx(rawtx, testnet = false) {
+export async function postBurnTx(tx: bsv.Transaction, testnet = false) {
+  const rawtx = tx.checkedSerialize({ disableDustOutputs: true })
   const host = testnet ? BACKEND_HOST_TESTNET : BACKEND_HOST
 
   return await post(host + "/burnSats", { rawtx })
 }
 
-export async function postBoostProofTx(rawtx, testnet = false) {
+export async function postBoostProofTx(tx: bsv.Transaction, testnet = false) {
+  const rawtx = tx.checkedSerialize({ disableDustOutputs: true })
   const host = testnet ? BACKEND_HOST_TESTNET : BACKEND_HOST
 
   const post = await fetch(host + "/boost/proof", {

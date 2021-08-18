@@ -14,6 +14,6 @@ export function fundTx(tx: bsv.Transaction, utxos) {
 
 export async function broadcast(tx: bsv.Transaction, testnet = false) {
   return await post(`https://api.whatsonchain.com/v1/bsv/${testnet ? "test" : "main"}/tx/raw`, {
-    txhex: tx.uncheckedSerialize()
+    txhex: tx.checkedSerialize({ disableDustOutputs: true })
   })
 }

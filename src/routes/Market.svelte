@@ -103,11 +103,9 @@
     const entries = getEntries(market)
 
     const newTx = await getUpdateTx(newBalance, entries)
-
-    const rawtx = newTx.checkedSerialize()
     console.log(newTx)
 
-    const postRes = await postMarketTx(rawtx, [], $testnet)
+    const postRes = await postMarketTx(newTx, [], $testnet)
     console.log(postRes)
 
     if (postRes.message === "success") {

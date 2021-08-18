@@ -98,9 +98,7 @@
     tx.change($address)
     tx.from(utxos)
 
-    const rawtx = tx.checkedSerialize()
-
-    await postBoostJobTx(rawtx, $rabinPubKey.toString(), $testnet)
+    await postBoostJobTx(tx, $rabinPubKey.toString(), $testnet)
 
     console.log(`Boosted with difficulty ${model.getDiff()} for ${sats} sats`)
   }
@@ -137,11 +135,9 @@
 
     console.log([tx, $privateKey, $address, utxos])
     bp.transaction.fundTx(tx, $privateKey, $address, utxos)
-
-    const rawtx = tx.checkedSerialize()
     console.log(tx)
 
-    const postRes = await postBurnTx(rawtx, $testnet)
+    const postRes = await postBurnTx(tx, $testnet)
     console.log(postRes)
   }
 
@@ -182,9 +178,8 @@
     console.log([currentTx, vote, $rabinPrivKey, $address, $utxos, $privateKey])
 
     const newTx = await bp.transaction.getOracleVoteTx(currentTx, vote, $rabinPrivKey, $address, $utxos, $privateKey)
-    const rawtx = newTx.checkedSerialize() // FIXME: throws if not enough sats
 
-    const postRes = await postMarketTx(rawtx, [], $testnet)
+    const postRes = await postMarketTx(newTx, [], $testnet)
     console.log(postRes)
   }
 
@@ -195,9 +190,8 @@
     // fundTx(tx, privateKey, address, utxos)
 
     const newTx = bp.transaction.getOracleCommitTx(currentTx, $rabinPrivKey, $address, $utxos, $privateKey)
-    const rawtx = newTx.checkedSerialize()
 
-    const postRes = await postMarketTx(rawtx, [], $testnet)
+    const postRes = await postMarketTx(newTx, [], $testnet)
     console.log(postRes)
   }
 

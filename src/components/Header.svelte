@@ -17,6 +17,7 @@
     $seed = null
     $username = null
     push("#/login")
+    // FIXME: Breaks when called from a page that requires wallet seed
   }
 
   function round(n) {
