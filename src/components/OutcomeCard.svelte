@@ -75,7 +75,9 @@
           <td> <sl-format-number type="percent" value={probabilities[index]} /></td>
 
           {#if !market.market_state.decided}
-            <td>{round(potentials[index])}x</td>
+            <td>
+              {#if potentials[index] !== Infinity}{round(potentials[index])}x{/if}
+            </td>
           {/if}
           {#if $seed}
             <td><sl-format-number type="currency" currency="USD" value={usdBalances[index]} locale="en-US" /></td>
@@ -113,7 +115,7 @@
 
             {#if !market.market_state.decided}
               <Property label="Potential X">
-                {round(potentials[index])}x
+                {#if potentials[index] !== Infinity}{round(potentials[index])}x{/if}
               </Property>
             {/if}
             {#if $seed}

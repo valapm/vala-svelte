@@ -98,7 +98,7 @@
       {#if action === "buy"}
         <Property label="Potential Win">
           <sl-format-number type="currency" currency="USD" value={potentialWin} locale="en-US" />
-          ({round(potentialX)}x)
+          {#if potentialX !== Infinity}({round(potentialX)}x){/if}
         </Property>
       {:else}
         <Property label="Market Fee">
