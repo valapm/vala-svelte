@@ -26,6 +26,7 @@
           }
         }
         market_state {
+          satoshis
           decided
           shares
           liquidity

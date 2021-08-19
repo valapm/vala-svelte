@@ -21,8 +21,6 @@
 
   $: txid = market.marketStateByFirststateid.transaction.txid
 
-  $: marketSats = lmsr.getLmsrSats(balance)
-
   $: shares = market.market_state.shares.map((share, index) => {
     const newShares = [...market.market_state.shares]
     newShares[index] += 1
@@ -47,7 +45,7 @@
     }
   })
 
-  $: bsvTotal = marketSats / 100000000
+  $: bsvTotal = market.market_state.satoshis / 100000000
   $: usdTotal = bsvTotal * $price
   $: bsvLiquidity =
     lmsr.getLmsrSats({ liquidity: balance.liquidity, shares: new Array(market.options.length).fill(0) }) / 100000000

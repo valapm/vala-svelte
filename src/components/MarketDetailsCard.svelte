@@ -16,8 +16,7 @@
     liquidity: market ? market.market_state.liquidity : 0
   }
 
-  $: marketSats = lmsr.getLmsrSats(marketBalance)
-  $: bsvTotal = marketSats / 100000000
+  $: bsvTotal = market.market_state.satoshis / 100000000
   $: usdTotal = bsvTotal * $price
   $: usdLiquidity =
     (lmsr.getLmsrSats({ liquidity: marketBalance.liquidity, shares: new Array(market.options.length).fill(0) }) *

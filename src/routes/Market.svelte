@@ -20,6 +20,7 @@
   import MarketDetailsCard from "../components/MarketDetailsCard.svelte"
   import MarketMenu from "../components/MarketMenu.svelte"
   import Backbutton from "../components/Backbutton.svelte"
+  import RedeemModal from "../components/RedeemModal.svelte"
 
   import SlCard from "@shoelace-style/shoelace/dist/components/card/card.js"
   import SlFormatNumber from "@shoelace-style/shoelace/dist/components/format-number/format-number"
@@ -41,6 +42,7 @@
         details
         version
         market_state {
+          satoshis
           market_oracles {
             committed
             oracle {
@@ -80,6 +82,7 @@
   `
 
   let payment_modal
+  let redeem_modal
 
   let market
 
@@ -111,6 +114,7 @@
     console.log(postRes)
 
     if (postRes.message === "success") {
+      redeem_modal.hide()
       payment_modal.hide()
       addNotification({
         type: "success",
@@ -175,6 +179,8 @@
 </script>
 
 {#if market && $seed}
+  <RedeemModal {market} bind:this={redeem_modal} {balance} on:update={e => updateMarket(e.detail.balance)} />
+
   <PaymentModal
     {market}
     bind:this={payment_modal}
@@ -220,6 +226,9 @@
             on:update={e => updateMarket(e.detail.balance)}
             on:buy={e => payment_modal.show("buy", e.detail.option)}
             on:sell={e => payment_modal.show("sell", e.detail.option)}
+            on:redeemInvalid={e => redeem_modal.show("redeemInvalid")}
+            on:redeemWinning={e => redeem_modal.show("redeemWinning")}
+            on:extractLiquidity={e => redeem_modal.show("extractLiquidity")}
           />
         {/if}
       </div>
