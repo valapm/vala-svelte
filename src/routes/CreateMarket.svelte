@@ -279,7 +279,7 @@
       <sl-input
         type="number"
         value={liquidity}
-        min="1"
+        min="0"
         bind:this={liquidity_input}
         on:input={() => (liquidity = parseInt(liquidity_input.value))}
       />
