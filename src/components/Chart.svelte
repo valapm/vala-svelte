@@ -16,9 +16,10 @@
 
   const priceQuery = gql`
   {
-    market_state(where: {market: { marketStateByFirststateid: {transactionTxid: {_eq: "${market.marketStateByFirststateid.transaction.txid}"}}}}, order_by: {stateCount: asc}) {
+    market_state(where: { market: { marketStateByFirststateid: {transactionTxid: {_eq: "${market.marketStateByFirststateid.transaction.txid}"}}}}, order_by: {stateCount: asc}) {
       shares
       liquidity
+      decided
       stateCount
       transaction {
         minerTimestamp
@@ -103,6 +104,10 @@
     const shareData = new Array(market.options.length).fill([])
 
     for (const [stateIndex, marketState] of marketData.market_state.entries()) {
+      if (marketState.decided) {
+        break
+      }
+
       const balance = {
         shares: marketState.shares,
         liquidity: marketState.liquidity
