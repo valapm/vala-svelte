@@ -231,10 +231,12 @@
         on:sell={e => payment_modal.show("sell", e.detail.option)}
       />
 
-      <sl-card>
-        <div slot="header">Details</div>
-        {market.details}</sl-card
-      >
+      {#if market.details}
+        <sl-card>
+          <div slot="header">Details</div>
+          {market.details}</sl-card
+        >
+      {/if}
     </div>
   {:else}
     loading...
