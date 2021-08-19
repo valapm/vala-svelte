@@ -105,9 +105,11 @@
             {market.options[index].details}
           {/if}
           <div class="properties">
-            <Property label="Price">
-              <sl-format-number type="currency" currency="USD" value={usdPrices[index]} locale="en-US" />
-            </Property>
+            {#if !market.market_state.decided}
+              <Property label="Price">
+                <sl-format-number type="currency" currency="USD" value={usdPrices[index]} locale="en-US" />
+              </Property>
+            {/if}
 
             <Property label="Probability">
               <sl-format-number type="percent" value={probabilities[index]} />
