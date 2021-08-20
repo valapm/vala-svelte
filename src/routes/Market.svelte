@@ -298,7 +298,7 @@
   }
 
   .full-width {
-    grid-column: span 4 / auto;
+    grid-column: 1 / -1;
   }
 
   .container {
