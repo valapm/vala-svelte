@@ -40,7 +40,8 @@ function handleResponse(response) {
     if (!response.ok) {
       console.log(response)
       const error = data || response.statusText
-      return Promise.reject(new Error(error))
+      console.error(data)
+      return Promise.reject(new Error(response.statusText))
     }
 
     return data

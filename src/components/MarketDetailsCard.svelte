@@ -47,6 +47,9 @@
     <Property label="Created">
       <sl-format-date date={creationDate} />
     </Property>
+    <Property label="Script Version">
+      {pm.getMarketVersion(market.version).version}
+    </Property>
   </div>
 </sl-card>
 
