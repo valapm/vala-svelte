@@ -84,8 +84,8 @@
 
   async function extractLiquidity() {
     const newBalance = {
-      shares: marketBalance.shares,
-      liquidity: marketBalance.liquidity - balance.liquidity
+      liquidity: 0,
+      shares: balance.shares.map((shares, index) => (market.market_state.decision === index ? shares : 0))
     }
     dispatch("update", { balance: newBalance })
   }
@@ -103,7 +103,13 @@
     if (redeemInvalidSats <= bsv.Transaction.DUST_AMOUNT) {
       throw new Error("Nothing to redeem")
     }
-    dispatch("update", { balance })
+
+    const newBalance = {
+      liquidity: balance.liquidity,
+      shares: balance.shares.map((shares, index) => (market.market_state.decision === index ? shares : 0))
+    }
+
+    dispatch("update", { balance: newBalance })
   }
 
   /**
@@ -117,11 +123,9 @@
       throw new Error("User has no winning shares")
     }
     const newBalance = {
-      shares: [...balance.shares],
+      shares: new Array(market.options.length).fill(0),
       liquidity: balance.liquidity
     }
-
-    newBalance.shares[market.market_state.decision] = 0
 
     dispatch("update", { balance: newBalance })
   }
