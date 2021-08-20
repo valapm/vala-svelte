@@ -2,6 +2,7 @@
   import { round } from "../utils/format"
   import { pm, lmsr } from "bitcoin-predict"
   import { price } from "../store/price"
+  import { getCreationDate } from "../utils/pm"
 
   import SlCard from "@shoelace-style/shoelace/dist/components/card/card.js"
   import SlFormatNumber from "@shoelace-style/shoelace/dist/components/format-number/format-number"
@@ -23,11 +24,10 @@
       $price) /
     100000000
   $: status = market && market.market_state.decided ? "Resolved" : "Open"
-  $: creationDate = market && new Date(market.marketStateByFirststateid.transaction.minerTimestamp).toISOString()
+  $: creationDate = market && getCreationDate(market).toISOString()
 </script>
 
 <sl-card>
-  <div slot="header">Properties</div>
   <div class="properties">
     <Property label="Status">
       {status}

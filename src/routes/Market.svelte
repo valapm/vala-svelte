@@ -225,6 +225,15 @@
 
     <div class="container">
       <div class="cards">
+        <div class="full-width">
+          <OutcomeCard
+            {market}
+            {balance}
+            on:buy={e => payment_modal.show("buy", e.detail.option)}
+            on:sell={e => payment_modal.show("sell", e.detail.option)}
+          />
+        </div>
+
         <div class="card-wide">
           <MarketDetailsCard {market} />
         </div>
@@ -244,13 +253,6 @@
           />
         {/if}
       </div>
-
-      <OutcomeCard
-        {market}
-        {balance}
-        on:buy={e => payment_modal.show("buy", e.detail.option)}
-        on:sell={e => payment_modal.show("sell", e.detail.option)}
-      />
 
       {#if market.details}
         <sl-card>
@@ -293,6 +295,10 @@
   }
   .card-wide {
     grid-column: span 2 / auto;
+  }
+
+  .full-width {
+    grid-column: span 4 / auto;
   }
 
   .container {

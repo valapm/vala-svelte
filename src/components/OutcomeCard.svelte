@@ -179,6 +179,10 @@
     flex-grow: 1;
   }
 
+  .outcomes {
+    width: 100%;
+  }
+
   .outcomes::part(body) {
     padding: 0;
   }

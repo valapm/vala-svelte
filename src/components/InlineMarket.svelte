@@ -3,6 +3,7 @@
   import { price } from "../store/price"
   import { onMount } from "svelte"
   import { testnet } from "../config"
+  import { getCreationDate } from "../utils/pm"
   // import { navigateTo } from 'svelte-spa-router'
 
   import SlCard from "@shoelace-style/shoelace/dist/components/card/card.js"
@@ -53,6 +54,8 @@
 
   $: status = market.market_state.decided ? "Resolved" : "Open"
 
+  $: creationDate = getCreationDate(market).toISOString()
+
   function round(n) {
     return Math.round(n * 100) / 100
   }
@@ -91,6 +94,10 @@
 
         <Property label="Oracle">
           {market.market_oracles_oracles[0].oracle.name}
+        </Property>
+
+        <Property label="Created">
+          <sl-format-date date={creationDate} />
         </Property>
       </div>
 

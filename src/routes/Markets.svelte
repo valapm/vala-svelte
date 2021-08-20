@@ -37,6 +37,9 @@
         marketStateByFirststateid {
           transaction {
             txid
+            broadcastedAt
+            minerTimestamp
+            processedAt
           }
         }
         resolve
