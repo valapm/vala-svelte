@@ -24,7 +24,7 @@
 >
   <sl-icon slot="icon" name="exclamation-octagon" />
   <strong>{notification.text}</strong><br />
-  {@html notification.description}
+  {@html notification.description || ""}
 </sl-alert>
 
 <style>

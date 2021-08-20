@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { lmsr, transaction as pmTx, bsv } from "bitcoin-predict"
+  import { lmsr, transaction as pmTx, pm } from "bitcoin-predict"
   import { price } from "../store/price"
   import { gql } from "graphql-request"
   import { gqlClient } from "../store/graphql"
@@ -9,7 +9,7 @@
   import { getTx } from "../apis/web"
   import { postMarketTx } from "../apis/web"
   import { testnet } from "../store/options"
-  import { getEntries } from "../utils/pm"
+  import { getEntries, isCompatibleVersion } from "../utils/pm"
   import { round } from "../utils/format"
   import { getNotificationsContext } from "svelte-notifications"
 
@@ -85,6 +85,18 @@
   let redeem_modal
 
   let market
+
+  $: compatibleVersion = market && isCompatibleVersion(market.version)
+  $: {
+    console.log(compatibleVersion)
+    if (compatibleVersion === false) {
+      addNotification({
+        type: "danger",
+        text: "Market version not supported",
+        position: "top-right"
+      })
+    }
+  }
 
   $: existingEntry =
     $publicKey && market && market.market_state.entries.find(entry => entry.investor.pubKey === $publicKey.toString())
@@ -219,7 +231,7 @@
 
         <OracleCard market_oracles={market.market_state.market_oracles} />
 
-        {#if $seed}
+        {#if $seed && compatibleVersion}
           <MarketMenu
             {balance}
             {market}

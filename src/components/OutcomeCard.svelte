@@ -3,6 +3,7 @@
   import { price } from "../store/price"
   import { getSharePrice } from "../utils/lmsr"
   import { round } from "../utils/format"
+  import { isCompatibleVersion } from "../utils/pm"
   import { seed } from "../store/wallet"
   import { createEventDispatcher } from "svelte"
 
@@ -25,6 +26,8 @@
     shares: market.market_state.shares,
     liquidity: market.market_state.liquidity
   }
+
+  $: compatibleVersion = market && isCompatibleVersion(market.version)
 
   $: probabilities = market.market_state.decided
     ? marketBalance.shares.map((shares, i) => (i === market.market_state.decision ? 1 : 0))
@@ -82,7 +85,7 @@
           {#if $seed}
             <td><sl-format-number type="currency" currency="USD" value={usdBalances[index]} locale="en-US" /></td>
 
-            {#if !market.market_state.decided}
+            {#if !market.market_state.decided && compatibleVersion}
               <td>
                 <sl-button-group>
                   <sl-button on:click={() => dispatch("buy", { option: index })}>Buy</sl-button>

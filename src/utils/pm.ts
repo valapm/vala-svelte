@@ -15,3 +15,12 @@ export function getEntries(market): pm.entry[] {
     }
   })
 }
+
+export function isCompatibleVersion(version: string) {
+  try {
+    pm.getMarketVersion(version)
+    return true
+  } catch (e) {
+    return false
+  }
+}
