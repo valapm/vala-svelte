@@ -3,7 +3,7 @@
   import { username } from "../store/profile"
   import WalletCard from "../components/WalletCard.svelte"
   import { gql } from "graphql-request"
-  import { gqlClient } from "../store/graphql"
+  import { gqlClient } from "../utils/graphql"
   import { pm, lmsr } from "bitcoin-predict"
   import { price } from "../store/price"
   import { round } from "../utils/format"
@@ -36,7 +36,7 @@
 
   async function getPositions() {
     console.log("test")
-    const res = await $gqlClient.request(entryQuery)
+    const res = await gqlClient.request(entryQuery)
 
     let sats = 0
     for (const entry of res.entry) {

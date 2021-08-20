@@ -2,7 +2,7 @@
   import { lmsr } from "bitcoin-predict"
   import { price } from "../store/price"
   import { onMount } from "svelte"
-  import { testnet } from "../store/options"
+  import { testnet } from "../config"
   // import { navigateTo } from 'svelte-spa-router'
 
   import SlCard from "@shoelace-style/shoelace/dist/components/card/card.js"
@@ -112,7 +112,7 @@
       </table>
     </sl-card>
   </a>
-  <a href={`https://${$testnet ? "test." : ""}whatsonchain.com/tx/${txid}`} class="txid">{txid.slice(0, 20)}...</a>
+  <a href={`https://${testnet ? "test." : ""}whatsonchain.com/tx/${txid}`} class="txid">{txid.slice(0, 20)}...</a>
 </div>
 
 <style>

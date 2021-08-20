@@ -3,10 +3,10 @@
   import { privateKey, publicKey, address } from "../store/wallet"
   // import { getUtxos } from "../utils/utxo"
   import { oracles } from "../oracle"
-  import { testnet } from "../store/options"
+  import { testnet } from "../config"
   import { postMarketTx } from "../apis/web"
   import { gql } from "graphql-request"
-  import { gqlClient } from "../store/graphql"
+  import { gqlClient } from "../utils/graphql"
   import { price } from "../store/price"
   import { satBalance, utxos } from "../store/wallet"
   import { push } from "svelte-spa-router"
@@ -64,7 +64,7 @@
 
     console.log(fundedTx)
 
-    const postRes = await postMarketTx(tx, [entry], $testnet)
+    const postRes = await postMarketTx(tx, [entry], testnet)
     console.log(postRes)
 
     loading = false

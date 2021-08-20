@@ -5,3 +5,10 @@ export const BACKEND_HOST_TESTNET = ENV.BACKEND_HOST_TESTNET
 export const GRAPHQL_HOST = ENV.GRAPHQL_HOST + "/v1/graphql"
 export const GRAPHQL_HOST_TESTNET = ENV.GRAPHQL_HOST_TESTNET + "/v1/graphql"
 export const AUTH_HOST = ENV.AUTH_HOST
+
+export const testnet =
+  window.location.host.split(".")[0] === "test" || window.location.pathname.split("/")[1] === "test"
+export const backendHost = testnet ? BACKEND_HOST_TESTNET : BACKEND_HOST
+export const graphqlHost = testnet ? GRAPHQL_HOST_TESTNET : GRAPHQL_HOST
+
+console.log("testnet:", testnet, backendHost)

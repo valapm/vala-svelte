@@ -1,6 +1,6 @@
 <script>
   import { gql } from "graphql-request"
-  import { gqlClient } from "../store/graphql"
+  import { gqlClient } from "../utils/graphql"
   import { createEventDispatcher } from "svelte"
 
   import InlineOracle from "../components/InlineOracle.svelte"
@@ -22,7 +22,7 @@
   let search = ""
 
   $: oracles = []
-  $: $gqlClient.request(oracleQuery).then(res => (oracles = res.oracle))
+  $: gqlClient.request(oracleQuery).then(res => (oracles = res.oracle))
 </script>
 
 <div class="oracle-list">

@@ -1,7 +1,7 @@
 <script>
   import { bsv } from "bitcoin-predict"
   import { address, privateKey, utxos } from "../store/wallet"
-  import { testnet } from "../store/options"
+  import { testnet } from "../config"
   import { usdBalance } from "../store/wallet"
   import { price } from "../store/price"
   import { broadcast } from "../utils/transaction"
@@ -31,7 +31,7 @@
   $: console.log(validAmount, validRecipient)
   function isValidRecipient() {
     try {
-      bsv.Address.fromString(recipient, $testnet ? "testnet" : "livenet")
+      bsv.Address.fromString(recipient, testnet ? "testnet" : "livenet")
       return true
     } catch (e) {
       return false
@@ -60,7 +60,7 @@
     console.log(tx)
     let success = false
     try {
-      const res = await broadcast(tx, $testnet)
+      const res = await broadcast(tx, testnet)
       console.log(res)
       success = true
     } catch (e) {
@@ -80,7 +80,7 @@
       addNotification({
         type: "success",
         text: "Successfully broadcasted transaction",
-        description: `<a href='https://${$testnet ? "test." : ""}whatsonchain.com/tx/${tx.hash}'>${tx.hash.slice(
+        description: `<a href='https://${testnet ? "test." : ""}whatsonchain.com/tx/${tx.hash}'>${tx.hash.slice(
           0,
           20
         )}...</a>`,

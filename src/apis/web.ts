@@ -78,7 +78,7 @@ export async function postOracleDetails(details, pubKey, signature, testnet = fa
   return await post.json()
 }
 
-export async function getTx(txid: string, $gqlClient): bsv.Transaction {
+export async function getTx(txid: string, gqlClient): bsv.Transaction {
   const query = gql`
   {
     transaction(where: { txid: { _eq: "${txid}" } }) {
@@ -86,7 +86,7 @@ export async function getTx(txid: string, $gqlClient): bsv.Transaction {
     }
   }
 `
-  const res = await $gqlClient.request(query)
+  const res = await gqlClient.request(query)
 
   if (!res.transaction.length) {
     throw new Error("Transaction not found.")

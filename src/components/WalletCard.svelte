@@ -80,7 +80,7 @@
       <div class="footer">
         <span>{username.toUpperCase()}</span>
         <div class="logo-wrapper">
-          <img src="./bitcoinsv_white.png" alt="Bitcoin SV" />
+          <img src="/bitcoinsv_white.png" alt="Bitcoin SV" />
         </div>
       </div>
     </sl-card>

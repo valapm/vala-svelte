@@ -2,6 +2,7 @@
   import { seed, usdBalance } from "../store/wallet"
   import { username } from "../store/profile"
   import { push, location } from "svelte-spa-router"
+  import { testnet } from "../config"
 
   import SlDropdown from "@shoelace-style/shoelace/dist/components/dropdown/dropdown"
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
@@ -12,6 +13,9 @@
   import SlFormatNumber from "@shoelace-style/shoelace/dist/components/format-number/format-number"
   import SlTab from "@shoelace-style/shoelace/dist/components/tab/tab"
   import SlTabGroup from "@shoelace-style/shoelace/dist/components/tab-group/tab-group"
+  import SlSelect from "@shoelace-style/shoelace/dist/components/select/select"
+
+  let networkSelect
 
   function logout() {
     $seed = null
@@ -26,67 +30,101 @@
 </script>
 
 <nav>
-  <a href={$seed ? "#/markets" : "#/"}><img src="./Logo.svg" alt="vala-logo" /></a>
+  <div class="menu-main">
+    <div class="menu-left">
+      <a href={$seed ? "#/markets" : "#/"} class="logo"><img src="/Logo.svg" alt="vala-logo" /></a>
 
-  <div class="menu-center">
-    <sl-tab on:click={() => push("#/markets")} active={/\/market.*/gm.test($location)}>Markets</sl-tab>
-    <sl-tab on:click={() => push("#/oracles")} active={/\/oracle.*/gm.test($location)}>Oracles</sl-tab>
-  </div>
-  <div class="menu-right">
-    {#if $seed}
-      <a href="#/wallet">
-        <sl-format-number type="currency" currency="USD" value={round($usdBalance)} locale="en-US" />
-      </a>
-    {:else}
-      <a href="#/login"><sl-button type="text" size="small">Log in</sl-button></a>
-      <a href="#/register"><sl-button type="primary" size="small">Sign up</sl-button></a>
-    {/if}
-    <!-- <a href="#/options"><img class="dropdown" src="./icons/bars.svg" alt="dropdown" /></a> -->
-    <!-- <button on:click={() => (dropdown = true)}><img class="dropdown" src="./icons/bars.svg" alt="dropdown" /></button> -->
-    {#if $seed}
-      <sl-dropdown>
-        <sl-icon-button slot="trigger" name="list" label="Menu" />
-        <sl-menu>
-          <sl-menu-item on:click={() => push("#/wallet")}
-            >{$username}<sl-icon slot="prefix" name="wallet" /></sl-menu-item
-          >
-          <sl-menu-item on:click={() => push("#/options")}
-            >Options
-            <sl-icon slot="prefix" name="gear" /></sl-menu-item
-          >
-          <sl-menu-item
-            ><button on:click={logout}>Logout</button><sl-icon slot="prefix" name="box-arrow-left" /></sl-menu-item
-          >
-        </sl-menu>
-      </sl-dropdown>
-    {/if}
+      <div class="menu-center">
+        <sl-tab on:click={() => push("#/markets")} active={/\/market.*/gm.test($location)}>Markets</sl-tab>
+        <sl-tab on:click={() => push("#/oracles")} active={/\/oracle.*/gm.test($location)}>Oracles</sl-tab>
+      </div>
+    </div>
+    <div class="menu-right">
+      <sl-select
+        size="small"
+        value={testnet ? "testnet" : "mainnet"}
+        bind:this={networkSelect}
+        on:sl-change={() => {
+          if (networkSelect.value === "testnet") {
+            window.location.href = window.location.origin + "/test/"
+          } else {
+            window.location.href = window.location.origin
+          }
+        }}
+      >
+        <sl-menu-item value="mainnet">Mainnet</sl-menu-item>
+        <sl-menu-item value="testnet">Testnet</sl-menu-item>
+      </sl-select>
+
+      <!-- <a href="#/options"><img class="dropdown" src="./icons/bars.svg" alt="dropdown" /></a> -->
+      <!-- <button on:click={() => (dropdown = true)}><img class="dropdown" src="./icons/bars.svg" alt="dropdown" /></button> -->
+      {#if $seed}
+        <sl-dropdown>
+          <sl-icon-button slot="trigger" name="list" label="Menu" />
+          <sl-menu>
+            <sl-menu-item on:click={() => push("#/wallet")}>
+              <b><sl-format-number type="currency" currency="USD" value={round($usdBalance)} locale="en-US" /></b>
+              <sl-icon slot="prefix" name="wallet" /></sl-menu-item
+            >
+            <sl-menu-item on:click={() => push("#/options")}
+              >Options
+              <sl-icon slot="prefix" name="gear" /></sl-menu-item
+            >
+            <sl-menu-item
+              ><button on:click={logout}>Logout</button><sl-icon slot="prefix" name="box-arrow-left" /></sl-menu-item
+            >
+          </sl-menu>
+        </sl-dropdown>
+      {:else}
+        <a href="#/login"><sl-button type="text" size="small">Log in</sl-button></a>
+        <a href="#/register"><sl-button type="primary" size="small">Sign up</sl-button></a>
+      {/if}
+    </div>
   </div>
 </nav>
 
 <style>
   nav {
-    display: flex;
-    align-items: center;
+    margin-bottom: 4rem;
     height: 5rem;
     padding: 2rem;
-    justify-content: space-between;
-    margin-bottom: 4rem;
   }
 
-  nav img {
+  .menu-main {
+    gap: 2rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .menu-main img {
     height: 2rem;
+  }
+
+  .logo {
+    flex-shrink: 0;
+  }
+
+  sl-select sl-menu-item::part(base) {
+    font-size: var(--sl-font-size-small);
   }
 
   sl-tab::part(base):focus {
     box-shadow: none;
   }
 
-  .menu-center {
-    position: absolute !important;
-    left: 50% !important;
-    transform: translate(-50%, 0) !important;
+  .menu-left {
+    display: flex;
+    column-gap: 2rem;
+    row-gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
   }
 
+  .menu-center sl-tab::part(base) {
+    padding: 0.5rem;
+  }
   .menu-center,
   .menu-right {
     display: flex;

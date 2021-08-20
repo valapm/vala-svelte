@@ -2,13 +2,13 @@
   import { lmsr, transaction as pmTx, pm } from "bitcoin-predict"
   import { price } from "../store/price"
   import { gql } from "graphql-request"
-  import { gqlClient } from "../store/graphql"
+  import { gqlClient } from "../utils/graphql"
   import { onMount } from "svelte"
   import { publicKey, privateKey, address, seed } from "../store/wallet"
   import { getUtxos } from "../utils/utxo"
   import { getTx } from "../apis/web"
   import { postMarketTx } from "../apis/web"
-  import { testnet } from "../store/options"
+  import { testnet } from "../config"
   import { getEntries, isCompatibleVersion } from "../utils/pm"
   import { round } from "../utils/format"
   import { getNotificationsContext } from "svelte-notifications"
@@ -106,7 +106,7 @@
   }
 
   async function getMarket() {
-    const res = await $gqlClient.request(marketQuery)
+    const res = await gqlClient.request(marketQuery)
     console.log(res.market[0])
     return res.market[0]
   }
@@ -122,7 +122,7 @@
     const newTx = await getUpdateTx(newBalance, entries)
     console.log(newTx)
 
-    const postRes = await postMarketTx(newTx, [], $testnet)
+    const postRes = await postMarketTx(newTx, [], testnet)
     console.log(postRes)
 
     if (postRes.message === "success") {
@@ -131,7 +131,7 @@
       addNotification({
         type: "success",
         text: "Successfully updated market",
-        description: `<a href='https://${$testnet ? "test." : ""}whatsonchain.com/tx/${newTx.hash}'>${newTx.hash.slice(
+        description: `<a href='https://${testnet ? "test." : ""}whatsonchain.com/tx/${newTx.hash}'>${newTx.hash.slice(
           0,
           20
         )}...</a>`,
@@ -163,10 +163,10 @@
   }
 
   async function getUpdateTx(newBalance, entries) {
-    const currentTx = await getTx(market.market_state.transaction.txid, $gqlClient)
-    const feeb = $testnet ? 1 : 0.5
+    const currentTx = await getTx(market.market_state.transaction.txid, gqlClient)
+    const feeb = testnet ? 1 : 0.5
 
-    const utxos = await getUtxos($address, $testnet)
+    const utxos = await getUtxos($address, testnet)
 
     console.log(utxos)
 
@@ -208,7 +208,7 @@
 
     <h1>
       {market.resolve}
-      <a href={`https://${$testnet ? "test." : ""}whatsonchain.com/tx/${params.firstTxTxid}`} class="txid"
+      <a href={`https://${testnet ? "test." : ""}whatsonchain.com/tx/${params.firstTxTxid}`} class="txid"
         >{params.firstTxTxid.slice(0, 20)}...</a
       >
     </h1>

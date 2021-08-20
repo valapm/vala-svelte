@@ -2,7 +2,7 @@ import { writable as persistentWritable, derived as persistentDerived } from "sv
 import { writable, readable, derived, Readable } from "svelte/store"
 import { bsv } from "bitcoin-predict"
 import Mnemonic from "../utils/mnemonic"
-import { testnet } from "./options"
+import { testnet } from "../config"
 import { getUtxos } from "../utils/utxo"
 import { price } from "./price"
 
@@ -13,9 +13,9 @@ const derivationPath = "m/44'/0'/0'/0/0"
 export let seed = persistentWritable("seed", null)
 
 export let hdPrivateKey = derived(
-  [seed, testnet],
-  ([seed, $testnet]) => {
-    return seed ? Mnemonic.fromString(seed).toHDPrivateKey("", $testnet ? "testnet" : "livenet") : null
+  seed,
+  seed => {
+    return seed ? Mnemonic.fromString(seed).toHDPrivateKey("", testnet ? "testnet" : "livenet") : null
   },
   null
 )
@@ -44,10 +44,10 @@ export let address = derived(
   null
 )
 
-export let utxos: Readable<any[]> = derived([address, testnet], ([$address, $testnet], set) => {
+export let utxos: Readable<any[]> = derived(address, ($address, set) => {
   async function fetchUtxos() {
     if ($address) {
-      const utxos = await getUtxos($address, $testnet)
+      const utxos = await getUtxos($address, testnet)
       set(utxos)
     }
   }

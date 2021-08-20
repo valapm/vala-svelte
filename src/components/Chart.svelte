@@ -3,7 +3,7 @@
   // import { Chart, LineElement, LineController } from "chart.js"
   import Chart from "chart.js/auto"
   import { gql } from "graphql-request"
-  import { gqlClient } from "../store/graphql"
+  import { gqlClient } from "../utils/graphql"
   import { lmsr } from "bitcoin-predict"
   // import "chartjs-adapter-date-fns"
   import "chartjs-adapter-moment"
@@ -58,7 +58,7 @@
 
   async function updateMarketData() {
     console.log("Fetching price history")
-    marketData = await $gqlClient.request(priceQuery)
+    marketData = await gqlClient.request(priceQuery)
     console.log(marketData.market_state.length)
   }
 

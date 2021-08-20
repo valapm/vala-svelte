@@ -1,12 +1,8 @@
 <script>
-  import { testnet } from "../store/options"
+  import { testnet } from "../config"
 </script>
 
-<div class="options">
-  <div>
-    <input type="checkbox" bind:checked={$testnet} />Use Testnet
-  </div>
-</div>
+<div class="options" />
 
 <style>
   .options {

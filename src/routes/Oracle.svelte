@@ -1,6 +1,6 @@
 <script>
   import { gql } from "graphql-request"
-  import { gqlClient } from "../store/graphql"
+  import { gqlClient } from "../utils/graphql"
   import { price } from "../store/price"
   import { onMount } from "svelte"
 
@@ -31,7 +31,7 @@
   $: burnedUSD = ($price * (oracle.burnedSats || 0)) / 100000000
 
   onMount(async () => {
-    const res = await $gqlClient.request(oracleQuery)
+    const res = await gqlClient.request(oracleQuery)
     oracle = res.oracle[0]
     loading = false
   })

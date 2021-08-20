@@ -5,9 +5,9 @@
   import { rabinPubKey, rabinPrivKey } from "../store/oracle"
   import { address, privateKey, utxos } from "../store/wallet"
   import { getUtxos } from "../utils/utxo"
-  import { testnet } from "../store/options"
+  import { testnet } from "../config"
   import { gql } from "graphql-request"
-  import { gqlClient } from "../store/graphql"
+  import { gqlClient } from "../utils/graphql"
   import { postBoostJobTx, postOracleDetails, postMarketTx, postBurnTx } from "../apis/web"
   import { onMount } from "svelte"
   import { price } from "../store/price"
@@ -90,7 +90,7 @@
 
     const sats = Math.round(model.getDiff() * diffMultiplier * 100000000)
 
-    const utxos = await getUtxos($address.toString(), $testnet)
+    const utxos = await getUtxos($address.toString(), testnet)
 
     const tx = new bsv.Transaction()
     tx.addOutput(new bsv.Transaction.Output({ script: model.toScript(), satoshis: sats }))
@@ -98,7 +98,7 @@
     tx.change($address)
     tx.from(utxos)
 
-    await postBoostJobTx(tx, $rabinPubKey.toString(), $testnet)
+    await postBoostJobTx(tx, $rabinPubKey.toString(), testnet)
 
     console.log(`Boosted with difficulty ${model.getDiff()} for ${sats} sats`)
   }
@@ -118,7 +118,7 @@
           }
         }
       `
-      const res = await $gqlClient.request(txQuery)
+      const res = await gqlClient.request(txQuery)
       const prevTxHex = res.transaction[0].hex
       const prevTx = new bsv.Transaction()
       prevTx.fromString(prevTxHex)
@@ -131,13 +131,13 @@
     }
 
     console.log($address)
-    const utxos = await getUtxos($address, $testnet)
+    const utxos = await getUtxos($address, testnet)
 
     console.log([tx, $privateKey, $address, utxos])
     bp.transaction.fundTx(tx, $privateKey, $address, utxos)
     console.log(tx)
 
-    const postRes = await postBurnTx(tx, $testnet)
+    const postRes = await postBurnTx(tx, testnet)
     console.log(postRes)
   }
 
@@ -147,7 +147,7 @@
     }
     const detailHex = Buffer.from(JSON.stringify(details), "utf8").toString("hex")
     const sig = rabin.sign(detailHex, $rabinPrivKey.p, $rabinPrivKey.q, $rabinPubKey)
-    const res = await postOracleDetails(details, $rabinPubKey, sig, $testnet)
+    const res = await postOracleDetails(details, $rabinPubKey, sig, testnet)
     console.log(res)
     if (res.message === "success") registered = true
   }
@@ -165,7 +165,7 @@
 
   // FIXME: Duplicate code in Market.svelte
   async function getRawTx(txid) {
-    const res = await $gqlClient.request(getTxQuery(txid))
+    const res = await gqlClient.request(getTxQuery(txid))
     const hex = res.transaction[0].hex
     const tx = new bsv.Transaction()
     tx.fromString(hex)
@@ -179,7 +179,7 @@
 
     const newTx = await bp.transaction.getOracleVoteTx(currentTx, vote, $rabinPrivKey, $address, $utxos, $privateKey)
 
-    const postRes = await postMarketTx(newTx, [], $testnet)
+    const postRes = await postMarketTx(newTx, [], testnet)
     console.log(postRes)
   }
 
@@ -191,7 +191,7 @@
 
     const newTx = bp.transaction.getOracleCommitTx(currentTx, $rabinPrivKey, $address, $utxos, $privateKey)
 
-    const postRes = await postMarketTx(newTx, [], $testnet)
+    const postRes = await postMarketTx(newTx, [], testnet)
     console.log(postRes)
   }
 
@@ -208,7 +208,7 @@
   let burnUSD
 
   onMount(async () => {
-    const oracleData = await $gqlClient.request(oracleQuery)
+    const oracleData = await gqlClient.request(oracleQuery)
     oracle = oracleData.oracle[0]
 
     if (oracle) oracleName = oracle.name
@@ -238,7 +238,7 @@
   <br />
   <button on:click={boost}> Add PoW Reputation </button> -->
 
-  {#await $gqlClient.request(uncommittedMarketQuery) then res}
+  {#await gqlClient.request(uncommittedMarketQuery) then res}
     {#if res.market.length > 0}
       <h2>Oracle Requests</h2>
       {#each res.market as market}
@@ -247,7 +247,7 @@
     {/if}
   {/await}
 
-  {#await $gqlClient.request(undecidedMarketQuery) then res}
+  {#await gqlClient.request(undecidedMarketQuery) then res}
     {#if res.market.length > 0}
       <h2>Running Markets</h2>
       {#each res.market as market}
@@ -261,7 +261,7 @@
     {/if}
   {/await}
 
-  {#await $gqlClient.request(decidedMarketQuery) then res}
+  {#await gqlClient.request(decidedMarketQuery) then res}
     {#if res.market.length > 0}
       <h2>Closed Markets</h2>
       {#each res.market as market}

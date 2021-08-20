@@ -1,8 +1,10 @@
 <script>
   import { gql } from "graphql-request"
-  import { gqlClient } from "../store/graphql"
+  import { gqlClient } from "../utils/graphql"
   import { seed } from "../store/wallet"
   import { pm } from "bitcoin-predict"
+
+  import { location } from "svelte-spa-router"
 
   import InlineMarket from "../components/InlineMarket.svelte"
   import Searchbar from "../components/Searchbar.svelte"
@@ -46,7 +48,7 @@
     }
   `
 
-  $: $gqlClient.request(marketQuery).then(res => (markets = res.market))
+  $: gqlClient.request(marketQuery).then(res => (markets = res.market))
 </script>
 
 <div class="container">
