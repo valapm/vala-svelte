@@ -104,6 +104,8 @@
   }
 
   onMount(() => {
+    if ($seed) push("/")
+
     username_input.addEventListener("sl-input", () => {
       username = username_input.value
     })
@@ -118,7 +120,7 @@
 </script>
 
 <svelte:head>
-  <script src="./includes/valaauth.min.js" on:load={initAuth}></script>
+  <script src="/includes/valaauth.min.js" on:load={initAuth}></script>
 </svelte:head>
 
 <svelte:window on:keydown={handleKeydown} />
