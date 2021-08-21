@@ -17,13 +17,6 @@
 
   let networkSelect
 
-  function logout() {
-    $seed = null
-    $username = null
-    push("#/login")
-    // FIXME: Breaks when called from a page that requires wallet seed
-  }
-
   function round(n) {
     return Math.round(n * 100) / 100
   }
@@ -71,7 +64,10 @@
               <sl-icon slot="prefix" name="gear" /></sl-menu-item
             >
             <sl-menu-item
-              ><button on:click={logout}>Logout</button><sl-icon slot="prefix" name="box-arrow-left" /></sl-menu-item
+              ><button on:click={() => push("#/logout")}>Logout</button><sl-icon
+                slot="prefix"
+                name="box-arrow-left"
+              /></sl-menu-item
             >
           </sl-menu>
         </sl-dropdown>
