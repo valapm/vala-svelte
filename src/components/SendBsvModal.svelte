@@ -1,6 +1,6 @@
 <script>
   import { bsv } from "bitcoin-predict"
-  import { address, privateKey, utxos } from "../store/wallet"
+  import { address, privateKey, parsedUTXOs } from "../store/wallet"
   import { testnet } from "../config"
   import { usdBalance } from "../store/wallet"
   import { price } from "../store/price"
@@ -44,7 +44,7 @@
     const recipientAddress = recipient
 
     let utxoSats = 0
-    const requiredUTXOs = $utxos.filter(utxo => {
+    const requiredUTXOs = $parsedUTXOs.filter(utxo => {
       if (utxoSats >= satAmount) return false
       utxoSats += utxo.satoshis
       return true

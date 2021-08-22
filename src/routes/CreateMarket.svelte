@@ -8,7 +8,7 @@
   import { gql } from "graphql-request"
   import { gqlClient } from "../utils/graphql"
   import { price } from "../store/price"
-  import { satBalance, utxos } from "../store/wallet"
+  import { satBalance, parsedUTXOs } from "../store/wallet"
   import { push } from "svelte-spa-router"
   import { tick } from "svelte"
   import { getNotificationsContext } from "svelte-notifications"
@@ -60,7 +60,7 @@
       return
     }
 
-    const fundedTx = fundTx(tx, $privateKey, $address, $utxos)
+    const fundedTx = fundTx(tx, $privateKey, $address, $parsedUTXOs)
 
     console.log(fundedTx)
 

@@ -3,7 +3,7 @@
   import { bsv, rabin as rab } from "bitcoin-predict"
   import * as bp from "bitcoin-predict"
   import { rabinPubKey, rabinPrivKey } from "../store/oracle"
-  import { address, privateKey, utxos } from "../store/wallet"
+  import { address, privateKey, parsedUTXOs } from "../store/wallet"
   import { getUtxos } from "../utils/utxo"
   import { testnet } from "../config"
   import { gql } from "graphql-request"
@@ -175,9 +175,16 @@
   async function resolveMarket(market, vote: number) {
     const currentTx = await getRawTx(market.market_state.transactionTxid)
 
-    console.log([currentTx, vote, $rabinPrivKey, $address, $utxos, $privateKey])
+    console.log([currentTx, vote, $rabinPrivKey, $address, $parsedUTXOs, $privateKey])
 
-    const newTx = await bp.transaction.getOracleVoteTx(currentTx, vote, $rabinPrivKey, $address, $utxos, $privateKey)
+    const newTx = await bp.transaction.getOracleVoteTx(
+      currentTx,
+      vote,
+      $rabinPrivKey,
+      $address,
+      $parsedUTXOs,
+      $privateKey
+    )
 
     const postRes = await postMarketTx(newTx, [], testnet)
     console.log(postRes)
@@ -189,7 +196,7 @@
     // const tx = buildTx(market)
     // fundTx(tx, privateKey, address, utxos)
 
-    const newTx = bp.transaction.getOracleCommitTx(currentTx, $rabinPrivKey, $address, $utxos, $privateKey)
+    const newTx = bp.transaction.getOracleCommitTx(currentTx, $rabinPrivKey, $address, $parsedUTXOs, $privateKey)
 
     const postRes = await postMarketTx(newTx, [], testnet)
     console.log(postRes)

@@ -5,6 +5,7 @@ import Mnemonic from "../utils/mnemonic"
 import { testnet } from "../config"
 import { getUtxos } from "../utils/utxo"
 import { price } from "./price"
+import { fetchUTXOs } from "../apis/whatsonchain"
 
 // console.log(Mnemonic)
 
@@ -44,28 +45,36 @@ export let address = derived(
   null
 )
 
-export let utxos: Readable<any[]> = derived(address, ($address, set) => {
-  async function fetchUtxos() {
-    if ($address) {
-      const utxos = await getUtxos($address, testnet)
-      set(utxos)
+export let utxos = persistentDerived(
+  "utxos",
+  address,
+  ($address, set) => {
+    if (window.localStorage.utxos) {
+      set(JSON.parse(window.localStorage.utxos))
     }
-  }
 
-  const interval = setInterval(fetchUtxos, 3000)
+    async function fetchUtxos() {
+      if ($address) {
+        const utxos = await fetchUTXOs($address.hashBuffer.toString("hex"), testnet)
+        set(utxos)
+      }
+    }
 
-  return function stop() {
-    clearInterval(interval)
-  }
-})
+    const interval = setInterval(fetchUtxos, 3000)
 
-export let satBalance = persistentDerived(
-  "balance",
+    return function stop() {
+      clearInterval(interval)
+    }
+  },
+  []
+)
+
+export let parsedUTXOs = derived(utxos, $utxos => $utxos.map(utxo => bsv.Transaction.UnspentOutput(utxo)), [])
+
+export let satBalance = derived(
   utxos,
-  ($utxos, set) => {
-    if ($utxos) {
-      set($utxos.reduce((sats, output) => output.satoshis + sats, 0))
-    }
+  $utxos => {
+    return $utxos.reduce((sats, output) => output.satoshis + sats, 0)
   },
   0
 )
