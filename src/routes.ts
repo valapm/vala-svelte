@@ -3,6 +3,7 @@ import CreateMarket from "./routes/CreateMarket.svelte"
 import Markets from "./routes/Markets.svelte"
 import OracleDashboard from "./routes/OracleDashboard.svelte"
 import Login from "./routes/Login.svelte"
+import Logout from "./routes/Logout.svelte"
 import Register from "./routes/Register.svelte"
 import Wallet from "./routes/Wallet.svelte"
 import Options from "./routes/Options.svelte"
@@ -19,6 +20,7 @@ export const routes = {
   "/oracle": OracleDashboard,
   "/oracle/:rabinPubKey": Oracle,
   "/login": Login,
+  "/logout": Logout,
   "/register": Register,
   "/wallet": Wallet,
   "/options": Options
