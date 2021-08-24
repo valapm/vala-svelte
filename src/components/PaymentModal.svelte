@@ -5,6 +5,7 @@
   import { round } from "../utils/format"
   import { lmsr, pm } from "bitcoin-predict"
   import { createEventDispatcher } from "svelte"
+  import { feeb } from "../config"
 
   import Property from "./Property.svelte"
 
@@ -34,6 +35,9 @@
 
   let amount = 0
 
+  let satFeeEstimate = 63000 * feeb
+  $: usdFeeEstimate = (satFeeEstimate * $bsvPrice) / 100000000
+
   $: marketVersion = pm.getMarketVersion(market.version)
   $: marketBalance = market && {
     shares: market.market_state.shares,
@@ -44,7 +48,7 @@
     action === "buy"
       ? getSharePrice(marketBalance, option, change)
       : Math.abs(getSharePrice(marketBalance, option, change))
-  $: usdPrice = (price * $bsvPrice) / 100000000
+  $: usdPrice = ((price + satFeeEstimate) * $bsvPrice) / 100000000
 
   $: potentialAssetsUSD = ((amount * lmsr.SatScaling) / 100000000) * $bsvPrice || 0
   $: potentialWin = Math.abs(potentialAssetsUSD - usdPrice)
@@ -98,7 +102,9 @@
       {#if action === "buy"}
         <Property label="Potential Win">
           <sl-format-number type="currency" currency="USD" value={potentialWin} locale="en-US" />
-          {#if potentialX !== Infinity}({round(potentialX)}x){/if}
+        </Property>
+        <Property label="Return">
+          {#if potentialX !== Infinity}{round(potentialX)}x{/if}
         </Property>
       {:else}
         <Property label="Market Fee">
@@ -120,6 +126,9 @@
           />
         </Property>
       {/if}
+      <Property label="Tx Fee">
+        <sl-format-number class="red" type="currency" currency="USD" value={usdFeeEstimate} locale="en-US" />
+      </Property>
     {/if}
   </div>
 
@@ -187,6 +196,7 @@
   .properties {
     display: flex;
     gap: 1rem;
+    text-align: center !important;
   }
 
   .warning {

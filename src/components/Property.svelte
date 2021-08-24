@@ -11,6 +11,8 @@
   .property {
     display: flex;
     flex-direction: column;
+    width: 6rem;
+    justify-content: space-between;
   }
 
   label {
