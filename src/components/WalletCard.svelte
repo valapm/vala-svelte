@@ -3,11 +3,14 @@
 
   import SlCard from "@shoelace-style/shoelace/dist/components/card/card"
   import SlQrCode from "@shoelace-style/shoelace/dist/components/qr-code/qr-code"
+  import SlIconButton from "@shoelace-style/shoelace/dist/components/icon-button/icon-button"
+  import SlTooltip from "@shoelace-style/shoelace/dist/components/tooltip/tooltip"
 
   export let address
   export let username
 
   let card
+  let clipboardTooltip
 
   let counter = 0
   let updateRate = 10
@@ -52,6 +55,12 @@
     // card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`
   }
 
+  async function copyAddress(event) {
+    await navigator.clipboard.writeText(address)
+    clipboardTooltip.show()
+    setTimeout(() => clipboardTooltip.hide(), 1000)
+  }
+
   onMount(async () => {
     await tick()
     recenter()
@@ -72,8 +81,18 @@
     <sl-card bind:this={card}>
       <div class="body">
         <div class="info">
-          <div class="label">ADDRESS</div>
-          <div class="address">{address}</div>
+          <div class="label">
+            ADDRESS
+            <sl-tooltip content="Copied to clipboard" trigger="manual" bind:this={clipboardTooltip}>
+              <sl-button type="text" size="small" style="display: inline;" on:click={copyAddress}>
+                <sl-icon slot="prefix" name="clipboard" />
+                COPY</sl-button
+              >
+            </sl-tooltip>
+          </div>
+          <div class="address">
+            {address}
+          </div>
         </div>
         <sl-qr-code value={address} fill="white" background="transparent" />
       </div>
@@ -169,5 +188,23 @@
     filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.3));
     letter-spacing: 2px;
     color: var(--sl-color-gray-200);
+    display: flex;
+    justify-content: left;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .label sl-button::part(base) {
+    color: white;
+  }
+
+  .label sl-button::part(base):hover,
+  .label sl-button::part(base):focus {
+    color: white;
+    box-shadow: none;
+  }
+
+  .label sl-button::part(base):active {
+    color: white;
   }
 </style>
