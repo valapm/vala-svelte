@@ -13,6 +13,7 @@
   import { round } from "../utils/format"
   import { getUtxos } from "../utils/transaction"
   import { getNotificationsContext } from "svelte-notifications"
+  import { pop } from "svelte-spa-router"
 
   import OracleCard from "../components/OracleCard.svelte"
   import Chart from "../components/Chart.svelte"
@@ -20,7 +21,6 @@
   import PaymentModal from "../components/PaymentModal.svelte"
   import MarketDetailsCard from "../components/MarketDetailsCard.svelte"
   import MarketMenu from "../components/MarketMenu.svelte"
-  import Backbutton from "../components/Backbutton.svelte"
   import RedeemModal from "../components/RedeemModal.svelte"
   import NotFound from "../components/NotFound.svelte"
 
@@ -223,13 +223,15 @@
   {#if loading}
     loading...
   {:else if market}
-    <Backbutton />
-
     <h1>
       {market.resolve}
-      <a href={`https://${testnet ? "test." : ""}whatsonchain.com/tx/${params.firstTxTxid}`} class="txid"
-        >{params.firstTxTxid.slice(0, 20)}...</a
-      >
+
+      <div>
+        <sl-icon-button on:click={pop} name="arrow-left" label="Go Back" />
+        <a href={`https://${testnet ? "test." : ""}whatsonchain.com/tx/${params.firstTxTxid}`} class="txid">
+          {params.firstTxTxid.slice(0, 20)}...</a
+        >
+      </div>
     </h1>
 
     <div class="chart">
@@ -293,7 +295,15 @@
     flex-direction: column;
     align-items: center;
     width: min(90%, 50rem);
+    font-weight: bold;
   }
+
+  h1 div {
+    display: flex;
+    align-items: center;
+    font-size: 1.3rem;
+  }
+
   .market {
     display: flex;
     flex-direction: column;

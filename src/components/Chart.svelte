@@ -164,7 +164,20 @@
           x: {
             min: firstTimestamp,
             type: "time",
-            bounds: "data"
+            bounds: "data",
+            ticks: {
+              maxRotation: 0,
+              major: {
+                enabled: true
+              },
+              font: function (context) {
+                if (context.tick && context.tick.major) {
+                  return {
+                    weight: "bold"
+                  }
+                }
+              }
+            }
           },
           y: {
             min: 0,
