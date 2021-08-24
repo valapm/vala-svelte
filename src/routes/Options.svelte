@@ -10,8 +10,4 @@
     flex-direction: column;
     align-items: center;
   }
-
-  input {
-    margin-right: 0.3rem;
-  }
 </style>

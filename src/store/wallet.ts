@@ -73,7 +73,11 @@ export let fetchedUtxos = derived(
 export let utxos = writableDerived(
   fetchedUtxos,
   $fetchedUtxos => {
-    const currentUtxos = $fetchedUtxos || JSON.parse(window.localStorage.utxos) || []
+    const currentUtxos = $fetchedUtxos
+      ? $fetchedUtxos
+      : window.localStorage.utxos
+      ? JSON.parse(window.localStorage.utxos)
+      : []
     return currentUtxos.map(utxo => bsv.Transaction.UnspentOutput(utxo))
   },
   (newUtxos, set) => {

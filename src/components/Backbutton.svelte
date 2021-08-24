@@ -22,7 +22,7 @@
   nav > div {
     width: min(90%, 50rem);
     display: flex;
-    justify-content: start;
+    justify-content: flex-start;
   }
 
   sl-icon-button {
