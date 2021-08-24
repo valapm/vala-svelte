@@ -22,6 +22,7 @@
   import MarketMenu from "../components/MarketMenu.svelte"
   import Backbutton from "../components/Backbutton.svelte"
   import RedeemModal from "../components/RedeemModal.svelte"
+  import NotFound from "../components/NotFound.svelte"
 
   import SlCard from "@shoelace-style/shoelace/dist/components/card/card.js"
   import SlFormatNumber from "@shoelace-style/shoelace/dist/components/format-number/format-number"
@@ -91,7 +92,6 @@
 
   $: compatibleVersion = market && isCompatibleVersion(market.version)
   $: {
-    console.log(compatibleVersion)
     if (compatibleVersion === false) {
       addNotification({
         type: "danger",
@@ -200,8 +200,10 @@
     return updateTx
   }
 
+  let loading = true
   onMount(async () => {
     market = await getMarket()
+    loading = false
   })
 </script>
 
@@ -218,7 +220,9 @@
 {/if}
 
 <div class="market">
-  {#if market}
+  {#if loading}
+    loading...
+  {:else if market}
     <Backbutton />
 
     <h1>
@@ -277,7 +281,7 @@
       {/if}
     </div>
   {:else}
-    loading...
+    <NotFound />
   {/if}
 </div>
 
