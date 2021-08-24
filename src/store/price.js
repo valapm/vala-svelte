@@ -5,7 +5,7 @@ async function getPrice() {
   const res = await fetch(`${BACKEND_HOST}/price`)
   if (!res.ok) throw new Error("Failed to fetch price")
   const json = await res.json()
-  return parseInt(json.price)
+  return parseFloat(json.price)
 }
 
 export const price = asyncReadable({

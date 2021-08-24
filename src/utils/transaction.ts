@@ -17,3 +17,15 @@ export async function broadcast(tx: bsv.Transaction, testnet = false) {
     txhex: tx.checkedSerialize({ disableDustOutputs: true })
   })
 }
+
+export function getUtxos(tx: bsv.Transaction) {
+  return tx.outputs.map(
+    (output, index) =>
+      new bsv.Transaction.UnspentOutput({
+        outputIndex: index,
+        txId: tx.hash,
+        satoshis: output.satoshis,
+        script: output.script
+      })
+  )
+}

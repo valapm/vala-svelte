@@ -6,6 +6,7 @@ import { testnet } from "../config"
 import { getUtxos } from "../utils/utxo"
 import { price } from "./price"
 import { fetchUTXOs } from "../apis/whatsonchain"
+import writableDerived from "svelte-writable-derived"
 
 // console.log(Mnemonic)
 
@@ -45,8 +46,7 @@ export let address = derived(
   null
 )
 
-export let utxos = persistentDerived(
-  "utxos",
+export let fetchedUtxos = derived(
   address,
   ($address, set) => {
     if (window.localStorage.utxos) {
@@ -57,6 +57,7 @@ export let utxos = persistentDerived(
       if ($address) {
         const utxos = await fetchUTXOs($address.hashBuffer.toString("hex"), testnet)
         set(utxos)
+        window.localStorage.utxos = JSON.stringify(utxos)
       }
     }
 
@@ -66,10 +67,29 @@ export let utxos = persistentDerived(
       clearInterval(interval)
     }
   },
-  []
+  null
 )
 
-export let parsedUTXOs = derived(utxos, $utxos => $utxos.map(utxo => bsv.Transaction.UnspentOutput(utxo)), [])
+export let utxos = writableDerived(
+  fetchedUtxos,
+  $fetchedUtxos => {
+    const currentUtxos = $fetchedUtxos || JSON.parse(window.localStorage.utxos) || []
+    return currentUtxos.map(utxo => bsv.Transaction.UnspentOutput(utxo))
+  },
+  (newUtxos, set) => {
+    window.localStorage.utxos = JSON.stringify(
+      newUtxos.map(output => {
+        return {
+          txId: output.txId,
+          outputIndex: output.outputIndex,
+          satoshis: output.satoshis,
+          script: output.script.toHex()
+        }
+      })
+    )
+  },
+  []
+)
 
 export let satBalance = derived(
   utxos,

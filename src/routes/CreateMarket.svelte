@@ -8,7 +8,7 @@
   import { gql } from "graphql-request"
   import { gqlClient } from "../utils/graphql"
   import { price } from "../store/price"
-  import { satBalance, parsedUTXOs } from "../store/wallet"
+  import { satBalance, utxos } from "../store/wallet"
   import { push } from "svelte-spa-router"
   import { tick } from "svelte"
   import { getNotificationsContext } from "svelte-notifications"
@@ -60,7 +60,7 @@
       return
     }
 
-    const fundedTx = fundTx(tx, $privateKey, $address, $parsedUTXOs)
+    const fundedTx = fundTx(tx, $privateKey, $address, $utxos)
 
     console.log(fundedTx)
 
@@ -266,7 +266,7 @@
         value={creatorFee}
         min="0"
         bind:this={fee_input}
-        on:input={() => (creatorFee = parseInt(fee_input.value))}
+        on:input={() => (creatorFee = parseFloat(fee_input.value))}
       />
       <div class="buttons">
         <sl-button on:click={stepBack}>Back</sl-button>

@@ -1,10 +1,10 @@
 <script>
   import { bsv } from "bitcoin-predict"
-  import { address, privateKey, parsedUTXOs } from "../store/wallet"
-  import { testnet } from "../config"
+  import { address, privateKey, utxos } from "../store/wallet"
+  import { testnet, feeb } from "../config"
   import { usdBalance } from "../store/wallet"
   import { price } from "../store/price"
-  import { broadcast } from "../utils/transaction"
+  import { broadcast, getUtxos } from "../utils/transaction"
   import { getNotificationsContext } from "svelte-notifications"
 
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
@@ -43,18 +43,12 @@
     const satAmount = Math.ceil((amount / $price) * 100000000)
     const recipientAddress = recipient
 
-    let utxoSats = 0
-    const requiredUTXOs = $parsedUTXOs.filter(utxo => {
-      if (utxoSats >= satAmount) return false
-      utxoSats += utxo.satoshis
-      return true
-    })
-
     const tx = new bsv.Transaction()
 
     tx.to(recipientAddress, satAmount)
-    tx.from(requiredUTXOs)
+    tx.feePerKb(feeb * 1000)
     tx.change($address)
+    tx.from($utxos)
     tx.sign($privateKey)
 
     console.log(tx)
@@ -63,6 +57,19 @@
       const res = await broadcast(tx, testnet)
       console.log(res)
       success = true
+
+      for (const input of tx.inputs) {
+        $utxos = $utxos.filter(
+          utxo => utxo.txId !== input.prevTxId.toString("hex") || utxo.outputIndex !== input.outputIndex
+        )
+      }
+
+      const newUtxos = getUtxos(tx).filter(
+        utxo =>
+          utxo.script.toASM() === `OP_DUP OP_HASH160 ${$address.hashBuffer.toString("hex")} OP_EQUALVERIFY OP_CHECKSIG`
+      )
+      console.log(newUtxos)
+      $utxos = $utxos.concat(newUtxos)
     } catch (e) {
       console.error(e)
       error = e.message
@@ -98,7 +105,7 @@
       name="amount"
       label="USD Amount"
       bind:this={amount_input}
-      on:input={() => (amount = parseInt(amount_input.value))}
+      on:input={() => (amount = parseFloat(amount_input.value))}
       value={amount !== undefined ? amount : ""}
     />
     <sl-input

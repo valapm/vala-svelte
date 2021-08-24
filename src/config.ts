@@ -11,4 +11,4 @@ export const testnet =
 export const backendHost = testnet ? BACKEND_HOST_TESTNET : BACKEND_HOST
 export const graphqlHost = testnet ? GRAPHQL_HOST_TESTNET : GRAPHQL_HOST
 
-console.log("testnet:", testnet, backendHost)
+export const feeb = testnet ? 1 : 0.5

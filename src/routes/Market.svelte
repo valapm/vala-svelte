@@ -1,16 +1,17 @@
 <script lang="ts">
-  import { lmsr, transaction as pmTx, pm } from "bitcoin-predict"
+  import { lmsr, transaction as pmTx, pm, bsv } from "bitcoin-predict"
   import { price } from "../store/price"
   import { gql } from "graphql-request"
   import { gqlClient } from "../utils/graphql"
   import { onMount } from "svelte"
   import { publicKey, privateKey, address, seed } from "../store/wallet"
-  import { getUtxos } from "../utils/utxo"
+  import { utxos } from "../store/wallet"
   import { getTx } from "../apis/web"
   import { postMarketTx } from "../apis/web"
-  import { testnet } from "../config"
+  import { testnet, feeb } from "../config"
   import { getEntries, isCompatibleVersion } from "../utils/pm"
   import { round } from "../utils/format"
+  import { getUtxos } from "../utils/transaction"
   import { getNotificationsContext } from "svelte-notifications"
 
   import OracleCard from "../components/OracleCard.svelte"
@@ -139,6 +140,23 @@
         )}...</a>`,
         position: "top-right"
       })
+
+      const spentInputs = newTx.inputs.slice(1)
+      for (const input of spentInputs) {
+        $utxos = $utxos.filter(
+          utxo => utxo.txId !== input.prevTxId.toString("hex") || utxo.outputIndex !== input.outputIndex
+        )
+      }
+
+      const newUtxos = getUtxos(newTx)
+        .slice(1)
+        .filter(
+          utxo =>
+            utxo.script.toASM() ===
+            `OP_DUP OP_HASH160 ${$address.hashBuffer.toString("hex")} OP_EQUALVERIFY OP_CHECKSIG`
+        )
+      $utxos = $utxos.concat(newUtxos)
+
       market = await getMarket()
     } else {
       addNotification({
@@ -166,22 +184,17 @@
 
   async function getUpdateTx(newBalance, entries) {
     const currentTx = await getTx(market.market_state.transaction.txid, gqlClient)
-    const feeb = testnet ? 1 : 0.5
-
-    const utxos = await getUtxos($address, testnet)
-
-    console.log(utxos)
 
     let updateTx
     if (existingEntry) {
-      console.log([currentTx, entries, newBalance, $privateKey, $address, utxos, $privateKey])
-      updateTx = pmTx.getUpdateEntryTx(currentTx, entries, newBalance, $privateKey, $address, utxos, $privateKey, feeb)
+      console.log([currentTx, entries, newBalance, $privateKey, $address, $utxos, $privateKey])
+      updateTx = pmTx.getUpdateEntryTx(currentTx, entries, newBalance, $privateKey, $address, $utxos, $privateKey, feeb)
     } else {
       const newEntry = {
         balance: newBalance,
         publicKey: $publicKey
       }
-      updateTx = pmTx.getAddEntryTx(currentTx, entries, newEntry, $address, utxos, $privateKey, feeb)
+      updateTx = pmTx.getAddEntryTx(currentTx, entries, newEntry, $address, $utxos, $privateKey, feeb)
     }
 
     return updateTx
