@@ -3,9 +3,12 @@
 
   import { price } from "../store/price"
 
+  import HelpModal from "./HelpModal.svelte"
+  import FaqOracles from "./FaqOracles.svelte"
+
   import SlCard from "@shoelace-style/shoelace/dist/components/card/card.js"
   import SlFormatNumber from "@shoelace-style/shoelace/dist/components/format-number/format-number"
-  import SlIcon from "@shoelace-style/shoelace/dist/components/icon/icon.js"
+  import SlIconButton from "@shoelace-style/shoelace/dist/components/icon/icon.js"
 
   export let market_oracles = []
 
@@ -15,7 +18,7 @@
 </script>
 
 <sl-card>
-  <div slot="header">Oracles</div>
+  <div slot="header" class="header">Oracles <HelpModal label="FAQ: Oracles" content={FaqOracles} /></div>
   {#each market_oracles as market_oracle}
     <a href="#/oracle/{market_oracle.oracle.pubKey}">
       <h3>{market_oracle.oracle.name}</h3>
@@ -47,6 +50,13 @@
 </sl-card>
 
 <style>
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: space-between;
+  }
+
   h3 {
     font-size: 1.2rem;
     color: var(--sl-color-info-500);
