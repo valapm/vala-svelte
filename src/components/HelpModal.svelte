@@ -15,6 +15,14 @@
 <sl-icon-button name="question-circle-fill" label="Oracles" on:click={() => modal.show()} />
 
 <style>
+  sl-icon-button {
+    margin: -0.25rem 0;
+  }
+
+  sl-dialog {
+    font-weight: normal;
+  }
+
   sl-icon-button::part(base) {
     color: var(--sl-color-gray-400);
   }

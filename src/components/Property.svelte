@@ -1,10 +1,11 @@
 <script>
   export let label
+  export let centered = false
 </script>
 
 <div class="property">
-  <label for="prop">{label}</label>
-  <div style="font-weight: bold;" id="prop"><slot /></div>
+  <label for="prop" style={centered ? "text-align: center;" : ""}>{label}</label>
+  <div id="prop" style={centered ? "justify-content: center;" : ""}><slot /></div>
 </div>
 
 <style>
@@ -13,6 +14,12 @@
     flex-direction: column;
     width: 6rem;
     justify-content: space-between;
+  }
+
+  .property > div {
+    font-weight: bold;
+    display: flex;
+    align-items: center;
   }
 
   label {

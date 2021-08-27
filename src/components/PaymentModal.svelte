@@ -8,6 +8,8 @@
   import { feeb } from "../config"
 
   import Property from "./Property.svelte"
+  import HelpModal from "./HelpModal.svelte"
+  import FaqLiquidity from "./FaqLiquidity.svelte"
 
   import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js"
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
@@ -59,7 +61,15 @@
 </script>
 
 <sl-dialog label={option === -1 ? "Liquidity" : market.options[option].name} bind:this={dialog}>
-  {#if option !== -1}
+  {#if option === -1}
+    <p>
+      Liquidity is used to pay out winning shares if no sufficient loosing shares exist. Increasing liquidity will make
+      the market more attractive to investors but you might not get your provided liquidity back. <HelpModal
+        content={FaqLiquidity}
+        label="FAQ: Liquidity"
+      />
+    </p>
+  {:else}
     <p>{market.options[option].details}</p>
   {/if}
 
@@ -100,14 +110,14 @@
   <div class="properties">
     {#if option !== -1}
       {#if action === "buy"}
-        <Property label="Potential Win">
+        <Property label="Potential Win" centered={true}>
           <sl-format-number type="currency" currency="USD" value={potentialWin} locale="en-US" />
         </Property>
-        <Property label="Return">
+        <Property label="Return" centered={true}>
           {#if potentialX !== Infinity}{round(potentialX)}x{/if}
         </Property>
       {:else}
-        <Property label="Market Fee">
+        <Property label="Market Fee" centered={true}>
           <sl-format-number
             class="red"
             type="currency"
@@ -116,7 +126,7 @@
             locale="en-US"
           />
         </Property>
-        <Property label="Vala Fee">
+        <Property label="Vala Fee" centered={true}>
           <sl-format-number
             class="red"
             type="currency"
@@ -126,7 +136,7 @@
           />
         </Property>
       {/if}
-      <Property label="Tx Fee">
+      <Property label="Tx Fee" centered={true}>
         <sl-format-number class="red" type="currency" currency="USD" value={usdFeeEstimate} locale="en-US" />
       </Property>
     {/if}
@@ -196,7 +206,7 @@
   .properties {
     display: flex;
     gap: 1rem;
-    text-align: center !important;
+    /* text-align: center !important; */
   }
 
   .warning {

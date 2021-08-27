@@ -4,6 +4,9 @@
   import { price } from "../store/price"
   import { getCreationDate } from "../utils/pm"
 
+  import HelpModal from "./HelpModal.svelte"
+  import FaqLiquidity from "./FaqLiquidity.svelte"
+
   import SlCard from "@shoelace-style/shoelace/dist/components/card/card.js"
   import SlFormatNumber from "@shoelace-style/shoelace/dist/components/format-number/format-number"
   import SlFormatDate from "@shoelace-style/shoelace/dist/components/format-date/format-date"
@@ -36,12 +39,15 @@
       <sl-format-number type="currency" currency="USD" value={round(usdTotal)} locale="en-US" />
     </Property>
     <Property label="Liquidity">
+      <!-- <div style="display: flex; align-items: bottom;"> -->
       <sl-format-number type="currency" currency="USD" value={round(usdLiquidity)} locale="en-US" />
+      <HelpModal label="FAQ: Liquidity" content={FaqLiquidity} />
+      <!-- </div> -->
     </Property>
     <Property label="Market Fee">
       <sl-format-number type="percent" value={round(market.creatorFee / 100)} />
     </Property>
-    <Property label="Developer Fee">
+    <Property label="Vala Fee">
       <sl-format-number type="percent" value={round(pm.getMarketVersion(market.version).devFee / 100)} />
     </Property>
     <Property label="Created">
