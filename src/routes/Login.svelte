@@ -1,6 +1,6 @@
 <script>
   import { seed } from "../store/wallet"
-  import { username as usernameSave } from "../store/profile"
+  import { email as emailSave } from "../store/profile"
   import { push } from "svelte-spa-router"
   import Mnemonic from "../utils/mnemonic"
   import Loader from "../components/Loader.svelte"
@@ -16,11 +16,11 @@
   const { addNotification } = getNotificationsContext()
   const unspecificErrorMessage = { title: "Something went wrong", details: "Please try again or contact Support." }
 
-  let username = ""
+  let email = ""
   let password = ""
   let loading = false
 
-  let username_input
+  let email_input
   let password_input
   let login_button
 
@@ -32,16 +32,16 @@
 
   async function loginDefault() {
     // Necessary bc can't pass variables to shoelace
-    return login(username, password)
+    return login(email, password)
   }
 
-  async function login(username, password) {
+  async function login(email, password) {
     loading = true
     let savedSeed
     try {
       console.log("what")
-      console.log([username, password, AUTH_HOST])
-      savedSeed = await window.valaauth.login(username, password, AUTH_HOST)
+      console.log([email, password, AUTH_HOST])
+      savedSeed = await window.valaauth.login(email, password, AUTH_HOST)
       console.log("this")
     } catch (e) {
       if (e.message === "User not found") {
@@ -51,6 +51,10 @@
       } else if (e.message === "Invalid credentials") {
         error = {
           title: "Invalid credentials"
+        }
+      } else if (e.message === "Must be a valid email") {
+        error = {
+          title: "Must be a valid Email"
         }
       } else {
         error = unspecificErrorMessage
@@ -83,7 +87,7 @@
     }
 
     $seed = savedSeed
-    $usernameSave = username
+    $emailSave = email
 
     loading = false
     push("/")
@@ -92,7 +96,7 @@
   function handleKeydown(event) {
     if (event.keyCode === 13) {
       event.preventDefault()
-      if (username && password) {
+      if (email && password) {
         loginDefault()
       }
     }
@@ -101,8 +105,8 @@
   onMount(() => {
     if ($seed) push("/")
 
-    username_input.addEventListener("sl-input", () => {
-      username = username_input.value
+    email_input.addEventListener("sl-input", () => {
+      email = email_input.value
     })
     password_input.addEventListener("sl-input", () => {
       password = password_input.value
@@ -120,7 +124,7 @@
   <h1>Login to Vala</h1>
 
   <form>
-    <sl-input placeholder="Username" name="username" bind:this={username_input} value={username} />
+    <sl-input placeholder="Email" name="email" bind:this={email_input} value={email} />
     <sl-input
       placeholder="Password"
       type="password"
@@ -132,12 +136,8 @@
   </form>
 
   <div class="buttons">
-    <sl-button
-      type="primary"
-      on:click={loginDefault}
-      bind:this={login_button}
-      disabled={!username || !password}
-      {loading}>Login</sl-button
+    <sl-button type="primary" on:click={loginDefault} bind:this={login_button} disabled={!email || !password} {loading}
+      >Login</sl-button
     >
     <a href="#/register"><sl-button>Create a new account</sl-button></a>
   </div>

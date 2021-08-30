@@ -1,6 +1,6 @@
 <script>
-  import { seed } from "../store/wallet"
-  import { username as usernameSave } from "../store/profile"
+  import { seed, derivationPath } from "../store/wallet"
+  import { email as emailSave } from "../store/profile"
   import { push } from "svelte-spa-router"
   import Mnemonic from "../utils/mnemonic"
   import { AUTH_HOST } from "../config"
@@ -19,18 +19,19 @@
   let valaauth
   let loading
 
-  let username = ""
+  let email = ""
   let password = ""
   let password2 = ""
 
-  let username_input
+  let email_input
   let password_input
   let password_input2
   let register_button
   let error_alert
   let dialog
 
-  let generatedSeed = ""
+  let generatedSeed = null
+  $: publicKey = generatedSeed ? generatedSeed.toHDPrivateKey("livenet").deriveChild(derivationPath).publicKey : null
 
   let error = {}
 
@@ -50,22 +51,26 @@
       return
     }
 
-    generatedSeed = Mnemonic.fromRandom().toString()
+    generatedSeed = Mnemonic.fromRandom()
     dialog.show()
   }
 
   async function registerDefault() {
-    return register(username, password)
+    return register(email, password)
   }
 
-  async function register(username, password) {
+  async function register(email, password) {
     loading = true
     try {
-      await window.valaauth.register(username, password, generatedSeed, AUTH_HOST)
+      await window.valaauth.register(email, password, generatedSeed.toString(), AUTH_HOST, publicKey.toString())
     } catch (e) {
-      if (e.message === "Username already taken") {
+      if (e.message === "Email already taken") {
         error = {
-          title: "Username already taken"
+          title: "Email already taken"
+        }
+      } else if (e.message === "Must be a valid email") {
+        error = {
+          title: "Must be a valid Email"
         }
       } else {
         error = unspecificErrorMessage
@@ -81,22 +86,22 @@
       return
     }
 
-    $seed = generatedSeed
-    $usernameSave = username
+    $seed = generatedSeed ? generatedSeed.toString() : ""
+    $emailSave = email
     loading = false
     dialog.hide()
     push("/")
   }
 
   function resetSeed() {
-    generatedSeed = undefined
+    generatedSeed = null
   }
 
   function handleKeydown(event) {
     if (event.keyCode === 13) {
       event.preventDefault()
       if (dialog.open) {
-        register(username, password)
+        register(email, password)
       } else {
         generateSeed()
       }
@@ -106,8 +111,8 @@
   onMount(() => {
     if ($seed) push("/")
 
-    username_input.addEventListener("sl-input", () => {
-      username = username_input.value
+    email_input.addEventListener("sl-input", () => {
+      email = email_input.value
     })
     password_input.addEventListener("sl-input", () => {
       password = password_input.value
@@ -129,7 +134,9 @@
   This is your generated wallet seed. Your wallet is encrypted with your password and stored on our servers, we will
   never have access to it.
   <div class="seed">
-    {#each generatedSeed.split(" ") as word}<div>{word}</div>{/each}
+    {#if generatedSeed}
+      {#each generatedSeed.toString().split(" ") as word}<div>{word}</div>{/each}
+    {/if}
   </div>
   <p class="warning-message">If you loose your password, you will loose access to your wallet!</p>
   <sl-button slot="footer" type="primary" on:click={registerDefault} {loading}>Finish Registration</sl-button>
@@ -139,7 +146,7 @@
   <h1>Register</h1>
 
   <form>
-    <sl-input placeholder="Username" name="username" bind:this={username_input} value={username} />
+    <sl-input placeholder="Email" name="email" bind:this={email_input} value={email} />
     <sl-input
       placeholder="Password"
       type="password"
@@ -162,7 +169,7 @@
     <sl-button
       type="primary"
       bind:this={register_button}
-      disabled={!username || !password || !password2}
+      disabled={!email || !password || !password2}
       on:click={generateSeed}>Register</sl-button
     >
     <a href="#/login"><sl-button>Login</sl-button></a>

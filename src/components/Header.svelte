@@ -1,6 +1,5 @@
 <script>
   import { seed, usdBalance } from "../store/wallet"
-  import { username } from "../store/profile"
   import { push, location } from "svelte-spa-router"
   import { testnet } from "../config"
 

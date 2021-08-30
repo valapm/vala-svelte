@@ -10,7 +10,7 @@ import writableDerived from "svelte-writable-derived"
 
 // console.log(Mnemonic)
 
-const derivationPath = "m/44'/0'/0'/0/0"
+export const derivationPath = "m/44'/0'/0'/0/0"
 
 export let seed = persistentWritable("seed", null)
 

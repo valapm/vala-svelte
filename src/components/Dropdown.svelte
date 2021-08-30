@@ -1,13 +1,14 @@
 <script>
   import { seed } from "../store/wallet"
-  import { username } from "../store/profile"
+  import { email, username } from "../store/profile"
   import { push } from "svelte-spa-router"
 
   export let show = false
 
   function logout() {
     $seed = null
-    $username = undefined
+    $email = null
+    $username = null
     push("#/login")
   }
 </script>
@@ -17,7 +18,7 @@
     <div class="modal-bg" on:click={() => (show = false)} />
     <div class="menu">
       {#if $seed}
-        <div>Logged in as {$username}</div>
+        <div>Logged in as {$email}</div>
         <a href="#/options">Options</a>
         <button on:click={logout}>Logout</button>
       {/if}

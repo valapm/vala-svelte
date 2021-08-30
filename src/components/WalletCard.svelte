@@ -97,7 +97,9 @@
         <sl-qr-code value={address} fill="white" background="transparent" />
       </div>
       <div class="footer">
-        <span>{username.toUpperCase()}</span>
+        <span
+          >{#if username}{username.toUpperCase()}{/if}</span
+        >
         <div class="logo-wrapper">
           <img src="/bitcoinsv_white.png" alt="Bitcoin SV" />
         </div>
