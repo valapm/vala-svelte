@@ -35,13 +35,20 @@ function _delete(url) {
 
 function handleResponse(response) {
   return response.text().then(text => {
-    const data = text && JSON.parse(text)
+    let data
+    if (text) {
+      try {
+        data = JSON.parse(text)
+      } catch {
+        data = text
+      }
+    }
 
     if (!response.ok) {
       console.log(response)
       const error = data || response.statusText
       console.error(data)
-      return Promise.reject(new Error(response.statusText))
+      return Promise.reject(new Error(error))
     }
 
     return data

@@ -1,6 +1,6 @@
 <script>
   import { seed } from "../store/wallet"
-  import { email as emailSave } from "../store/profile"
+  import { email as emailSave, verified as verifiedSave } from "../store/profile"
   import { push } from "svelte-spa-router"
   import Mnemonic from "../utils/mnemonic"
   import Loader from "../components/Loader.svelte"
@@ -38,11 +38,12 @@
   async function login(email, password) {
     loading = true
     let savedSeed
+    let verified
     try {
-      console.log("what")
-      console.log([email, password, AUTH_HOST])
-      savedSeed = await window.valaauth.login(email, password, AUTH_HOST)
-      console.log("this")
+      const loginRes = await window.valaauth.login(email, password, AUTH_HOST)
+      console.log(loginRes)
+      savedSeed = loginRes.seed
+      verified = loginRes.verified
     } catch (e) {
       if (e.message === "User not found") {
         error = {
@@ -87,7 +88,18 @@
     }
 
     $seed = savedSeed
+    $verifiedSave = verified
     $emailSave = email
+
+    if (!verified) {
+      addNotification({
+        type: "warning",
+        text: "Email verfication",
+        description:
+          "Verify your email address by clicking the link in the email you have received or receive a new email in the settings.",
+        position: "top-right"
+      })
+    }
 
     loading = false
     push("/")
