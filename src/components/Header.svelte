@@ -62,11 +62,8 @@
               >Options
               <sl-icon slot="prefix" name="gear" /></sl-menu-item
             >
-            <sl-menu-item
-              ><button on:click={() => push("#/logout")}>Logout</button><sl-icon
-                slot="prefix"
-                name="box-arrow-left"
-              /></sl-menu-item
+            <sl-menu-item on:click={() => push("#/logout")}
+              >Logout<sl-icon slot="prefix" name="box-arrow-left" /></sl-menu-item
             >
           </sl-menu>
         </sl-dropdown>

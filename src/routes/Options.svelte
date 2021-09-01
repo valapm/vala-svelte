@@ -1,8 +1,11 @@
 <script>
   import { testnet } from "../config"
+  import { email } from "../store/profile"
 </script>
 
-<div class="options" />
+<div class="options">
+  Logged in as {$email}
+</div>
 
 <style>
   .options {
