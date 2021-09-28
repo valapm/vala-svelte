@@ -22,7 +22,8 @@ console.log({
   BACKEND_HOST_TESTNET: process.env.BACKEND_HOST_TESTNET || "",
   GRAPHQL_HOST: process.env.GRAPHQL_HOST || "",
   GRAPHQL_HOST_TESTNET: process.env.GRAPHQL_HOST_TESTNET || "",
-  AUTH_HOST: process.env.AUTH_HOST || ""
+  AUTH_HOST: process.env.AUTH_HOST || "",
+  MAUTIC_HOST: process.env.MAUTIC_HOST || ""
 })
 
 const production = !process.env.ROLLUP_WATCH
@@ -66,7 +67,8 @@ export default {
           BACKEND_HOST_TESTNET: process.env.BACKEND_HOST_TESTNET || "",
           GRAPHQL_HOST: process.env.GRAPHQL_HOST || "",
           GRAPHQL_HOST_TESTNET: process.env.GRAPHQL_HOST_TESTNET || "",
-          AUTH_HOST: process.env.AUTH_HOST || ""
+          AUTH_HOST: process.env.AUTH_HOST || "",
+          MAUTIC_HOST: process.env.MAUTIC_HOST || ""
         })
       }
     }),

@@ -2,6 +2,7 @@
   import { onMount } from "svelte"
   import { seed } from "../store/wallet"
   import { push } from "svelte-spa-router"
+  import WaitlistSignup from "../components/WaitlistSignup.svelte"
 
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
   import SlCard from "@shoelace-style/shoelace/dist/components/card/card.js"
@@ -21,6 +22,8 @@
       protocol on Bitcoin SV.
     </p>
   </div>
+
+  <WaitlistSignup />
 
   <!-- <div class="button-group">
   <a href="#/markets"><sl-button>Discover Forecasts</sl-button></a>
