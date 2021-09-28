@@ -32,21 +32,23 @@
       </div>
     </div>
     <div class="menu-right">
-      <sl-select
-        size="small"
-        value={testnet ? "testnet" : "mainnet"}
-        bind:this={networkSelect}
-        on:sl-change={() => {
-          if (networkSelect.value === "testnet") {
-            window.location.href = window.location.origin + "/test/"
-          } else {
-            window.location.href = window.location.origin
-          }
-        }}
-      >
-        <sl-menu-item value="mainnet">Mainnet</sl-menu-item>
-        <sl-menu-item value="testnet">Testnet</sl-menu-item>
-      </sl-select>
+      {#if $seed}
+        <sl-select
+          size="small"
+          value={testnet ? "testnet" : "mainnet"}
+          bind:this={networkSelect}
+          on:sl-change={() => {
+            if (networkSelect.value === "testnet") {
+              window.location.href = window.location.origin + "/test/"
+            } else {
+              window.location.href = window.location.origin
+            }
+          }}
+        >
+          <sl-menu-item value="mainnet">Mainnet</sl-menu-item>
+          <sl-menu-item value="testnet">Testnet</sl-menu-item>
+        </sl-select>
+      {/if}
 
       <!-- <a href="#/options"><img class="dropdown" src="./icons/bars.svg" alt="dropdown" /></a> -->
       <!-- <button on:click={() => (dropdown = true)}><img class="dropdown" src="./icons/bars.svg" alt="dropdown" /></button> -->
