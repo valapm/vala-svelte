@@ -61,7 +61,7 @@
     "tslib": "^2.0.0",
     "typescript": "^4.0.0",
     "unorm": "^1.6.0",
-    "vala-auth": "github:valapm/vala-auth#59fc057b0fada779bf6ace7100832267c045e313",
+    "vala-auth": "github:valapm/vala-auth#c44855b7662846550dc642cf5291344c75a93e16",
     "webpack": "^5.24.0",
     "webpack-cli": "^4.5.0"
   },
