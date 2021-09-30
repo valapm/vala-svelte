@@ -135,8 +135,26 @@
 <div class="login">
   <h1>Login to Vala</h1>
 
-  <form>
-    <sl-input placeholder="Email" name="email" bind:this={email_input} value={email} />
+  <form method="POST">
+    <input
+      style="display: none;"
+      id="email"
+      autocomplete="email"
+      placeholder="Email"
+      name="email"
+      type="email"
+      bind:value={email}
+    />
+    <sl-input placeholder="Email" name="email" type="email" bind:this={email_input} value={email} />
+    <input
+      style="display: none;"
+      id="password"
+      placeholder="Password"
+      type="password"
+      name="password"
+      autocomplete="password-current"
+      bind:value={password}
+    />
     <sl-input
       placeholder="Password"
       type="password"
