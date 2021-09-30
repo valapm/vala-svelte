@@ -7,6 +7,7 @@
   import { AUTH_HOST } from "../config"
   import { onMount } from "svelte"
   import { getNotificationsContext } from "svelte-notifications"
+  import { EMAIL_REGEX } from "../utils/email"
 
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
   import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js"
@@ -19,6 +20,8 @@
   let email = ""
   let password = ""
   let loading = false
+
+  $: isValidEmail = email && EMAIL_REGEX.test(email)
 
   let email_input
   let password_input
@@ -108,7 +111,7 @@
   function handleKeydown(event) {
     if (event.keyCode === 13) {
       event.preventDefault()
-      if (email && password) {
+      if (isValidEmail && password) {
         loginDefault()
       }
     }
@@ -166,8 +169,12 @@
   </form>
 
   <div class="buttons">
-    <sl-button type="primary" on:click={loginDefault} bind:this={login_button} disabled={!email || !password} {loading}
-      >Login</sl-button
+    <sl-button
+      type="primary"
+      on:click={loginDefault}
+      bind:this={login_button}
+      disabled={!isValidEmail || !password}
+      {loading}>Login</sl-button
     >
     <a href="#/register"><sl-button>Create a new account</sl-button></a>
   </div>

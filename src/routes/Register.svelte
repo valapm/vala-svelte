@@ -7,6 +7,7 @@
   import Loader from "../components/Loader.svelte"
   import { onMount } from "svelte"
   import { getNotificationsContext } from "svelte-notifications"
+  import { EMAIL_REGEX } from "../utils/email"
 
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
   import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js"
@@ -22,6 +23,8 @@
   let email = ""
   let password = ""
   let password2 = ""
+
+  $: isValidEmail = email && EMAIL_REGEX.test(email)
 
   let email_input
   let password_input
@@ -103,7 +106,9 @@
       if (dialog.open) {
         register(email, password)
       } else {
-        generateSeed()
+        if (isValidEmail && password && password2) {
+          generateSeed()
+        }
       }
     }
   }
@@ -169,7 +174,7 @@
     <sl-button
       type="primary"
       bind:this={register_button}
-      disabled={!email || !password || !password2}
+      disabled={!isValidEmail || !password || !password2}
       on:click={generateSeed}>Register</sl-button
     >
     <a href="#/login"><sl-button>Login</sl-button></a>
