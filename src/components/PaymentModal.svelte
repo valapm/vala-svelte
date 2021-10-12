@@ -48,9 +48,9 @@
   $: change = action === "buy" ? amount : -amount
   $: price =
     action === "buy"
-      ? getSharePrice(marketBalance, option, change)
-      : Math.abs(getSharePrice(marketBalance, option, change))
-  $: usdPrice = ((price + satFeeEstimate) * $bsvPrice) / 100000000
+      ? getSharePrice(marketBalance, option, change) + satFeeEstimate
+      : Math.abs(getSharePrice(marketBalance, option, change)) - satFeeEstimate
+  $: usdPrice = (price * $bsvPrice) / 100000000
 
   $: potentialAssetsUSD = ((amount * lmsr.SatScaling) / 100000000) * $bsvPrice || 0
   $: potentialWin = Math.abs(potentialAssetsUSD - usdPrice)
@@ -135,11 +135,20 @@
             locale="en-US"
           />
         </Property>
+        <Property label="Liquidity Fee" centered={true}>
+          <sl-format-number
+            class="red"
+            type="currency"
+            currency="USD"
+            value={(market.liquidityFee * usdPrice) / 100}
+            locale="en-US"
+          />
+        </Property>
       {/if}
-      <Property label="Tx Fee" centered={true}>
-        <sl-format-number class="red" type="currency" currency="USD" value={usdFeeEstimate} locale="en-US" />
-      </Property>
     {/if}
+    <Property label="Tx Fee" centered={true}>
+      <sl-format-number class="red" type="currency" currency="USD" value={usdFeeEstimate} locale="en-US" />
+    </Property>
   </div>
 
   <sl-format-number class="price {action}" type="currency" currency="USD" value={usdPrice} locale="en-US" />

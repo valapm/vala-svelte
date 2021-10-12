@@ -3,21 +3,12 @@ import { post } from "../utils/fetch"
 import { bsv } from "bitcoin-predict"
 import { gql } from "graphql-request"
 
-export async function postMarketTx(tx: bsv.Transaction, entries = [], testnet = false) {
-  const entryPayload = entries.map(entry => {
-    return {
-      ...entry,
-      publicKey: entry.publicKey.toString()
-    }
-  })
-
+export async function postMarketTx(tx: bsv.Transaction, testnet = false) {
   const rawtx = tx.checkedSerialize({ disableDustOutputs: true })
   const host = testnet ? BACKEND_HOST_TESTNET : BACKEND_HOST
   console.log("posting to ", host)
 
-  const payLoad = entries.length ? { rawtx, entries: entryPayload } : { rawtx }
-
-  return await post(host + "/market", payLoad)
+  return await post(host + "/market", { rawtx })
 
   // const post = await fetch(host + "/market", {
   //   method: "post",

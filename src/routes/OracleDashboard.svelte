@@ -149,7 +149,7 @@
     const sig = rabin.sign(detailHex, $rabinPrivKey.p, $rabinPrivKey.q, $rabinPubKey)
     const res = await postOracleDetails(details, $rabinPubKey, sig, testnet)
     console.log(res)
-    if (res.message === "success") registered = true
+    if (res === "success") registered = true
   }
 
   // FIXME: Duplicate code in Market.svelte
@@ -179,7 +179,7 @@
 
     const newTx = await bp.transaction.getOracleVoteTx(currentTx, vote, $rabinPrivKey, $address, $utxos, $privateKey)
 
-    const postRes = await postMarketTx(newTx, [], testnet)
+    const postRes = await postMarketTx(newTx, testnet)
     console.log(postRes)
   }
 
@@ -191,7 +191,7 @@
 
     const newTx = bp.transaction.getOracleCommitTx(currentTx, $rabinPrivKey, $address, $utxos, $privateKey)
 
-    const postRes = await postMarketTx(newTx, [], testnet)
+    const postRes = await postMarketTx(newTx, testnet)
     console.log(postRes)
   }
 

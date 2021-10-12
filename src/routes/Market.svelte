@@ -23,6 +23,7 @@
   import MarketMenu from "../components/MarketMenu.svelte"
   import RedeemModal from "../components/RedeemModal.svelte"
   import NotFound from "../components/NotFound.svelte"
+  import LiquidityCard from "../components/LiquidityCard.svelte"
 
   import SlCard from "@shoelace-style/shoelace/dist/components/card/card.js"
   import SlFormatNumber from "@shoelace-style/shoelace/dist/components/format-number/format-number"
@@ -43,7 +44,11 @@
         creatorFee
         details
         version
+        liquidityFee
         market_state {
+          accLiquidityFeePool
+          liquidityPoints
+          liquidityFeePool
           satoshis
           market_oracles {
             committed
@@ -66,6 +71,8 @@
             investor {
               pubKey
             }
+            liquidityPoints
+            prevLiquidityPoolState
           }
         }
         marketStateByFirststateid {
@@ -119,16 +126,17 @@
    *
    * @param balance New Balance
    */
-  async function updateMarket(newBalance: lmsr.balance) {
+  async function updateMarket(newBalance: lmsr.balance, redeemLiquidityPoints = false) {
+    console.log(market.entries)
     const entries = getEntries(market)
 
-    const newTx = await getUpdateTx(newBalance, entries)
+    const newTx = await getUpdateTx(newBalance, entries, redeemLiquidityPoints)
     console.log(newTx)
 
-    const postRes = await postMarketTx(newTx, [], testnet)
+    const postRes = await postMarketTx(newTx, testnet)
     console.log(postRes)
 
-    if (postRes.message === "success") {
+    if (postRes === "success") {
       redeem_modal.hide()
       payment_modal.hide()
       addNotification({
@@ -162,7 +170,7 @@
       addNotification({
         type: "danger",
         text: "Failed to updated market",
-        description: postRes.message,
+        description: postRes.error,
         position: "top-right"
       })
     }
@@ -182,19 +190,25 @@
     updateMarket(newBalance)
   }
 
-  async function getUpdateTx(newBalance, entries) {
+  async function getUpdateTx(newBalance, entries, redeemLiquidityPoints = false) {
     const currentTx = await getTx(market.market_state.transaction.txid, gqlClient)
 
     let updateTx
     if (existingEntry) {
       console.log([currentTx, entries, newBalance, $privateKey, $address, $utxos, $privateKey])
-      updateTx = pmTx.getUpdateEntryTx(currentTx, entries, newBalance, $privateKey, $address, $utxos, $privateKey, feeb)
+      updateTx = pmTx.getUpdateEntryTx(
+        currentTx,
+        entries,
+        newBalance,
+        redeemLiquidityPoints,
+        $privateKey,
+        $address,
+        $utxos,
+        $privateKey,
+        feeb
+      )
     } else {
-      const newEntry = {
-        balance: newBalance,
-        publicKey: $publicKey
-      }
-      updateTx = pmTx.getAddEntryTx(currentTx, entries, newEntry, $address, $utxos, $privateKey, feeb)
+      updateTx = pmTx.getAddEntryTx(currentTx, entries, $publicKey, newBalance, $address, $utxos, $privateKey, feeb)
     }
 
     return updateTx
@@ -274,6 +288,16 @@
           />
         {/if}
       </div>
+
+      {#if existingEntry && existingEntry.liquidity}
+        <LiquidityCard
+          {market}
+          entry={existingEntry}
+          on:add={e => payment_modal.show("buy", -1)}
+          on:remove={e => payment_modal.show("sell", -1)}
+          on:redeem={e => updateMarket(balance, true)}
+        />
+      {/if}
 
       {#if market.details}
         <sl-card>

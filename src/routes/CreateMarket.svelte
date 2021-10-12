@@ -1,9 +1,9 @@
-<script>
+<script lang="ts">
   import * as bp from "bitcoin-predict"
   import { privateKey, publicKey, address } from "../store/wallet"
   // import { getUtxos } from "../utils/utxo"
   import { oracles } from "../oracle"
-  import { testnet } from "../config"
+  import { testnet, feeb } from "../config"
   import { postMarketTx } from "../apis/web"
   import { gql } from "graphql-request"
   import { gqlClient } from "../utils/graphql"
@@ -30,14 +30,13 @@
   let resolve_input
   let detail_input
   let fee_input
-  let liquidity_input
 
   let resolve
   let details
   let selectedOracle
-  let liquidity = 1
   let options = []
   let creatorFee = 0
+  let liquidityFee = 0.2
   let oracleSearch = ""
 
   let step = 0
@@ -60,18 +59,18 @@
       return
     }
 
-    const fundedTx = fundTx(tx, $privateKey, $address, $utxos)
+    const fundedTx = fundTx(tx, $privateKey, $address, $utxos, feeb)
 
     console.log(fundedTx)
 
-    const postRes = await postMarketTx(tx, [entry], testnet)
+    const postRes = await postMarketTx(tx, testnet)
     console.log(postRes)
 
     loading = false
-    if (postRes.message === "success") {
+    if (postRes === "success") {
       push(`#/market/${fundedTx.hash}`)
     } else {
-      error = postRes.message
+      error = postRes.error
       addNotification({
         type: "danger",
         text: "Failed to broadcast transaction",
@@ -86,17 +85,7 @@
     options.length >= 2 && !options.some(option => !option.name) && options.length <= bp.pm.versions[0].maxOptionCount
   $: canComplete2 = !!selectedOracle
   $: canComplete3 = creatorFee >= 0
-  $: canCreateMarket =
-    canComplete0 && canComplete1 && canComplete2 && canComplete3 && liquidity !== null && liquidity >= 0
-
-  $: entry = {
-    publicKey: $publicKey.toString(),
-    balance: {
-      shares: Array(options.length).fill(0),
-      // liquidity: liquidity >= 0 ? liquidity : 1,
-      liquidity
-    }
-  }
+  $: canCreateMarket = canComplete0 && canComplete1 && canComplete2 && canComplete3
 
   $: market = canCreateMarket
     ? bp.pm.getNewMarket(
@@ -110,7 +99,6 @@
             }
           })
         },
-        entry,
         [
           {
             pubKey: BigInt(selectedOracle.pubKey),
@@ -122,6 +110,7 @@
           payoutAddress: $address
         },
         creatorFee,
+        liquidityFee,
         100
       )
     : undefined
@@ -268,6 +257,14 @@
         bind:this={fee_input}
         on:input={() => (creatorFee = parseFloat(fee_input.value))}
       />
+      <h2>Set a fee for liquidity providers</h2>
+      <sl-input
+        type="number"
+        value={liquidityFee}
+        min="0"
+        bind:this={fee_input}
+        on:input={() => (liquidityFee = parseFloat(fee_input.value))}
+      />
       <div class="buttons">
         <sl-button on:click={stepBack}>Back</sl-button>
         <sl-button on:click={completeStep3} type="primary" disabled={!canComplete3}>Continue</sl-button>
@@ -275,14 +272,6 @@
     </div>
   {:else if step === 4}
     <div class="content">
-      <h3>Add inital liquidity</h3>
-      <sl-input
-        type="number"
-        value={liquidity}
-        min="0"
-        bind:this={liquidity_input}
-        on:input={() => (liquidity = parseInt(liquidity_input.value))}
-      />
       <div class="price">
         <div>Total cost</div>
         <sl-format-number type="currency" currency="USD" value={cost} locale="en-US" />

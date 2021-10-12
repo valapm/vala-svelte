@@ -45,10 +45,17 @@
       <!-- </div> -->
     </Property>
     <Property label="Market Fee">
-      <sl-format-number type="percent" value={round(market.creatorFee / 100)} />
+      <sl-format-number type="percent" value={market.creatorFee / 100} minimum-fraction-digits="1" />
     </Property>
     <Property label="Vala Fee">
-      <sl-format-number type="percent" value={round(pm.getMarketVersion(market.version).devFee / 100)} />
+      <sl-format-number
+        type="percent"
+        value={pm.getMarketVersion(market.version).devFee / 100}
+        minimum-fraction-digits="1"
+      />
+    </Property>
+    <Property label="Liquidity Fee">
+      <sl-format-number type="percent" value={market.liquidityFee / 100} minimum-fraction-digits="1" />
     </Property>
     <Property label="Created">
       <sl-format-date date={creationDate} />
