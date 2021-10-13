@@ -14,6 +14,7 @@
 
   let email = ""
   let loading = false
+  let signedUp = false
 
   $: isValidEmail = email && EMAIL_REGEX.test(email)
 
@@ -43,6 +44,7 @@
         position: "top-right"
       })
       email = ""
+      signedUp = true
     } else {
       addNotification({
         type: "danger",
@@ -55,18 +57,22 @@
   }
 </script>
 
-<div class="waitlist_input">
-  <sl-input
-    placeholder="Email"
-    name="email"
-    bind:this={email_input}
-    value={email}
-    on:input={() => (email = email_input.value)}
-  />
-  <sl-button type="primary" on:click={joinWaitlist} bind:this={submit_button} disabled={!isValidEmail} {loading}
-    >Join Waitlist</sl-button
-  >
-</div>
+{#if !signedUp}
+  <div class="waitlist_input">
+    <sl-input
+      placeholder="Email"
+      name="email"
+      bind:this={email_input}
+      value={email}
+      on:input={() => (email = email_input.value)}
+    />
+    <sl-button type="primary" on:click={joinWaitlist} bind:this={submit_button} disabled={!isValidEmail} {loading}
+      >Join Waitlist</sl-button
+    >
+  </div>
+{:else}
+  <p>Thank you for joining!</p>
+{/if}
 
 <style>
   .waitlist_input {
@@ -74,5 +80,9 @@
     flex-direction: column;
     gap: 1rem;
     align-items: center;
+  }
+
+  p {
+    font-size: 1.5rem;
   }
 </style>

@@ -70,8 +70,8 @@
           </sl-menu>
         </sl-dropdown>
       {:else}
-        <a href="#/login"><sl-button type="text" size="small">Log in</sl-button></a>
-        <a href="#/register"><sl-button type="primary" size="small">Sign up</sl-button></a>
+        <a href="#/login"><sl-button type="primary" size="small">Log in</sl-button></a>
+        <!-- <a href="#/register"><sl-button type="primary" size="small">Sign up</sl-button></a> -->
       {/if}
     </div>
   </div>
