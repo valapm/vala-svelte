@@ -3,6 +3,8 @@
   import { push, location } from "svelte-spa-router"
   import { testnet } from "../config"
 
+  import Button from "./Button.svelte"
+
   import SlDropdown from "@shoelace-style/shoelace/dist/components/dropdown/dropdown"
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
   import SlIconButton from "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js"
@@ -24,7 +26,10 @@
 <nav>
   <div class="menu-main">
     <div class="menu-left">
-      <a href={$seed ? "#/markets" : "#/"} class="logo"><img src="/Logo.svg" alt="vala-logo" /></a>
+      <a href={$seed ? "#/markets" : "#/"} class="logo">
+        <img src="/Logo_img.svg" alt="vala-logo" />
+        <img src="/Logo_text.svg" alt="vala-text" />
+      </a>
 
       <div class="menu-center">
         <sl-tab on:click={() => push("#/markets")} active={/\/market.*/gm.test($location)}>Markets</sl-tab>
@@ -70,7 +75,7 @@
           </sl-menu>
         </sl-dropdown>
       {:else}
-        <a href="#/login"><sl-button type="primary" size="small">Log in</sl-button></a>
+        <a href="#/login"><Button primary={true}>Sign in</Button></a>
         <!-- <a href="#/register"><sl-button type="primary" size="small">Sign up</sl-button></a> -->
       {/if}
     </div>
@@ -82,6 +87,9 @@
     margin-bottom: 4rem;
     height: 5rem;
     padding: 2rem;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
   }
 
   .menu-main {
@@ -90,6 +98,7 @@
     align-items: flex-start;
     justify-content: space-between;
     margin-bottom: 1rem;
+    width: min(65rem, 100%);
   }
 
   .menu-main img {
@@ -98,6 +107,17 @@
 
   .logo {
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 6.9px;
+  }
+
+  .logo img[alt="vala-logo"] {
+    height: 2.6rem;
+  }
+
+  .logo img[alt="vala-text"] {
+    height: 1.3rem;
   }
 
   sl-select sl-menu-item::part(base) {
