@@ -2,6 +2,51 @@
 /* @tailwind components; */
 /* @tailwind utilities; */
 
+@font-face {
+  font-family: "Roboto";
+  src: url("/fonts/Roboto/Roboto-Thin.ttf") format("truetype");
+  font-weight: 100;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Roboto";
+  src: url("/fonts/Roboto/Roboto-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Roboto";
+  src: url("/fonts/Roboto/Roboto-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Roboto";
+  src: url("/fonts/Roboto/Roboto-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Roboto";
+  src: url("/fonts/Roboto/Roboto-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Roboto";
+  src: url("/fonts/Roboto/Roboto-Black.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+}
+
+
+@font-face {
+  font-family: "Roboto Mono";
+  src: url("/fonts/Roboto_Mono/RobotoMono-VariableFont_wght.ttf") format("truetype");
+  font-weight: 100 700;
+  font-style: normal;
+}
+
 .container {
   display: flex;
   flex-direction: column;
@@ -10,13 +55,19 @@
 }
 
 .container > * {
-  width: min(90%, 50rem);
+  width: min(65rem, 90%);
 }
 
 body {
-  background-color: #f4f4f6;
-  font-family: var(--sl-font-sans);
+  background-color: #272C33;
+  font-family: 'Roboto', sans-serif;
   min-height: 100vh;
+
+  color: white;
+}
+
+* {
+  line-height: 1.1875em; /* Figma does this for some reason */
 }
 
 /* Shoelace colors */
@@ -32,6 +83,8 @@ body {
   --sl-color-primary-800: #1035bc !important;
   --sl-color-primary-900: #0d2b99 !important;
   --sl-color-primary-950: #0a2176 !important;
+
+  --sl-font-sans: Roboto !important;
 }
 
 sl-dialog::part(body) {

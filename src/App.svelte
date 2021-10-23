@@ -9,5 +9,21 @@
 <Notifications item={Notification}>
   <Header />
 
-  <Router {routes} />
+  <div>
+    <main>
+      <Router {routes} />
+    </main>
+  </div>
 </Notifications>
+
+<style>
+  main {
+    width: min(65rem, 100%);
+  }
+
+  div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+</style>

@@ -14,7 +14,7 @@
 
 <main>
   <div class="header">
-    <h1>Peer to Peer Prediction Markets</h1>
+    <h1>Bitcoin’s First <br />Peer to Peer <br />Prediction Market</h1>
 
     <p>
       Vala is an open-source platform for traders and entrepreneurs to create and use decentralized betting markets. It
@@ -68,7 +68,7 @@
   }
 
   h1 {
-    font-size: 3.5rem;
+    font-size: 3.125rem;
     font-weight: bold;
   }
 

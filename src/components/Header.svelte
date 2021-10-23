@@ -3,6 +3,8 @@
   import { push, location } from "svelte-spa-router"
   import { testnet } from "../config"
 
+  import Button from "./Button.svelte"
+
   import SlDropdown from "@shoelace-style/shoelace/dist/components/dropdown/dropdown"
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
   import SlIconButton from "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js"
@@ -24,14 +26,22 @@
 <nav>
   <div class="menu-main">
     <div class="menu-left">
-      <a href={$seed ? "#/markets" : "#/"} class="logo"><img src="/Logo.svg" alt="vala-logo" /></a>
+      <a href={$seed ? "#/markets" : "#/"} class="logo">
+        <img src="/logo.svg" alt="vala-logo" />
+        <img src="/logo_text.svg" alt="vala-logo-text" />
+      </a>
 
-      <div class="menu-center">
-        <sl-tab on:click={() => push("#/markets")} active={/\/market.*/gm.test($location)}>Markets</sl-tab>
-        <sl-tab on:click={() => push("#/oracles")} active={/\/oracle.*/gm.test($location)}>Oracles</sl-tab>
-      </div>
+      <div class="menu-center" />
     </div>
     <div class="menu-right">
+      <a href="#/markets"
+        ><Button type="text" on:click={() => push("#/markets")} active={/\/market.*/gm.test($location)}>Markets</Button
+        ></a
+      >
+      <a href="#/oracles"
+        ><Button type="text" on:click={() => push("#/oracles")} active={/\/oracle.*/gm.test($location)}>Oracles</Button
+        ></a
+      >
       {#if $seed}
         <sl-select
           size="small"
@@ -53,6 +63,7 @@
       <!-- <a href="#/options"><img class="dropdown" src="./icons/bars.svg" alt="dropdown" /></a> -->
       <!-- <button on:click={() => (dropdown = true)}><img class="dropdown" src="./icons/bars.svg" alt="dropdown" /></button> -->
       {#if $seed}
+        <a href="#/create"><Button type="filled">Create Market</Button></a>
         <sl-dropdown>
           <sl-icon-button slot="trigger" name="list" label="Menu" />
           <sl-menu>
@@ -70,8 +81,8 @@
           </sl-menu>
         </sl-dropdown>
       {:else}
-        <a href="#/login"><sl-button type="primary" size="small">Log in</sl-button></a>
-        <!-- <a href="#/register"><sl-button type="primary" size="small">Sign up</sl-button></a> -->
+        <a href="#/login"><Button>Sign in</Button></a>
+        <a href="#/register"><Button type="filled">Sign up</Button></a>
       {/if}
     </div>
   </div>
@@ -79,17 +90,20 @@
 
 <style>
   nav {
-    margin-bottom: 4rem;
-    height: 5rem;
-    padding: 2rem;
+    height: 6.25rem;
+    background-color: #1f2329;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .menu-main {
+    width: min(65rem, 100%);
+    height: 100%;
     gap: 2rem;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    margin-bottom: 1rem;
   }
 
   .menu-main img {
@@ -98,6 +112,16 @@
 
   .logo {
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .logo img[alt="vala-logo"] {
+    height: 2.4rem;
+  }
+  .logo img[alt="vala-logo-text"] {
+    height: 1.2rem;
   }
 
   sl-select sl-menu-item::part(base) {
@@ -122,7 +146,7 @@
   .menu-center,
   .menu-right {
     display: flex;
-    gap: 1rem;
+    gap: 2rem;
     align-items: center;
   }
 
