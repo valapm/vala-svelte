@@ -4,14 +4,15 @@
   import { seed } from "../store/wallet"
   import { pm } from "bitcoin-predict"
   import { onMount } from "svelte"
-  import Bricks from "bricks.js"
   import { tick } from "svelte"
+  import { fade, crossfade } from "svelte/transition"
 
   import { location } from "svelte-spa-router"
 
   import MarketCard from "../components/MarketCard.svelte"
   import Searchbar from "../components/Searchbar.svelte"
   import SearchOptions from "../components/SearchOptions.svelte"
+  import Masonry from "../components/Masonry.svelte"
 
   const sortOptions = [
     "Market Cap",
@@ -94,46 +95,39 @@
     }
   `
 
+  $: marketArray = Array(30).fill(markets).flat()
+
   $: gqlClient.request(marketQuery).then(res => (markets = res.market))
 
   function remToPixels(rem) {
     return rem * parseFloat(getComputedStyle(document.documentElement).fontSize)
   }
 
-  $: {
-    if (markets) {
-      tick().then(() => {
-        instance.pack()
-      })
-    }
-  }
-
-  let instance
-
-  onMount(() => {
-    instance = Bricks({
-      container: grid,
-      sizes: [
-        // { columns: 1, gutter: remToPixels(1) },
-        // { mq: "768px", columns: 2, gutter: remToPixels(1.5) },
-        { mq: "1040px", columns: 3, gutter: remToPixels(1.5625) }
-      ],
-      packed: "packed"
-    })
-  })
+  // const [send, receive] = crossfade({ duration: 300, fallback: fade })
 </script>
 
-<div class="container">
+<div class="markets">
   <div class="search">
     <Searchbar bind:value={search} />
     <SearchOptions {sortOptions} {filterOptions} bind:sort bind:filter bind:direction />
   </div>
 
-  <div bind:this={grid}>
-    {#each new Array(30).fill(markets).flat() as market}
-      <MarketCard {market} />
-    {/each}
-  </div>
+  <Masonry
+    items={marketArray.map((market, index) => {
+      return { ...market, id: market.marketStateByFirststateid.transaction.txid + index }
+    })}
+    minColWidth={remToPixels(20.625)}
+    maxColWidth={remToPixels(20.625)}
+    gap={remToPixels(1.5625)}
+    let:item={market}
+  >
+    <!-- <div
+    in:receive={{ key: item.marketStateByFirststateid.transaction.txid }}
+    out:send={{ key: item.marketStateByFirststateid.transaction.txid }}
+  > -->
+    <MarketCard {market} />
+    <!-- </div> -->
+  </Masonry>
 </div>
 
 <style>
@@ -144,9 +138,13 @@
     align-items: center;
   } */
 
-  .container {
+  .markets {
     gap: 3.0625rem;
     margin-top: 4.3125rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
   }
 
   .search {
