@@ -11,12 +11,47 @@
 
   import MarketCard from "../components/MarketCard.svelte"
   import Searchbar from "../components/Searchbar.svelte"
+  import SearchOptions from "../components/SearchOptions.svelte"
 
-  import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
-  import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js"
+  const sortOptions = [
+    "Market Cap",
+    // "Total Volume",
+    "Most Recent",
+    "Liquidity"
+  ]
+
+  const filterOptions = ["Live Markets", "Unconfirmed Markets", "Resolved Markets"]
 
   let markets = []
   let search = ""
+  let sort = 0
+  let filter = [0, 1, 2]
+  let direction = "desc"
+
+  const filterQueries = [
+    "market_state: {market_oracles: {committed: {_eq: true}}}",
+    "market_state: {market_oracles: {committed: {_eq: false}}}",
+    "market_state: {decided: {_eq: true}}"
+  ]
+
+  // $: filterQuery = filter.reduce((query, fIndex, index) => {
+  //   if (index === 0) return filterQueries[fIndex]
+
+  //   return query + `, _or: { ${filterQueries[fIndex]} }`
+  // }, "")
+
+  $: filterQuery =
+    filter.length === 1
+      ? filterQueries[filter[0]]
+      : `_or: [ ${filter.map(fIndex => `{ ${filterQueries[fIndex]} }`).join(", ")} ]`
+
+  $: orderQueries = [
+    `market_state: { liquidity: ${direction} }`,
+    `marketStateByFirststateid: { transaction: { processedAt: ${direction} } }`,
+    `market_state: { liquidity: ${direction} }`
+  ]
+
+  $: console.log(`Search ${filter.join(", ")} by ${sort}`)
 
   let grid
 
@@ -24,9 +59,9 @@
 
   $: marketQuery = gql`
     {
-      market(order_by: { market_state: { liquidity: desc } }, where: { resolve: {_ilike: "%${search}%"}, version: { _in: ${JSON.stringify(
-    versions
-  )}}}) {
+      market(order_by: { ${
+        orderQueries[sort]
+      } }, where: { resolve: {_ilike: "%${search}%"}, version: { _in: ${JSON.stringify(versions)}}, ${filterQuery}}) {
         market_oracles_oracles {
           oracle {
             name
@@ -61,43 +96,9 @@
 
   $: gqlClient.request(marketQuery).then(res => (markets = res.market))
 
-  // function resizeGridItem(item) {
-  //   rowHeight = parseInt(window.getComputedStyle(grid).getPropertyValue("grid-auto-rows"))
-  //   rowGap = parseInt(window.getComputedStyle(grid).getPropertyValue("grid-row-gap"))
-  //   rowSpan = Math.ceil((item.querySelector(".content").getBoundingClientRect().height + rowGap) / (rowHeight + rowGap))
-  //   item.style.gridRowEnd = "span " + rowSpan
-  // }
-
-  // function resizeGridItems() {
-  //   const cards = grid ? grid.childNodes : []
-  //   for (const card of cards) {
-  //     resizeGridItem(card)
-  //   }
-  // }
-
-  // function resizeInstance(instance) {
-  //   item = instance.elements[0]
-  //   resizeGridItem(item)
-  // }
-
   function remToPixels(rem) {
     return rem * parseFloat(getComputedStyle(document.documentElement).fontSize)
   }
-
-  // $: {
-  //   if (grid) {
-  //     const instance = Bricks({
-  //       container: grid,
-  //       sizes: [
-  //         // { columns: 1, gutter: remToPixels(1) },
-  //         // { mq: "768px", columns: 2, gutter: remToPixels(1.5) },
-  //         { mq: "1040px", columns: 3, gutter: remToPixels(2) }
-  //       ],
-  //       packed: "packed"
-  //     })
-  //     instance.pack()
-  //   }
-  // }
 
   $: {
     if (markets) {
@@ -122,39 +123,36 @@
   })
 </script>
 
-<!-- <svelte:window on:resize={resizeGridItems} /> -->
-
 <div class="container">
-  <Searchbar bind:value={search} />
+  <div class="search">
+    <Searchbar bind:value={search} />
+    <SearchOptions {sortOptions} {filterOptions} bind:sort bind:filter bind:direction />
+  </div>
 
   <div bind:this={grid}>
     {#each new Array(30).fill(markets).flat() as market}
       <MarketCard {market} />
     {/each}
-    <!-- {#each [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as count}
-      <div style="background-color: grey; color: white; min-height: {Math.random() * 4 + 2}rem; width: 5rem">
-        {count}
-      </div>
-    {/each} -->
   </div>
-
-  <!-- <div class="markets">
-    {#each markets as market}
-      <MarketCard {market} />
-    {/each}
-  </div> -->
 </div>
 
 <style>
-  .markets {
+  /* .markets {
     display: flex;
     flex-direction: column;
     gap: 2rem;
     align-items: center;
-  }
+  } */
 
   .container {
     gap: 3.0625rem;
     margin-top: 4.3125rem;
+  }
+
+  .search {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 0.875rem;
   }
 </style>

@@ -68,7 +68,14 @@ body {
 
 * {
   line-height: 1.1875em; /* Figma does this for some reason */
+
+  /* Anti-aliasing */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+
+
 
 /* Shoelace colors */
 :root {
