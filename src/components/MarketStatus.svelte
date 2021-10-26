@@ -3,7 +3,7 @@
 
   const labels = ["Unconfirmed", "Live Market", "Resolved"]
 
-  const colors = ["#FAFF00", "#00FFC5", "#FF2E00"]
+  const colors = ["#6CD4FF", "#00FFC5", "rgba(255, 255, 255, 0.5)"]
 </script>
 
 <div class="status">

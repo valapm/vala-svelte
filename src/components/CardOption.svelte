@@ -11,7 +11,7 @@
   $: barWidth = element ? Math.round(probability * element.clientWidth) : 0
 </script>
 
-<div class="option" bind:this={element}>
+<div class="option" bind:this={element} style={probability === 1 ? "border: 1px solid #01a781;" : ""}>
   <div class="labels">
     <div class="name">{option.name}</div>
     {#if !resolved}

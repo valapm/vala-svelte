@@ -2,7 +2,9 @@
   import { onMount } from "svelte"
   import { seed } from "../store/wallet"
   import { push } from "svelte-spa-router"
+
   import WaitlistSignup from "../components/WaitlistSignup.svelte"
+  import LandingpageLogo from "../components/LandingpageLogo.svelte"
 
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
   import SlCard from "@shoelace-style/shoelace/dist/components/card/card.js"
@@ -14,23 +16,15 @@
 
 <main>
   <div class="header">
-    <h1>Bitcoin’s First <br />Peer to Peer <br />Prediction Market</h1>
+    <div class="title">
+      <h1>Bitcoin’s First <br />Peer to Peer <br />Prediction Market</h1>
 
-    <p>
-      Vala is an open-source platform for traders and entrepreneurs to create and use decentralized betting markets. It
-      lets you trade event derivates and earn by creating new markets or providing an Oracle service. It runs on an open
-      protocol on Bitcoin SV.
-    </p>
+      <p>Bet on anything you can imagine using Bitcoin SV.</p>
+    </div>
+    <LandingpageLogo />
   </div>
 
   <WaitlistSignup />
-
-  <!-- <div class="button-group">
-  <a href="#/markets"><sl-button>Discover Forecasts</sl-button></a>
-  <a href="#/register"><sl-button>Start Trading</sl-button></a>
-  <a href="#/register"><sl-button>Create new Market</sl-button></a>
-  <a href="#/register"><sl-button>Become an Oracle</sl-button></a>
-</div> -->
 
   <div class="paragraphs">
     <sl-card>
@@ -72,16 +66,32 @@
     font-weight: bold;
   }
 
-  .header {
+  .banner {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    margin-top: 5rem;
-    gap: 4rem;
-    text-align: center;
   }
 
-  .header > p {
+  .header {
+    width: 100%;
+    display: flex;
+    gap: 1rem;
+    position: relative;
+    flex-wrap: wrap-reverse;
+    justify-content: center;
+  }
+
+  .title {
+    justify-content: center;
+    gap: 4rem;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 3.375rem;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .title > p {
     width: min(95%, 40rem);
     font-size: 1.2rem;
   }

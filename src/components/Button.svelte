@@ -28,6 +28,6 @@
   }
 
   .active {
-    opacity: 100%;
+    font-weight: 700;
   }
 </style>
