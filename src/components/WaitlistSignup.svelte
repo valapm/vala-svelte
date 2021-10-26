@@ -4,13 +4,12 @@
   import { EMAIL_REGEX } from "../utils/email"
   import { getNotificationsContext } from "svelte-notifications"
 
+  import Button from "./Button.svelte"
+
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
   import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js"
 
   const { addNotification } = getNotificationsContext()
-
-  let email_input
-  let submit_button
 
   let email = ""
   let loading = false
@@ -59,16 +58,8 @@
 
 {#if !signedUp}
   <div class="waitlist_input">
-    <sl-input
-      placeholder="Email"
-      name="email"
-      bind:this={email_input}
-      value={email}
-      on:input={() => (email = email_input.value)}
-    />
-    <sl-button type="primary" on:click={joinWaitlist} bind:this={submit_button} disabled={!isValidEmail} {loading}
-      >Join Waitlist</sl-button
-    >
+    <input type="email" placeholder="Email" name="email" bind:value={email} />
+    <Button type="blue" on:click={joinWaitlist} disabled={!isValidEmail} {loading}>Join Waitlist</Button>
   </div>
 {:else}
   <p>Thank you for joining!</p>
@@ -77,12 +68,21 @@
 <style>
   .waitlist_input {
     display: flex;
-    flex-direction: column;
     gap: 1rem;
     align-items: center;
   }
 
   p {
     font-size: 1.5rem;
+  }
+
+  input {
+    background-color: #323841;
+    border-radius: 0.375rem;
+    padding: 0.625rem 1.5rem;
+  }
+
+  input:focus {
+    outline: none;
   }
 </style>

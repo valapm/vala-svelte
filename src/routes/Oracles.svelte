@@ -2,6 +2,7 @@
   import { gql } from "graphql-request"
   import { gqlClient } from "../utils/graphql"
   import { push } from "svelte-spa-router"
+  import { fade } from "svelte/transition"
 
   import InlineOracle from "../components/InlineOracle.svelte"
   import Searchbar from "../components/Searchbar.svelte"
@@ -23,7 +24,7 @@
   $: gqlClient.request(oracleQuery).then(res => (oracles = res.oracle))
 </script>
 
-<div class="container">
+<div class="container" transition:fade={{ duration: 300 }}>
   <div class="oracle-list">
     <Searchbar bind:value={search} />
     {#each oracles as oracle}

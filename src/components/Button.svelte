@@ -1,9 +1,17 @@
 <script>
+  import { createEventDispatcher } from "svelte"
+
+  const dispatch = createEventDispatcher()
+
   export let type = ""
   export let active = false
+  export let disabled = false
+  export let loading = false
 </script>
 
-<button class="{type} {active ? 'active' : ''}"><slot /></button>
+<button on:click={() => dispatch("click")} class="{type} {disabled ? 'disabled' : ''} {active ? 'active' : ''}"
+  ><slot /></button
+>
 
 <style>
   button {
@@ -18,7 +26,13 @@
   }
 
   .filled {
+    border: none;
     background-color: #01a781;
+  }
+
+  .blue {
+    border: none;
+    background-color: #5184e7;
   }
 
   .text {
@@ -29,5 +43,9 @@
 
   .active {
     font-weight: 700;
+  }
+
+  .disabled {
+    opacity: 50%;
   }
 </style>

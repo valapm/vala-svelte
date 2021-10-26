@@ -2,6 +2,7 @@
   import { onMount } from "svelte"
   import { seed } from "../store/wallet"
   import { push } from "svelte-spa-router"
+  import { fade } from "svelte/transition"
 
   import WaitlistSignup from "../components/WaitlistSignup.svelte"
   import LandingpageLogo from "../components/LandingpageLogo.svelte"
@@ -14,19 +15,18 @@
   })
 </script>
 
-<main>
+<main transition:fade={{ duration: 300 }}>
   <div class="header">
     <div class="title">
       <h1>Bitcoin’s First <br />Peer to Peer <br />Prediction Market</h1>
 
       <p>Bet on anything you can imagine using Bitcoin SV.</p>
+      <WaitlistSignup />
     </div>
     <LandingpageLogo />
   </div>
 
-  <WaitlistSignup />
-
-  <div class="paragraphs">
+  <!-- <div class="paragraphs">
     <sl-card>
       <p>Vala aggregates traders knowledge about future events, making it public and accessible to all.</p>
       <a href="#/markets"><sl-button type="primary">Discover Forecasts</sl-button></a>
@@ -50,7 +50,7 @@
       <p>Use Proof of Work to signal commitment in your reputation and earn money by helping to resolve markets</p>
       <a href="#/register"><sl-button type="primary">Become an Oracle</sl-button></a>
     </sl-card>
-  </div>
+  </div> -->
 </main>
 
 <style>
