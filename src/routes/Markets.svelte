@@ -106,7 +106,7 @@
   // const [send, receive] = crossfade({ duration: 300, fallback: fade })
 </script>
 
-<div class="markets" transition:fade={{ duration: 300 }}>
+<div class="markets" in:fade={{ duration: 300 }} out:fade={{ duration: 0 }}>
   <div class="search">
     <Searchbar bind:value={search} />
     <SearchOptions {sortOptions} {filterOptions} bind:sort bind:filter bind:direction />

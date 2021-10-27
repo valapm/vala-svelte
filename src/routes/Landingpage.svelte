@@ -15,7 +15,7 @@
   })
 </script>
 
-<main transition:fade={{ duration: 300 }}>
+<main in:fade={{ duration: 300 }} out:fade={{ duration: 0 }}>
   <div class="header">
     <div class="title">
       <h1>Bitcoin’s First <br />Peer to Peer <br />Prediction Market</h1>
