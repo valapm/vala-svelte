@@ -63,7 +63,7 @@
       <!-- <a href="#/options"><img class="dropdown" src="./icons/bars.svg" alt="dropdown" /></a> -->
       <!-- <button on:click={() => (dropdown = true)}><img class="dropdown" src="./icons/bars.svg" alt="dropdown" /></button> -->
       {#if $seed}
-        <a href="#/create"><Button type="filled">Create Market</Button></a>
+        <!-- <a href="#/create"><Button type="filled">Create Market</Button></a> -->
         <sl-dropdown>
           <sl-icon-button slot="trigger" name="list" label="Menu" />
           <sl-menu>

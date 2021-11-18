@@ -6,7 +6,9 @@ import { seededBytes } from "../utils/buffer"
 const rabin = new rab.RabinSignature()
 
 export const rabinPrivKey = derived(hdPrivateKey, $hdPrivateKey =>
-  $hdPrivateKey ? rabin.generatePrivKeyFromSeed(seededBytes($hdPrivateKey.toString(), 2048)) : undefined
+  $hdPrivateKey
+    ? rabin.generatePrivKeyFromSeed(seededBytes($hdPrivateKey.toString(), 2048))
+    : undefined
 )
 
 // export const rabinPrivKey = derived(hdPrivateKey, $hdPrivateKey => {

@@ -65,7 +65,9 @@
       } }, where: { resolve: {_ilike: "%${search}%"}, version: { _in: ${JSON.stringify(versions)}}, ${filterQuery}}) {
         market_oracles_oracles {
           oracle {
-            name
+            oracleStateByCurrentstateid {
+              domain
+            }
           }
         }
         market_state {
