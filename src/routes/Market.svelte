@@ -24,6 +24,10 @@
   import RedeemModal from "../components/RedeemModal.svelte"
   import NotFound from "../components/NotFound.svelte"
   import LiquidityCard from "../components/LiquidityCard.svelte"
+  import SubHeader from "../components/SubHeader.svelte"
+  import OptionPanel from "../components/OptionPanel.svelte"
+  import MarketHeader from "../components/MarketHeader.svelte"
+  import MarketBanner from "../components/MarketBanner.svelte"
 
   import SlCard from "@shoelace-style/shoelace/dist/components/card/card.js"
   import SlFormatNumber from "@shoelace-style/shoelace/dist/components/format-number/format-number"
@@ -46,6 +50,7 @@
         version
         liquidityFee
         market_state {
+          totalSatVolume
           accLiquidityFeePool
           liquidityPoints
           liquidityFeePool
@@ -53,8 +58,9 @@
           market_oracles {
             committed
             oracle {
-              name
-              burnedSats
+              oracleStateByCurrentstateid {
+                domain
+              }
               pubKey
             }
           }
@@ -219,7 +225,14 @@
     market = await getMarket()
     loading = false
   })
+
+  $: status = market && market.market_state.decided ? "Resolved" : "Open"
 </script>
+
+<SubHeader>
+  <button class="selected">Overview</button>
+  <button>Details</button>
+</SubHeader>
 
 {#if market && $seed}
   <RedeemModal {market} bind:this={redeem_modal} {balance} on:update={e => updateMarket(e.detail.balance)} />
@@ -233,85 +246,109 @@
   />
 {/if}
 
-<div class="market">
+<main>
   {#if loading}
     loading...
   {:else if market}
-    <h1>
-      {market.resolve}
-
-      <div>
-        <sl-icon-button on:click={pop} name="arrow-left" label="Go Back" />
-        <a href={`https://${testnet ? "test." : ""}whatsonchain.com/tx/${params.firstTxTxid}`} class="txid">
-          {params.firstTxTxid.slice(0, 20)}...</a
-        >
+    <div class="main-panel">
+      <MarketHeader {market} />
+      <MarketBanner {market} />
+      <!-- <a href={`https://${testnet ? "test." : ""}whatsonchain.com/tx/${params.firstTxTxid}`} class="txid">
+        {params.firstTxTxid.slice(0, 20)}...</a
+      > -->
+      <div class="chart">
+        <Chart {market} />
       </div>
-    </h1>
-
-    <div class="chart">
-      <Chart {market} />
-    </div>
-    <!-- <AnimatedNumber {num} />
+      <!-- <AnimatedNumber {num} />
     <button on:click={() => (num = num + 1000)}> Increase </button> -->
 
-    {#if !$seed}
-      <a href="#/login"><sl-button type="primary">Login to trade</sl-button></a>
-    {/if}
+      {#if !$seed}
+        <a href="#/login"><sl-button type="primary">Login to trade</sl-button></a>
+      {/if}
 
-    <div class="container">
-      <div class="cards">
-        <div class="full-width">
-          <OutcomeCard
-            {market}
-            {balance}
-            on:buy={e => payment_modal.show("buy", e.detail.option)}
-            on:sell={e => payment_modal.show("sell", e.detail.option)}
-          />
+      <div class="container">
+        <div class="cards">
+          <div class="full-width">
+            <OutcomeCard
+              {market}
+              {balance}
+              on:buy={e => payment_modal.show("buy", e.detail.option)}
+              on:sell={e => payment_modal.show("sell", e.detail.option)}
+            />
+          </div>
+
+          <div class="card-wide">
+            <MarketDetailsCard {market} />
+          </div>
+
+          <OracleCard market_oracles={market.market_state.market_oracles} />
+
+          {#if $seed && compatibleVersion}
+            <MarketMenu
+              {balance}
+              {market}
+              on:update={e => updateMarket(e.detail.balance)}
+              on:buy={e => payment_modal.show("buy", e.detail.option)}
+              on:sell={e => payment_modal.show("sell", e.detail.option)}
+              on:redeemInvalid={e => redeem_modal.show("redeemInvalid")}
+              on:redeemWinning={e => redeem_modal.show("redeemWinning")}
+              on:extractLiquidity={e => redeem_modal.show("extractLiquidity")}
+            />
+          {/if}
         </div>
 
-        <div class="card-wide">
-          <MarketDetailsCard {market} />
-        </div>
-
-        <OracleCard market_oracles={market.market_state.market_oracles} />
-
-        {#if $seed && compatibleVersion}
-          <MarketMenu
-            {balance}
+        {#if existingEntry && existingEntry.liquidity}
+          <LiquidityCard
             {market}
-            on:update={e => updateMarket(e.detail.balance)}
-            on:buy={e => payment_modal.show("buy", e.detail.option)}
-            on:sell={e => payment_modal.show("sell", e.detail.option)}
-            on:redeemInvalid={e => redeem_modal.show("redeemInvalid")}
-            on:redeemWinning={e => redeem_modal.show("redeemWinning")}
-            on:extractLiquidity={e => redeem_modal.show("extractLiquidity")}
+            entry={existingEntry}
+            on:add={e => payment_modal.show("buy", -1)}
+            on:remove={e => payment_modal.show("sell", -1)}
+            on:redeem={e => updateMarket(balance, true)}
           />
         {/if}
+
+        {#if market.details}
+          <sl-card>
+            <div slot="header">Details</div>
+            {market.details}</sl-card
+          >
+        {/if}
       </div>
+    </div>
 
-      {#if existingEntry && existingEntry.liquidity}
-        <LiquidityCard
-          {market}
-          entry={existingEntry}
-          on:add={e => payment_modal.show("buy", -1)}
-          on:remove={e => payment_modal.show("sell", -1)}
-          on:redeem={e => updateMarket(balance, true)}
-        />
-      {/if}
-
-      {#if market.details}
-        <sl-card>
-          <div slot="header">Details</div>
-          {market.details}</sl-card
-        >
-      {/if}
+    <div class="side-panel">
+      {#each market.market_state.shares as shares, index}
+        <OptionPanel />
+      {/each}
     </div>
   {:else}
     <NotFound />
   {/if}
-</div>
+</main>
 
 <style>
+  main {
+    width: min(65rem, 95%);
+    display: flex;
+    margin-top: 3.125rem;
+    gap: 5.5rem;
+  }
+
+  .main-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    align-items: center;
+    max-width: 100%;
+  }
+
+  .side-panel {
+    width: 18.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
   h1 {
     font-size: 2.3rem;
     text-align: center;
@@ -328,16 +365,8 @@
     font-size: 1.3rem;
   }
 
-  .market {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    margin: 4rem 0;
-    align-items: center;
-  }
-
   .chart {
-    width: min(95%, 70rem);
+    width: 100%;
   }
 
   .cards {

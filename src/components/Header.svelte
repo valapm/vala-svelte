@@ -98,7 +98,7 @@
   }
 
   .menu-main {
-    width: min(65rem, 100%);
+    width: min(65rem, 95%);
     height: 100%;
     gap: 2rem;
     display: flex;

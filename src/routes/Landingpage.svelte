@@ -59,6 +59,7 @@
     flex-direction: column;
     align-items: center;
     gap: 6rem;
+    width: min(65rem, 95%);
   }
 
   h1 {

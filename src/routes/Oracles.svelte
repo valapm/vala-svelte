@@ -34,6 +34,10 @@
 </div>
 
 <style>
+  .container {
+    width: min(65rem, 95%);
+  }
+
   .oracle-list {
     display: flex;
     flex-direction: column;

@@ -92,6 +92,7 @@
     align-items: center;
     gap: 3rem;
     margin-bottom: 5rem;
+    width: min(65rem, 95%);
   }
 
   .balances {

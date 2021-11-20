@@ -191,8 +191,9 @@
     top: 50%;
     gap: 2rem;
     text-align: center;
-    width: min(90%, 15rem);
+    /* width: min(90%, 15rem); */
     align-items: center;
+    width: min(65rem, 100%);
   }
 
   .login form {

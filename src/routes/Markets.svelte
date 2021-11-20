@@ -115,7 +115,7 @@
   </div>
 
   <Masonry
-    items={marketArray.map((market, index) => {
+    items={markets.map((market, index) => {
       return { ...market, id: market.marketStateByFirststateid.transaction.txid + index }
     })}
     minColWidth={remToPixels(20.625)}
@@ -147,6 +147,7 @@
     flex-direction: column;
     align-items: center;
     width: 100%;
+    width: min(65rem, 95%);
   }
 
   .search {

@@ -8,19 +8,12 @@
 
 <Notifications item={Notification}>
   <Header />
-
   <div>
-    <main>
-      <Router {routes} />
-    </main>
+    <Router {routes} />
   </div>
 </Notifications>
 
 <style>
-  main {
-    width: min(65rem, 100%);
-  }
-
   div {
     display: flex;
     flex-direction: column;

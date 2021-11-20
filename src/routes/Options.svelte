@@ -50,5 +50,6 @@
     flex-direction: column;
     align-items: center;
     gap: 2rem;
+    width: min(65rem, 95%);
   }
 </style>

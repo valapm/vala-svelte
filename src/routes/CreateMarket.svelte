@@ -301,6 +301,7 @@
     flex-direction: column;
     gap: 2rem;
     align-items: center;
+    width: min(65rem, 95%);
   }
 
   .content {
