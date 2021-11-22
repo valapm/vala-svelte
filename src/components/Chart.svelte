@@ -10,9 +10,9 @@
 
   export let market
 
-  let ctx
+  let canvas
 
-  const colors = ["#ff6384", "#36a2eb", "#4bc0c0", "#ffcd56", "#ff9f40", "#9966ff"]
+  const colors = ["#FF0060", "#00ACFF", "#C4A4FF", "#00FFE0", "#05FF00", "#0029FF"]
 
   const priceQuery = gql`
   {
@@ -138,19 +138,26 @@
       }
     }
 
+    // const ctx = canvas.getContext("2d")
+
     return shareData.map((data, index) => {
+      // const gradient = ctx.createLinearGradient(0, 0, 0, 200)
+      // gradient.addColorStop(0, colors[index % 6])
+      // gradient.addColorStop(1, "rgba(255,255,255,0)")
+
       return {
         label: market.options[index].name,
         data: shareData[index],
         fill: false,
         cubicInterpolationMode: "monotone",
         borderColor: [colors[index % 6]]
+        // backgroundColor: gradient // Only works after canvas is loaded
       }
     })
   }
 
   function getChart() {
-    return new Chart(ctx, {
+    return new Chart(canvas, {
       type: "line",
       data: {
         labels,
@@ -196,4 +203,4 @@
   })
 </script>
 
-<canvas bind:this={ctx} width="400" height="200" />
+<canvas bind:this={canvas} width="400" height="200" />

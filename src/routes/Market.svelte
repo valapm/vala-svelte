@@ -28,6 +28,8 @@
   import OptionPanel from "../components/OptionPanel.svelte"
   import MarketHeader from "../components/MarketHeader.svelte"
   import MarketBanner from "../components/MarketBanner.svelte"
+  import Positions from "../components/Positions.svelte"
+  import LiquidityPanel from "../components/LiquidityPanel.svelte"
 
   import SlCard from "@shoelace-style/shoelace/dist/components/card/card.js"
   import SlFormatNumber from "@shoelace-style/shoelace/dist/components/format-number/format-number"
@@ -100,6 +102,8 @@
 
   let payment_modal
   let redeem_modal
+
+  let balanceTab = "positions"
 
   let market
 
@@ -264,6 +268,29 @@
 
       {#if !$seed}
         <a href="#/login"><sl-button type="primary">Login to trade</sl-button></a>
+      {:else}
+        <div id="balances">
+          <button on:click={() => (balanceTab = "positions")} style={balanceTab === "positions" ? "color: white;" : ""}
+            >My Positions</button
+          >
+          <button on:click={() => (balanceTab = "liquidity")} style={balanceTab === "liquidity" ? "color: white;" : ""}
+            >My Liquidity</button
+          >
+        </div>
+
+        {#if balanceTab === "positions"}
+          <Positions {market} {balance} />
+        {:else if balanceTab === "liquidity"}
+          {#if existingEntry && existingEntry.liquidity}
+            <LiquidityPanel
+              {market}
+              entry={existingEntry}
+              on:add={e => payment_modal.show("buy", -1)}
+              on:remove={e => payment_modal.show("sell", -1)}
+              on:redeem={e => updateMarket(balance, true)}
+            />
+          {/if}
+        {/if}
       {/if}
 
       <div class="container">
@@ -391,5 +418,15 @@
     font-size: var(--sl-font-size-x-small);
     color: var(--sl-color-gray-400);
     margin: 0.2rem;
+  }
+
+  #balances {
+    font-size: 1.25rem;
+    display: flex;
+    gap: 2.5rem;
+    color: rgba(255, 255, 255, 0.5);
+    justify-content: flex-start;
+    font-weight: 500;
+    width: 100%;
   }
 </style>

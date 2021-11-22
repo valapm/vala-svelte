@@ -39,7 +39,6 @@
   font-style: normal;
 }
 
-
 @font-face {
   font-family: "Roboto Mono";
   src: url("/fonts/Roboto_Mono/RobotoMono-VariableFont_wght.ttf") format("truetype");
@@ -55,8 +54,8 @@
 }
 
 body {
-  background-color: #272C33;
-  font-family: 'Roboto', sans-serif;
+  background-color: #272c33;
+  font-family: "Roboto", sans-serif;
   min-height: 100vh;
 
   color: white;
@@ -73,9 +72,6 @@ body {
 *:focus {
   outline: none;
 }
-
-
-
 
 :root {
   /* Shoelace colors */
