@@ -49,15 +49,28 @@ export let address = derived(
 export let fetchedUtxos = derived(
   address,
   ($address, set) => {
-    if (window.localStorage.utxos) {
-      set(JSON.parse(window.localStorage.utxos))
-    }
-
+    // Periodically fetch UTXOs from whatsonchain
     async function fetchUtxos() {
       if ($address) {
         const utxos = await fetchUTXOs($address.hashBuffer.toString("hex"), testnet)
-        set(utxos)
-        window.localStorage.utxos = JSON.stringify(utxos)
+
+        // Add new, not yet seen outputs to store
+        outputs.update(outs => {
+          for (const utxo of utxos) {
+            const path = utxo.txId + "/" + utxo.outputIndex
+            if (!outs[path]) {
+              outs[path] = {
+                txId: utxo.txId,
+                outputIndex: utxo.outputIndex,
+                spent: false,
+                script: utxo.script,
+                satoshis: utxo.satoshis
+              }
+            }
+          }
+
+          return outs
+        })
       }
     }
 
@@ -70,28 +83,17 @@ export let fetchedUtxos = derived(
   null
 )
 
-export let utxos = writableDerived(
-  fetchedUtxos,
-  $fetchedUtxos => {
-    const currentUtxos = $fetchedUtxos
-      ? $fetchedUtxos
-      : window.localStorage.utxos
-      ? JSON.parse(window.localStorage.utxos)
-      : []
-    return currentUtxos.map(utxo => bsv.Transaction.UnspentOutput(utxo))
-  },
-  (newUtxos, set) => {
-    window.localStorage.utxos = JSON.stringify(
-      newUtxos.map(output => {
-        return {
-          txId: output.txId,
-          outputIndex: output.outputIndex,
-          satoshis: output.satoshis,
-          script: output.script.toHex()
-        }
-      })
-    )
-  },
+export let outputs = persistentWritable("outputs", {}, set => {
+  // Required to start periodic fetching
+  fetchedUtxos.subscribe(_ => {})
+})
+
+export let utxos = derived(
+  outputs,
+  $outputs => Object.values($outputs).filter(output => !output.spent),
+  // .map(output => {
+  //   return { ...output, script: bsv.Script.fromHex(output.script) }
+  // })
   []
 )
 

@@ -9,22 +9,26 @@
   $: totalInvested =
     (lmsr.getLmsrSats({ liquidity: market.market_state.liquidity, shares: market.market_state.shares }) * $price) /
     100000000
-  $: totalVolume = (market.market_state.totalSatVolume * $price) / 100000000
-
-  $: props = {
-    "Total Volume": formatUSD(totalVolume),
-    "Total Invested": formatUSD(totalInvested),
-    "Trading Fees": fees + "%"
-  }
+  // $: totalVolume = (market.market_state.totalSatVolume * $price) / 100000000
+  $: marketOracle = market.market_state.market_oracles[0]
+  $: oracleId = marketOracle.oracle.oracleStateByCurrentstateid
+    ? marketOracle.oracle.oracleStateByCurrentstateid.domain
+    : "????"
 </script>
 
 <div id="banner">
-  {#each Object.entries(props) as [header, value]}
-    <div>
-      <h2>{header}</h2>
-      <div>{value}</div>
-    </div>
-  {/each}
+  <div>
+    <h2>Oracle</h2>
+    <div>{oracleId}</div>
+  </div>
+  <div>
+    <h2>Total Invested</h2>
+    <div>{formatUSD(totalInvested)}</div>
+  </div>
+  <div>
+    <h2>Trading Fees</h2>
+    <div>{fees}%</div>
+  </div>
 </div>
 
 <style>

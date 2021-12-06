@@ -6,14 +6,9 @@
   $: status = market && market.market_state.decided ? "Resolved" : "Live"
   $: creationDate =
     market && getCreationDate(market).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })
-  $: marketOracle = market.market_state.market_oracles[0]
-  $: oracleId = marketOracle.oracle.oracleStateByCurrentstateid
-    ? marketOracle.oracle.oracleStateByCurrentstateid.domain
-    : "????"
 </script>
 
 <div id="title">
-  <div id="oracle">{oracleId}</div>
   <h1>{market.resolve}</h1>
   <div id="subheader">
     <div id="market-dates">Created: {creationDate}</div>
@@ -30,10 +25,6 @@
     display: flex;
     flex-direction: column;
     gap: 0.375rem;
-  }
-
-  #oracle {
-    font-size: 0.75rem;
   }
 
   h1 {
