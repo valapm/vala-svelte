@@ -161,10 +161,10 @@
     }`
 
   async function update() {
-    const oracleDetails = JSON.stringify({
+    const oracleDetails = {
       domain: domainName,
-      details: details
-    })
+      description: details
+    }
 
     let prevTx
     if (oracle.oracleStateByCurrentstateid) {

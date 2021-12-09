@@ -21,7 +21,7 @@
     "@tsconfig/svelte": "^1.0.0",
     "autoprefixer": "^10.3.1",
     "bigint-buffer": "^1.1.5",
-    "bitcoin-predict": "^0.4.0",
+    "bitcoin-predict": "^0.4.1",
     "buffer": "^6.0.3",
     "chart.js": "^3.4.1",
     "chartjs-adapter-moment": "^1.0.0",
