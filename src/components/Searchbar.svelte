@@ -1,10 +1,11 @@
 <script>
   export let value = ""
+  export let placeholder = "Search"
 </script>
 
 <div>
   <img src="./icons/search.svg" alt="search" />
-  <input type="text" placeholder="Search Bets" bind:value />
+  <input type="text" {placeholder} bind:value />
 </div>
 
 <style>

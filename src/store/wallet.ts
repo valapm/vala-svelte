@@ -56,6 +56,8 @@ export let fetchedUtxos = derived(
 
         // Add new, not yet seen outputs to store
         outputs.update(outs => {
+          const newOuts = {}
+
           for (const utxo of utxos) {
             const path = utxo.txId + "/" + utxo.outputIndex
             if (!outs[path]) {
@@ -64,8 +66,11 @@ export let fetchedUtxos = derived(
                 outputIndex: utxo.outputIndex,
                 spent: false,
                 script: utxo.script,
-                satoshis: utxo.satoshis
+                satoshis: utxo.satoshis,
+                testnet
               }
+            } else {
+              newOuts[path] = { ...outs[path] }
             }
           }
 
@@ -89,8 +94,8 @@ export let outputs = persistentWritable("outputs", {}, set => {
 })
 
 export let utxos = derived(
-  outputs,
-  $outputs => Object.values($outputs).filter(output => !output.spent),
+  [outputs, address],
+  ([$outputs, $address]) => Object.values($outputs).filter(output => !output.spent && output.testnet === testnet),
   // .map(output => {
   //   return { ...output, script: bsv.Script.fromHex(output.script) }
   // })
@@ -112,3 +117,15 @@ export let usdBalance = derived(
   },
   0
 )
+
+export function updateOutputs(tx: bsv.Transaction) {
+  // Mark outputs as spent
+  outputs.update(outs => {
+    for (const [index, input] of tx.inputs.entries()) {
+      const path = tx.hash + "/" + index
+
+      if (outs[path]) outs[path].spent = true
+      return outs
+    }
+  })
+}

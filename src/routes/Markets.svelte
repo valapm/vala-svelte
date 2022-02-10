@@ -2,7 +2,7 @@
   import { gql } from "graphql-request"
   import { gqlClient } from "../utils/graphql"
   import { seed } from "../store/wallet"
-  import { pm } from "bitcoin-predict"
+  import { pm, contracts } from "bitcoin-predict"
   import { onMount } from "svelte"
   import { tick } from "svelte"
   import { fade, crossfade } from "svelte/transition"
@@ -56,23 +56,21 @@
 
   let grid
 
-  const versions = pm.versions.map(v => v.identifier)
+  const versions = contracts.marketContracts.map(v => v.identifier)
 
   $: marketQuery = gql`
     {
       market(order_by: { ${
         orderQueries[sort]
       } }, where: { resolve: {_ilike: "%${search}%"}, version: { _in: ${JSON.stringify(versions)}}, ${filterQuery}}) {
-        market_oracles_oracles {
-          oracle {
-            oracleStateByCurrentstateid {
-              domain
-            }
-          }
-        }
         market_state {
           market_oracles {
             committed
+            oracle {
+              oracleStateByCurrentstateid {
+                domain
+              }
+            }
           }
           satoshis
           decided
@@ -81,11 +79,13 @@
           decision
         }
         marketStateByFirststateid {
-          transaction {
-            txid
-            broadcastedAt
-            minerTimestamp
-            processedAt
+          state {
+            transaction {
+              txid
+              broadcastedAt
+              minerTimestamp
+              processedAt
+            }
           }
         }
         resolve
@@ -110,7 +110,7 @@
 
 <div class="markets" in:fade={{ duration: 300 }} out:fade={{ duration: 0 }}>
   <div class="search">
-    <Searchbar bind:value={search} />
+    <Searchbar bind:value={search} placeholder="Search Bets" />
     <SearchOptions {sortOptions} {filterOptions} bind:sort bind:filter bind:direction />
   </div>
 
@@ -146,7 +146,6 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 100%;
     width: min(65rem, 95%);
   }
 

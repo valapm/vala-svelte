@@ -33,8 +33,10 @@
     {
       market(where: { market_state: { market_oracles: { oraclePubKey: {_eq: "${$rabinPubKey.toString()}"}, committed: {_eq: true}}, decided: {_eq: false}}}) {
         marketStateByFirststateid {
-          transaction {
-            txid
+          state {
+            transaction {
+              txid
+            }
           }
         }
         resolve
@@ -42,7 +44,9 @@
           name
         }
         market_state {
-          transactionTxid
+          state {
+            transactionTxid
+          }
           shares
           liquidity
         }
@@ -54,8 +58,10 @@
       {
       market(where: { market_state: { market_oracles: {oraclePubKey: {_eq: "${$rabinPubKey.toString()}"}, committed: {_eq: true}}, decided: {_eq: true}}}) {
         marketStateByFirststateid {
-          transaction {
-            txid
+          state {
+            transaction {
+              txid
+            }
           }
         }
         resolve
@@ -70,15 +76,29 @@
     {
       market(where: { market_state: { market_oracles: {oraclePubKey: {_eq: "${$rabinPubKey.toString()}"}, committed: {_eq: false}},  decided: {_eq: false}}}) {
         marketStateByFirststateid {
-          transaction {
-            txid
+          state {
+            transaction {
+              txid
+            }
           }
         }
         resolve
         market_state {
-          transactionTxid
+          state {
+            transactionTxid
+          }
           shares
           liquidity
+        }
+      }
+    }
+  `
+
+  const valaIndexTxQuery = gql`
+    {
+      state(where: { _not: { states: {} }, isValaIndex: { _eq: true } }) {
+        transaction {
+          hex
         }
       }
     }
@@ -153,32 +173,45 @@
         oracleStateByCurrentstateid {
           details
           domain
-          transaction {
-            hex
+          state {
+            transaction {
+              hex
+            }
+            outputIndex
           }
         }
       }
     }`
 
-  async function update() {
-    const oracleDetails = {
-      domain: domainName,
-      description: details
-    }
+  async function getNewOracleTx(): bsv.Transaction {
+    const valaState = (await gqlClient.request(valaIndexTxQuery)).state[0]
 
+    const prevTx = new bsv.Transaction()
+    prevTx.fromString(valaState.transaction.hex)
+
+    const newTx = bp.transaction.getNewOracleTx($rabinPubKey, prevTx)
+    bp.transaction.fundTx(newTx, $privateKey, $address, $utxos)
+
+    return newTx
+  }
+
+  async function update() {
     let prevTx
-    if (oracle.oracleStateByCurrentstateid) {
+    let prevOutputIndex
+
+    if (oracle && oracle.oracleStateByCurrentstateid) {
       prevTx = new bsv.Transaction()
-      prevTx.fromString(oracle.oracleStateByCurrentstateid.transaction.hex)
+      prevTx.fromString(oracle.oracleStateByCurrentstateid.state.transaction.hex)
+      prevOutputIndex = oracle.oracleStateByCurrentstateid.state.outputIndex
     } else {
       // Initialize oracle
-      const initTx = await bp.transaction.getOracleTx($rabinPubKey)
-      bp.transaction.fundTx(initTx, $privateKey, $address, $utxos)
+      const initTx = await getNewOracleTx()
 
       try {
-        await postTx(initTx, "oracle", testnet)
+        await postTx(initTx, testnet)
         await tick()
       } catch (e) {
+        console.error(e)
         addNotification({
           type: "danger",
           text: "Failed to broadcast transaction",
@@ -188,13 +221,19 @@
       }
 
       prevTx = initTx
+      prevOutputIndex = 0
     }
 
-    const tx = await bp.transaction.getOracleUpdateTx(prevTx, 0, oracleDetails, $rabinPrivKey)
-    bp.transaction.fundTx(tx, $privateKey, $address, $utxos)
+    const oracleDetails = {
+      domain: domainName,
+      description: details
+    }
+
+    const newTx = bp.transaction.getOracleUpdateTx(prevTx, prevOutputIndex, 0, oracleDetails, $rabinPrivKey)
+    bp.transaction.fundTx(newTx, $privateKey, $address, $utxos)
 
     try {
-      await postTx(tx, "oracle", testnet)
+      await postTx(newTx, testnet)
     } catch (e) {
       addNotification({
         type: "danger",
@@ -229,7 +268,7 @@
   }
 
   async function resolveMarket(market, vote: number) {
-    const currentTx = await getRawTx(market.market_state.transactionTxid)
+    const currentTx = await getRawTx(market.market_state.state.transactionTxid)
 
     console.log([currentTx, vote, $rabinPrivKey, $address, $utxos, $privateKey])
 
@@ -240,7 +279,7 @@
   }
 
   async function commitToMarket(market) {
-    const currentTx = await getRawTx(market.market_state.transactionTxid)
+    const currentTx = await getRawTx(market.market_state.state.transactionTxid)
 
     // const tx = buildTx(market)
     // fundTx(tx, privateKey, address, utxos)
@@ -254,14 +293,11 @@
   let oracle
   let burnUSD
 
-  $: changes =
-    oracle &&
-    oracle.oracleStateByCurrentstateid &&
-    (domainName !== oracle.oracleStateByCurrentstateid.domain || details !== oracle.oracleStateByCurrentstateid.details)
-
   onMount(async () => {
     const oracleData = await gqlClient.request(oracleQuery)
     oracle = oracleData.oracle[0]
+
+    console.log(oracle)
 
     if (oracle && oracle.oracleStateByCurrentstateid) {
       domainName = oracle.oracleStateByCurrentstateid.domain
@@ -281,13 +317,21 @@
       <button on:click={update}>Save</button>
     </div>
   {:else}
-    <input type="text" bind:value={domainName} />
+    <h1>Profile Settings</h1>
 
-    <textarea name="details" cols="30" rows="10" bind:value={details} />
+    <div id="settings">
+      <div class="setting">
+        <div>Domain name</div>
+        <input type="text" bind:value={domainName} />
+      </div>
 
-    {#if changes}
-      <button>Save</button>
-    {/if}
+      <div class="setting">
+        <div>Profile Description</div>
+        <textarea name="details" cols="30" rows="10" bind:value={details} />
+      </div>
+    </div>
+
+    <button on:click={update}>Save</button>
 
     {#await gqlClient.request(uncommittedMarketQuery) then res}
       {#if res.market.length > 0}
@@ -326,10 +370,17 @@
 <style>
   #oracle {
     display: flex;
-    gap: 7rem;
+    gap: 6rem;
     margin-top: 5.5rem;
     flex-direction: column;
     align-items: center;
+  }
+
+  #settings {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4rem;
   }
 
   h1 {
@@ -345,13 +396,23 @@
     width: 18rem;
   }
 
-  input {
+  input,
+  textarea {
     background-color: #323841;
-    padding: 0 1.25rem;
-    height: 2.8125rem;
     border-radius: 0.375rem;
     font-size: 1rem;
     font-weight: 500;
+    width: 100%;
+  }
+
+  input {
+    height: 2.8125rem;
+    padding: 0 1.25rem;
+  }
+
+  textarea {
+    padding: 1.25rem;
+    resize: none;
   }
 
   button {
@@ -362,5 +423,17 @@
     align-items: center;
     justify-content: center;
     border-radius: 0.375rem;
+    min-width: 10rem;
+  }
+
+  .setting {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .setting div {
+    opacity: 50%;
   }
 </style>

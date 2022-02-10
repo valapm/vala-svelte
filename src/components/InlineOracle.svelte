@@ -8,13 +8,12 @@
 
   export let oracle
 
-  $: burnedUSD = ($price * oracle.burnedSats) / 100000000
+  // $: burnedUSD = ($price * oracle.burnedSats) / 100000000
 </script>
 
 <sl-card on:click={() => dispatch("click")} class="oracle">
-  <h2>{oracle.name}</h2>
-  <h3>Burned</h3>
-  <p>${Math.round(burnedUSD * 100) / 100}</p>
+  <h2>{oracle.oracleStateByCurrentstateid.domain}</h2>
+  <p>{oracle.oracleStateByCurrentstateid.details}</p>
 </sl-card>
 
 <style>

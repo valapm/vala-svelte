@@ -4,16 +4,17 @@
   import { push } from "svelte-spa-router"
   import { fade } from "svelte/transition"
 
-  import InlineOracle from "../components/InlineOracle.svelte"
+  import OracleCard from "../components/OracleCard.svelte"
   import Searchbar from "../components/Searchbar.svelte"
 
   $: oracleQuery = gql`
     {
-      oracle(order_by: { burnedSats: desc }, where: { name: {_ilike: "%${search}%"}}) {
+      oracle(order_by: { market_oracles_aggregate: {count: desc} }, where: { oracleStateByCurrentstateid: { _or: [{ domain: {_ilike: "%${search}%"}}, {details: {_ilike: "%${search}%"}}]}}) {
         pubKey
-        name
-        burnedSats
-        burnTxTxid
+        oracleStateByCurrentstateid {
+          domain
+          details
+        }
       }
     }
   `
@@ -24,17 +25,22 @@
   $: gqlClient.request(oracleQuery).then(res => (oracles = res.oracle))
 </script>
 
-<div class="container" transition:fade={{ duration: 300 }}>
+<div id="oracles" transition:fade={{ duration: 300 }}>
+  <Searchbar bind:value={search} placeholder="Search Oracles" />
   <div class="oracle-list">
-    <Searchbar bind:value={search} />
     {#each oracles as oracle}
-      <InlineOracle {oracle} on:click={() => push("#/oracle/" + oracle.pubKey)} />
+      <OracleCard {oracle} on:click={() => push("#/oracle/" + oracle.pubKey)} />
     {/each}
   </div>
 </div>
 
 <style>
-  .container {
+  #oracles {
+    gap: 3.0625rem;
+    margin-top: 4.3125rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     width: min(65rem, 95%);
   }
 
@@ -42,6 +48,6 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    width: min(90%, 50rem);
+    width: 100%;
   }
 </style>

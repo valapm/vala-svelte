@@ -43,6 +43,7 @@
 
   .active {
     font-weight: 700;
+    opacity: 100%;
   }
 
   .disabled {
