@@ -14,6 +14,8 @@
   import { getNotificationsContext } from "svelte-notifications"
   import { tick } from "svelte"
 
+  import DnsInfo from "../components/DnsInfo.svelte"
+
   const { addNotification } = getNotificationsContext()
 
   const rabin = new rab.RabinSignature()
@@ -170,6 +172,7 @@
     query {
       oracle(where: {pubKey: {_eq: "${$rabinPubKey}"}}) {
         pubKey
+        hasCorrectDNS
         oracleStateByCurrentstateid {
           details
           domain
@@ -325,6 +328,10 @@
         <input type="text" bind:value={domainName} />
       </div>
 
+      {#if !oracle.hasCorrectDNS}
+        <DnsInfo {oracle} />
+      {/if}
+
       <div class="setting">
         <div>Profile Description</div>
         <textarea name="details" cols="30" rows="10" bind:value={details} />
@@ -379,8 +386,9 @@
   #settings {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 4rem;
+    width: min(90%, 25rem);
   }
 
   h1 {
