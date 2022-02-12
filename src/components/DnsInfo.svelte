@@ -1,5 +1,18 @@
 <script>
+  import { getNotificationsContext } from "svelte-notifications"
+
   export let oracle
+
+  const { addNotification } = getNotificationsContext()
+
+  async function copyValue() {
+    await navigator.clipboard.writeText(`vala:oracle:${oracle.pubKey}`)
+    addNotification({
+      type: "success",
+      text: "Copied to clipboard",
+      position: "top-right"
+    })
+  }
 </script>
 
 <div class="dns_info_box">
@@ -11,7 +24,10 @@
       To validate your domain name, please add the following DNS TXT record to your domain. This can be done in the
       control panel of your domain name registrar.
     </p>
-    <div class="warning">It can take up to a day for DNS changes to update.</div>
+    <div class="warning">
+      <img src="./icons/exclamation-circle.svg" alt="warning" />
+      It can take up to a day for DNS changes to update.
+    </div>
     <div class="dns_entry">
       <table>
         <thead>
@@ -25,7 +41,10 @@
           <tr>
             <td>TXT</td>
             <td>@</td>
-            <td class="entry_value">vala:oracle:{oracle.pubKey}</td>
+            <td class="entry_value">
+              <img src="./icons/copy.svg" alt="copy" on:click={copyValue} />
+              vala:oracle:{oracle.pubKey}
+            </td>
           </tr>
         </tbody>
       </table>
@@ -72,6 +91,9 @@
     border: 1px solid #dca52a;
     border-radius: 0.375rem;
     padding: 0.625rem;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
   }
 
   .dns_entry {
@@ -116,5 +138,14 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    /* display: flex;
+    align-items: center;
+    gap: 0.625rem; */
+  }
+
+  .entry_value img {
+    display: inline;
+    cursor: pointer;
+    margin-right: 0.625rem;
   }
 </style>

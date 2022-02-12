@@ -1,12 +1,12 @@
 import { writable as persistentWritable, derived as persistentDerived } from "svelte-persistent-store/dist/local"
-import { writable, readable, derived, Readable } from "svelte/store"
+import { writable, readable, derived, Readable, get } from "svelte/store"
 import { bsv } from "bitcoin-predict"
 import Mnemonic from "../utils/mnemonic"
 import { testnet } from "../config"
 import { getUtxos } from "../utils/utxo"
 import { price } from "./price"
 import { fetchUTXOs } from "../apis/whatsonchain"
-import writableDerived from "svelte-writable-derived"
+// import writableDerived from "svelte-writable-derived"
 
 // console.log(Mnemonic)
 
@@ -17,7 +17,9 @@ export let seed = persistentWritable("seed", null)
 export let hdPrivateKey = derived(
   seed,
   seed => {
-    return seed ? Mnemonic.fromString(seed).toHDPrivateKey("", testnet ? "testnet" : "livenet") : null
+    return seed
+      ? (Mnemonic.fromString(seed).toHDPrivateKey("", testnet ? "testnet" : "livenet") as bsv.HDPrivateKey)
+      : null
   },
   null
 )
@@ -119,13 +121,38 @@ export let usdBalance = derived(
 )
 
 export function updateOutputs(tx: bsv.Transaction) {
-  // Mark outputs as spent
   outputs.update(outs => {
+    const add = get(address)
+    const network = testnet ? "testnet" : "mainnet"
+
+    // Register newly created outputs
+    for (const [index, out] of tx.outputs.entries()) {
+      let payoutAddress
+      try {
+        payoutAddress = bsv.Address.fromScript(out.script, network)
+      } catch (e) {
+        continue
+      }
+
+      if (payoutAddress.toHex() === add.toHex()) {
+        const path = tx.hash + "/" + index
+        outs[path] = {
+          testnet,
+          spent: false,
+          outputIndex: index,
+          script: out.script.toHex(),
+          satoshis: out.satoshis,
+          txId: tx.hash
+        }
+      }
+    }
+
+    // Mark spent outputs as such
     for (const [index, input] of tx.inputs.entries()) {
-      const path = tx.hash + "/" + index
+      const path = input.prevTxId.toString("hex") + "/" + index
 
       if (outs[path]) outs[path].spent = true
-      return outs
     }
+    return outs
   })
 }

@@ -13,8 +13,10 @@
   import { postTx } from "../utils/api"
   import { getNotificationsContext } from "svelte-notifications"
   import { tick } from "svelte"
+  import { isValidUrl, parseHostname } from "../utils/url"
 
   import DnsInfo from "../components/DnsInfo.svelte"
+  import Button from "../components/VariantButton.svelte"
 
   const { addNotification } = getNotificationsContext()
 
@@ -198,9 +200,22 @@
     return newTx
   }
 
+  let loading = false
+
   async function update() {
+    loading = true
     let prevTx
     let prevOutputIndex
+
+    if (!isValidUrl(domainName)) {
+      addNotification({
+        type: "danger",
+        text: "Invalid domain name",
+        position: "top-right"
+      })
+      loading = false
+      return
+    }
 
     if (oracle && oracle.oracleStateByCurrentstateid) {
       prevTx = new bsv.Transaction()
@@ -220,6 +235,7 @@
           text: "Failed to broadcast transaction",
           position: "top-right"
         })
+        loading = false
         return
       }
 
@@ -243,11 +259,19 @@
         text: "Failed to broadcast transaction",
         position: "top-right"
       })
+      loading = false
       return
     }
 
+    addNotification({
+      type: "success",
+      text: "Profile saved",
+      position: "top-right"
+    })
+
     const oracleData = await gqlClient.request(oracleQuery)
     oracle = oracleData.oracle[0]
+    loading = false
   }
 
   // FIXME: Duplicate code in Market.svelte
@@ -303,7 +327,7 @@
     console.log(oracle)
 
     if (oracle && oracle.oracleStateByCurrentstateid) {
-      domainName = oracle.oracleStateByCurrentstateid.domain
+      domainName = parseHostname(oracle.oracleStateByCurrentstateid.domain)
       details = oracle.oracleStateByCurrentstateid.details
     }
 
@@ -317,14 +341,21 @@
 
     <div class="setup-form">
       <input bind:value={domainName} placeholder="Your domain name" type="text" />
-      <button on:click={update}>Save</button>
+      <Button {loading} on:click={update}>Save</Button>
     </div>
   {:else}
     <h1>Profile Settings</h1>
 
     <div id="settings">
       <div class="setting">
-        <div>Domain name</div>
+        <div>
+          Domain name
+          {#if !oracle.hasCorrectDNS}
+            <img src="./icons/exclamation-circle.svg" alt="invalid" />
+          {:else}
+            <img src="./icons/checkmark-circle.svg" alt="valid" />
+          {/if}
+        </div>
         <input type="text" bind:value={domainName} />
       </div>
 
@@ -338,7 +369,7 @@
       </div>
     </div>
 
-    <button on:click={update}>Save</button>
+    <Button {loading} on:click={update}>Save</Button>
 
     {#await gqlClient.request(uncommittedMarketQuery) then res}
       {#if res.market.length > 0}
@@ -423,17 +454,6 @@
     resize: none;
   }
 
-  button {
-    padding: 0.625rem 1.5rem;
-    background: linear-gradient(149.62deg, #01a781 17.39%, #00ffc5 124.46%);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0.375rem;
-    min-width: 10rem;
-  }
-
   .setting {
     display: flex;
     flex-direction: column;
@@ -443,5 +463,13 @@
 
   .setting div {
     opacity: 50%;
+    display: flex;
+    align-items: center;
+    height: 1rem;
+    gap: 0.5rem;
+  }
+
+  .setting img {
+    height: 100%;
   }
 </style>
