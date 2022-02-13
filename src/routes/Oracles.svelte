@@ -15,6 +15,23 @@
           domain
           details
         }
+        oracle_state {
+          state {
+            transaction {
+              processedAt
+            }
+          }
+        }
+        num_open_markets: market_oracles_aggregate(where: {market_state: {state: {_not: {states: {}}}, decided: {_eq: false}}}) {
+          aggregate {
+            count
+          }
+        }
+        num_resolved_markets: market_oracles_aggregate(where: {market_state: {state: {_not: {states: {}}}, decided: {_eq: true}}}) {
+          aggregate {
+            count
+          }
+        }
       }
     }
   `
@@ -29,7 +46,7 @@
   <Searchbar bind:value={search} placeholder="Search Oracles" />
   <div class="oracle-list">
     {#each oracles as oracle}
-      <OracleCard {oracle} on:click={() => push("#/oracle/" + oracle.pubKey)} />
+      <OracleCard {oracle} on:click={() => push("#/oracles/" + oracle.pubKey)} />
     {/each}
   </div>
 </div>
@@ -49,5 +66,9 @@
     flex-direction: column;
     gap: 1rem;
     width: 100%;
+  }
+
+  .oracle-list > :global(div) {
+    cursor: pointer;
   }
 </style>

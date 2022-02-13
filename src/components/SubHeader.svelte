@@ -21,7 +21,8 @@
     align-items: center;
   }
 
-  .menu :global(button) {
+  .menu :global(button),
+  .menu :global(a) {
     font-size: 0.875rem;
     color: #8d8d8d;
   }

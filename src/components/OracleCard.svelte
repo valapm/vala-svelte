@@ -1,24 +1,77 @@
 <script>
+  import { isValidUrl, parseHostname } from "../utils/url"
+  import { createEventDispatcher } from "svelte"
+
+  import Property from "./Property.svelte"
+
   export let oracle
+  export let large = false
+
+  const dispatch = createEventDispatcher()
+
+  $: hostname = parseHostname(oracle.oracleStateByCurrentstateid.domain)
+  $: joined = new Date(oracle.oracle_state.state.transaction.processedAt + "Z")
 </script>
 
-<a id="oracle" href="#/oracle/{oracle.pubKey}">
-  <img src="https://twetch.com/favicon.ico" alt="icon" />
-  <h2>{oracle.oracleStateByCurrentstateid.domain}</h2>
-</a>
+<div id="oracle_card" on:click={() => dispatch("click")}>
+  <div class="header">
+    <div id="title">
+      <img src="https://{hostname}/favicon.ico" alt="icon" />
+      <h2>{oracle.oracleStateByCurrentstateid.domain}</h2>
+    </div>
+    <div class="properties">
+      <Property label="Open Markets">{oracle.num_open_markets.aggregate.count}</Property>
+      <Property label="Resolved Markets">{oracle.num_resolved_markets.aggregate.count}</Property>
+    </div>
+  </div>
+
+  {#if large}
+    {oracle.oracleStateByCurrentstateid.details}
+
+    <div class="footer">
+      Joined: {new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(joined)}
+    </div>
+  {/if}
+</div>
 
 <style>
-  #oracle {
+  #oracle_card {
     width: 100%;
     background-color: #323841;
-    display: flex;
-    gap: 1rem;
     padding: 2rem;
-    align-items: center;
     border-radius: 0.375rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.75rem;
   }
 
-  img {
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    /* height: 6.5rem; */
+  }
+
+  .footer {
+    opacity: 50%;
+    font-weight: 700;
+    font-family: "Roboto Mono", sans-serif;
+  }
+
+  .properties {
+    display: flex;
+    gap: 2.125rem;
+  }
+
+  #title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .header img {
     height: 2.75rem;
   }
 
