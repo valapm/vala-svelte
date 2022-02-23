@@ -9,7 +9,7 @@
 
   $: oracleQuery = gql`
     {
-      oracle(order_by: { market_oracles_aggregate: {count: desc} }, where: { oracleStateByCurrentstateid: { _or: [{ domain: {_ilike: "%${search}%"}}, {details: {_ilike: "%${search}%"}}]}}) {
+      oracle(order_by: { market_oracles_aggregate: {count: desc} }, where: { hasCorrectDNS: {_eq: true}, oracleStateByCurrentstateid: { _or: [{ domain: {_ilike: "%${search}%"}}, {details: {_ilike: "%${search}%"}}]}}) {
         pubKey
         oracleStateByCurrentstateid {
           domain

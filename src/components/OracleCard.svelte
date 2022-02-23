@@ -1,6 +1,7 @@
 <script>
   import { isValidUrl, parseHostname } from "../utils/url"
   import { createEventDispatcher } from "svelte"
+  import { backendHost } from "../config"
 
   import Property from "./Property.svelte"
 
@@ -18,12 +19,7 @@
 <div id="oracle_card" on:click={() => dispatch("click")}>
   <div class="header">
     <div id="title">
-      <img
-        src="https://{hostname}/favicon.ico"
-        alt="icon"
-        bind:this={icon}
-        on:error={() => (icon.style.display = "none")}
-      />
+      <img src="{backendHost}/static/{hostname}.ico" alt="icon" bind:this={icon} />
       <h2>{oracle.oracleStateByCurrentstateid.domain}</h2>
     </div>
     <div class="properties">
