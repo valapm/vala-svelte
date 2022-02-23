@@ -9,6 +9,8 @@
 
   const dispatch = createEventDispatcher()
 
+  let icon
+
   $: hostname = parseHostname(oracle.oracleStateByCurrentstateid.domain)
   $: joined = new Date(oracle.oracle_state.state.transaction.processedAt + "Z")
 </script>
@@ -16,7 +18,12 @@
 <div id="oracle_card" on:click={() => dispatch("click")}>
   <div class="header">
     <div id="title">
-      <img src="https://{hostname}/favicon.ico" alt="icon" />
+      <img
+        src="https://{hostname}/favicon.ico"
+        alt="icon"
+        bind:this={icon}
+        on:error={() => (icon.style.display = "none")}
+      />
       <h2>{oracle.oracleStateByCurrentstateid.domain}</h2>
     </div>
     <div class="properties">

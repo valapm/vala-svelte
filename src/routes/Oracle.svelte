@@ -45,10 +45,8 @@
     }`
 
   onMount(async () => {
-    console.log(oracleQuery)
     const oracleData = await gqlClient.request(oracleQuery)
     oracle = oracleData.oracle[0]
-    console.log(oracleData)
   })
 </script>
 
