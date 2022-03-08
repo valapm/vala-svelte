@@ -82,7 +82,9 @@
 
   $: canComplete0 = resolve || details
   $: canComplete1 =
-    options.length >= 2 && !options.some(option => !option.name) && options.length <= bp.pm.versions[0].maxOptionCount
+    options.length >= 2 &&
+    !options.some(option => !option.name) &&
+    options.length <= bp.contracts.marketContracts[0].options.maxOptionCount
   $: canComplete2 = !!selectedOracle
   $: canComplete3 = creatorFee >= 0
   $: canCreateMarket = canComplete0 && canComplete1 && canComplete2 && canComplete3

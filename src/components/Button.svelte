@@ -27,7 +27,8 @@
 
   .filled {
     border: none;
-    background-color: #01a781;
+    /* background-color: #01a781; */
+    background: linear-gradient(149.62deg, #01a781 17.39%, #00ffc5 124.46%);
   }
 
   .blue {
@@ -48,5 +49,9 @@
 
   .disabled {
     opacity: 50%;
+  }
+
+  .wide {
+    padding: 0.625rem 3.5rem;
   }
 </style>

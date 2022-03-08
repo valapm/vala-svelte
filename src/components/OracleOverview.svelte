@@ -1,11 +1,13 @@
 <script>
   import OracleCard from "./OracleCard.svelte"
+  import Markets from "./Markets.svelte"
 
   export let oracle
 </script>
 
 <div id="overview">
   <OracleCard {oracle} large={true} />
+  <Markets {oracle} />
 </div>
 
 <style>

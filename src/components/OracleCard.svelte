@@ -19,7 +19,12 @@
 <div id="oracle_card" on:click={() => dispatch("click")}>
   <div class="header">
     <div id="title">
-      <img src="{backendHost}/static/{hostname}.ico" alt="icon" bind:this={icon} />
+      <img
+        src="{backendHost}/static/{hostname}.ico"
+        alt="icon"
+        bind:this={icon}
+        on:error={() => (icon.style.display = "none")}
+      />
       <h2>{oracle.oracleStateByCurrentstateid.domain}</h2>
     </div>
     <div class="properties">
