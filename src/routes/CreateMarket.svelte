@@ -4,14 +4,16 @@
   // import { getUtxos } from "../utils/utxo"
   import { oracles } from "../oracle"
   import { testnet, feeb } from "../config"
-  import { postMarketTx } from "../apis/web"
+  import { postTx } from "../utils/api"
   import { gql } from "graphql-request"
   import { gqlClient } from "../utils/graphql"
   import { price } from "../store/price"
   import { satBalance, utxos } from "../store/wallet"
   import { push } from "svelte-spa-router"
   import { tick } from "svelte"
+  import { rabinPubKey } from "../store/oracle"
   import { getNotificationsContext } from "svelte-notifications"
+  import { onMount } from "svelte"
 
   import SlInput from "@shoelace-style/shoelace/dist/components/input/input"
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button"
@@ -33,7 +35,6 @@
 
   let resolve
   let details
-  let selectedOracle
   let options = []
   let creatorFee = 0
   let liquidityFee = 0.2
@@ -46,6 +47,23 @@
 
   async function postMarket() {
     loading = true
+
+    const valaIndexRes = await gqlClient.request(gql`
+      query {
+        state(where: { isValaIndex: { _eq: true } }, order_by: { stateCount: desc }, limit: 1) {
+          transaction {
+            hex
+          }
+        }
+      }
+    `)
+
+    const valaIndex = valaIndexRes.state[0]
+
+    const valaIndexTx = new bp.bsv.Transaction()
+    valaIndexTx.fromString(valaIndex.transaction.hex)
+
+    const tx = bp.transaction.getNewMarketTx(market, valaIndexTx, valaIndex.outputIndex)
 
     if ($satBalance < tx.outputs[0].satoshis) {
       loading = false
@@ -63,21 +81,26 @@
 
     console.log(fundedTx)
 
-    const postRes = await postMarketTx(tx, testnet)
-    console.log(postRes)
+    await postTx(tx, testnet)
 
-    loading = false
-    if (postRes === "success") {
-      push(`#/market/${fundedTx.hash}`)
-    } else {
-      error = postRes.error
+    try {
+      await postTx(tx, testnet)
+      await tick()
+    } catch (e) {
+      console.error(e)
       addNotification({
         type: "danger",
         text: "Failed to broadcast transaction",
-        description: error,
+        description: e,
         position: "top-right"
       })
+      loading = false
+      return
     }
+
+    loading = false
+
+    push(`#/market/${fundedTx.hash}`)
   }
 
   $: canComplete0 = resolve || details
@@ -85,39 +108,41 @@
     options.length >= 2 &&
     !options.some(option => !option.name) &&
     options.length <= bp.contracts.marketContracts[0].options.maxOptionCount
-  $: canComplete2 = !!selectedOracle
-  $: canComplete3 = creatorFee >= 0
-  $: canCreateMarket = canComplete0 && canComplete1 && canComplete2 && canComplete3
+  $: canComplete2 = creatorFee >= 0
+  $: canCreateMarket = canComplete0 && canComplete1 && canComplete2
 
-  $: market = canCreateMarket
-    ? bp.pm.getNewMarket(
-        {
-          resolve,
-          details,
-          options: options.map(option => {
-            return {
-              name: option.name,
-              details: option.details
-            }
-          })
-        },
-        [
+  const contract = bp.contracts.marketContracts[0]
+
+  $: market =
+    step === 3
+      ? bp.pm.getNewMarket(
           {
-            pubKey: BigInt(selectedOracle.pubKey),
-            votes: 100
-          }
-        ],
-        {
-          pubKey: $publicKey,
-          payoutAddress: $address
-        },
-        creatorFee,
-        liquidityFee,
-        100
-      )
-    : undefined
-  $: tx = market ? buildTx(market) : undefined
-  $: cost = tx ? (tx.outputs[0].satoshis * $price) / 100000000 : 0
+            resolve,
+            details,
+            options: options.map(option => {
+              return {
+                name: option.name,
+                details: option.details
+              }
+            })
+          },
+          [
+            {
+              pubKey: $rabinPubKey,
+              votes: 100
+            }
+          ],
+          {
+            pubKey: $publicKey,
+            payoutAddress: $address
+          },
+          creatorFee,
+          liquidityFee,
+          100
+        )
+      : undefined
+
+  $: cost = ((bp.transaction.getDust(contract.length, feeb) + contract.length * feeb) * $price) / 100000000
 
   const completeStep0 = () => {
     if (canComplete0) {
@@ -137,13 +162,6 @@
   const completeStep2 = () => {
     if (canComplete2) {
       step = 3
-    } else {
-      console.error("Can't complete step")
-    }
-  }
-  const completeStep3 = () => {
-    if (canComplete3) {
-      step = 4
     } else {
       console.error("Can't complete step")
     }
@@ -235,22 +253,6 @@
     </div>
   {:else if step === 2}
     <div class="content">
-      <h2>Choose oracle</h2>
-
-      <OraclePicker
-        on:select={async e => {
-          selectedOracle = e.detail.oracle
-          await tick()
-          completeStep2()
-        }}
-      />
-
-      <div class="buttons">
-        <sl-button on:click={stepBack}>Back</sl-button>
-      </div>
-    </div>
-  {:else if step === 3}
-    <div class="content">
       <h2>Set a fee for yourself in percent</h2>
       <sl-input
         type="number"
@@ -269,10 +271,10 @@
       />
       <div class="buttons">
         <sl-button on:click={stepBack}>Back</sl-button>
-        <sl-button on:click={completeStep3} type="primary" disabled={!canComplete3}>Continue</sl-button>
+        <sl-button on:click={completeStep2} type="primary" disabled={!canComplete2}>Continue</sl-button>
       </div>
     </div>
-  {:else if step === 4}
+  {:else if step === 3}
     <div class="content">
       <div class="price">
         <div>Total cost</div>

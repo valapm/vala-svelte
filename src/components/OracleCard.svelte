@@ -13,7 +13,7 @@
   let icon
 
   $: hostname = parseHostname(oracle.oracleStateByCurrentstateid.domain)
-  $: joined = new Date(oracle.oracle_state.state.transaction.processedAt + "Z")
+  $: joined = large ? new Date(oracle.oracle_state.state.transaction.processedAt + "Z") : undefined
 </script>
 
 <div id="oracle_card" on:click={() => dispatch("click")}>

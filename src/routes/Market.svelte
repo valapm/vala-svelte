@@ -7,13 +7,13 @@
   import { publicKey, privateKey, address, seed } from "../store/wallet"
   import { utxos } from "../store/wallet"
   import { getTx } from "../apis/web"
-  import { postMarketTx } from "../apis/web"
   import { testnet, feeb } from "../config"
   import { getEntries, isCompatibleVersion } from "../utils/pm"
   import { round } from "../utils/format"
   import { getUtxos } from "../utils/transaction"
   import { getNotificationsContext } from "svelte-notifications"
   import { pop } from "svelte-spa-router"
+  import { postTx } from "../utils/api"
 
   import OracleCard from "../components/OracleCard.svelte"
   import Chart from "../components/Chart.svelte"
@@ -45,7 +45,7 @@
 
   const marketQuery = gql`
   {
-      market(where: {marketStateByFirststateid: {transaction: {txid: {_eq: "${params.firstTxTxid}"}}}}) {
+      market(where: {marketStateByFirststateid: { state: {transaction: {txid: {_eq: "${params.firstTxTxid}"}}}}}) {
         creatorPubKey
         creatorFee
         details
@@ -66,8 +66,10 @@
               pubKey
             }
           }
-          transaction {
-            txid
+          state {
+            transaction {
+              txid
+            }
           }
           decided
           decision
@@ -84,11 +86,13 @@
           }
         }
         marketStateByFirststateid {
-          transaction {
-            txid
-            broadcastedAt
-            minerTimestamp
-            processedAt
+          state {
+            transaction {
+              txid
+              broadcastedAt
+              minerTimestamp
+              processedAt
+            }
           }
         }
         resolve
@@ -143,47 +147,46 @@
     const newTx = await getUpdateTx(newBalance, entries, redeemLiquidityPoints)
     console.log(newTx)
 
-    const postRes = await postMarketTx(newTx, testnet)
-    console.log(postRes)
-
-    if (postRes === "success") {
-      redeem_modal.hide()
-      payment_modal.hide()
-      addNotification({
-        type: "success",
-        text: "Successfully updated market",
-        description: `<a href='https://${testnet ? "test." : ""}whatsonchain.com/tx/${newTx.hash}'>${newTx.hash.slice(
-          0,
-          20
-        )}...</a>`,
-        position: "top-right"
-      })
-
-      const spentInputs = newTx.inputs.slice(1)
-      for (const input of spentInputs) {
-        $utxos = $utxos.filter(
-          utxo => utxo.txId !== input.prevTxId.toString("hex") || utxo.outputIndex !== input.outputIndex
-        )
-      }
-
-      const newUtxos = getUtxos(newTx)
-        .slice(1)
-        .filter(
-          utxo =>
-            utxo.script.toASM() ===
-            `OP_DUP OP_HASH160 ${$address.hashBuffer.toString("hex")} OP_EQUALVERIFY OP_CHECKSIG`
-        )
-      $utxos = $utxos.concat(newUtxos)
-
-      market = await getMarket()
-    } else {
+    try {
+      await postTx(newTx, testnet)
+    } catch (e) {
       addNotification({
         type: "danger",
         text: "Failed to updated market",
-        description: postRes.error,
+        description: e.message,
         position: "top-right"
       })
+      return
     }
+
+    redeem_modal.hide()
+    payment_modal.hide()
+    addNotification({
+      type: "success",
+      text: "Successfully updated market",
+      description: `<a href='https://${testnet ? "test." : ""}whatsonchain.com/tx/${newTx.hash}'>${newTx.hash.slice(
+        0,
+        20
+      )}...</a>`,
+      position: "top-right"
+    })
+
+    const spentInputs = newTx.inputs.slice(1)
+    for (const input of spentInputs) {
+      $utxos = $utxos.filter(
+        utxo => utxo.txId !== input.prevTxId.toString("hex") || utxo.outputIndex !== input.outputIndex
+      )
+    }
+
+    const newUtxos = getUtxos(newTx)
+      .slice(1)
+      .filter(
+        utxo =>
+          utxo.script.toASM() === `OP_DUP OP_HASH160 ${$address.hashBuffer.toString("hex")} OP_EQUALVERIFY OP_CHECKSIG`
+      )
+    $utxos = $utxos.concat(newUtxos)
+
+    market = await getMarket()
   }
 
   async function buySell(option: number, shareChange: number) {
@@ -231,11 +234,15 @@
   })
 
   $: status = market && market.market_state.decided ? "Resolved" : "Open"
+
+  $: hasBalance = balance.shares.reduce((partialSum, a) => partialSum + a, 0) > 0
+
+  let tab = 1
 </script>
 
 <SubHeader>
-  <button class="selected">Overview</button>
-  <button>Details</button>
+  <button class={tab === 1 ? "selected" : ""} on:click={() => (tab = 1)}>Overview</button>
+  <button class={tab === 2 ? "selected" : ""} on:click={() => (tab = 2)}>Details</button>
 </SubHeader>
 
 {#if market && $seed}
@@ -256,62 +263,68 @@
   {:else if market}
     <div class="main-panel">
       <MarketHeader {market} />
-      <MarketBanner {market} />
-      <!-- <a href={`https://${testnet ? "test." : ""}whatsonchain.com/tx/${params.firstTxTxid}`} class="txid">
+
+      {#if tab === 1}
+        <MarketBanner {market} />
+        <!-- <a href={`https://${testnet ? "test." : ""}whatsonchain.com/tx/${params.firstTxTxid}`} class="txid">
         {params.firstTxTxid.slice(0, 20)}...</a
       > -->
-      <div class="chart">
-        <Chart {market} />
-      </div>
-      <!-- <AnimatedNumber {num} />
+        <div class="chart">
+          <Chart {market} />
+        </div>
+        <!-- <AnimatedNumber {num} />
     <button on:click={() => (num = num + 1000)}> Increase </button> -->
 
-      {#if !$seed}
-        <a href="#/login"><sl-button type="primary">Login to trade</sl-button></a>
-      {:else}
-        <div id="balances">
-          <button on:click={() => (balanceTab = "positions")} style={balanceTab === "positions" ? "color: white;" : ""}
-            >My Positions</button
-          >
-          <button on:click={() => (balanceTab = "liquidity")} style={balanceTab === "liquidity" ? "color: white;" : ""}
-            >My Liquidity</button
-          >
-        </div>
+        {#if !$seed}
+          <a href="#/login"><sl-button type="primary">Login to trade</sl-button></a>
+        {:else}
+          <div id="balances">
+            <button
+              on:click={() => (balanceTab = "positions")}
+              style={balanceTab === "positions" ? "color: white;" : ""}>My Positions</button
+            >
+            <button
+              on:click={() => (balanceTab = "liquidity")}
+              style={balanceTab === "liquidity" ? "color: white;" : ""}>My Liquidity</button
+            >
+          </div>
 
-        {#if balanceTab === "positions"}
-          <Positions {market} {balance} />
-        {:else if balanceTab === "liquidity"}
-          {#if existingEntry && existingEntry.liquidity}
-            <LiquidityPanel
-              {market}
-              entry={existingEntry}
-              on:add={e => payment_modal.show("buy", -1)}
-              on:remove={e => payment_modal.show("sell", -1)}
-              on:redeem={e => updateMarket(balance, true)}
-            />
+          {#if balanceTab === "positions"}
+            {#if hasBalance}
+              <Positions {market} {balance} />
+            {:else}
+              Nothing here yet
+            {/if}
+          {:else if balanceTab === "liquidity"}
+            {#if existingEntry && existingEntry.liquidity}
+              <LiquidityPanel
+                {market}
+                entry={existingEntry}
+                on:add={e => payment_modal.show("buy", -1)}
+                on:remove={e => payment_modal.show("sell", -1)}
+                on:redeem={e => updateMarket(balance, true)}
+              />
+            {/if}
           {/if}
         {/if}
-      {/if}
 
-      <div class="container">
-        <div class="cards">
-          <div class="full-width">
+        <div class="container">
+          <div class="cards">
+            <!-- <div class="full-width">
             <OutcomeCard
               {market}
               {balance}
               on:buy={e => payment_modal.show("buy", e.detail.option)}
               on:sell={e => payment_modal.show("sell", e.detail.option)}
             />
-          </div>
+          </div> -->
 
-          <div class="card-wide">
+            <!-- <div class="card-wide">
             <MarketDetailsCard {market} />
-          </div>
+          </div> -->
 
-          <OracleCard market_oracles={market.market_state.market_oracles} />
-
-          {#if $seed && compatibleVersion}
-            <MarketMenu
+            {#if $seed && compatibleVersion}
+              <!-- <MarketMenu
               {balance}
               {market}
               on:update={e => updateMarket(e.detail.balance)}
@@ -320,27 +333,23 @@
               on:redeemInvalid={e => redeem_modal.show("redeemInvalid")}
               on:redeemWinning={e => redeem_modal.show("redeemWinning")}
               on:extractLiquidity={e => redeem_modal.show("extractLiquidity")}
+            /> -->
+            {/if}
+          </div>
+
+          {#if existingEntry && existingEntry.liquidity}
+            <LiquidityCard
+              {market}
+              entry={existingEntry}
+              on:add={e => payment_modal.show("buy", -1)}
+              on:remove={e => payment_modal.show("sell", -1)}
+              on:redeem={e => updateMarket(balance, true)}
             />
           {/if}
         </div>
-
-        {#if existingEntry && existingEntry.liquidity}
-          <LiquidityCard
-            {market}
-            entry={existingEntry}
-            on:add={e => payment_modal.show("buy", -1)}
-            on:remove={e => payment_modal.show("sell", -1)}
-            on:redeem={e => updateMarket(balance, true)}
-          />
-        {/if}
-
-        {#if market.details}
-          <sl-card>
-            <div slot="header">Details</div>
-            {market.details}</sl-card
-          >
-        {/if}
-      </div>
+      {:else if tab === 2}
+        <OracleCard oracle={market.market_state.market_oracles[0].oracle} />
+      {/if}
     </div>
 
     <div class="side-panel">
@@ -366,7 +375,7 @@
     flex-direction: column;
     gap: 2rem;
     align-items: center;
-    max-width: 100%;
+    width: 100%;
   }
 
   .side-panel {

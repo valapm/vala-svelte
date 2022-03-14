@@ -29,8 +29,8 @@ export function isCompatibleVersion(version: string) {
 
 export function getCreationDate(market): Date {
   return new Date(
-    (market.marketStateByFirststateid.transaction.broadcastedAt ||
-      market.marketStateByFirststateid.transaction.processedAt ||
-      market.marketStateByFirststateid.transaction.minerTimestamp) + "Z"
+    (market.marketStateByFirststateid.state.transaction.broadcastedAt ||
+      market.marketStateByFirststateid.state.transaction.processedAt ||
+      market.marketStateByFirststateid.state.transaction.minerTimestamp) + "Z"
   )
 }

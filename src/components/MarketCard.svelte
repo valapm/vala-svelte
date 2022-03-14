@@ -18,7 +18,7 @@
     liquidity: market.market_state.liquidity
   }
 
-  $: txid = market.marketStateByFirststateid.transaction.txid
+  $: txid = market.marketStateByFirststateid.state.transaction.txid
 
   $: shares = market.market_state.shares.map((share, index) => {
     const newShares = [...market.market_state.shares]

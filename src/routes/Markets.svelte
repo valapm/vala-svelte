@@ -48,7 +48,7 @@
 
   $: orderQueries = [
     `market_state: { liquidity: ${direction} }`,
-    `marketStateByFirststateid: { transaction: { processedAt: ${direction} } }`,
+    `marketStateByFirststateid: { state: {transaction: { processedAt: ${direction} } } }`,
     `market_state: { liquidity: ${direction} }`
   ]
 
@@ -116,7 +116,7 @@
 
   <Masonry
     items={markets.map((market, index) => {
-      return { ...market, id: market.marketStateByFirststateid.transaction.txid + index }
+      return { ...market, id: market.marketStateByFirststateid.state.transaction.txid + index }
     })}
     minColWidth={remToPixels(20.625)}
     maxColWidth={remToPixels(20.625)}

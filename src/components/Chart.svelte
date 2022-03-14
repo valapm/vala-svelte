@@ -16,15 +16,17 @@
 
   const priceQuery = gql`
   {
-    market_state(where: { market: { marketStateByFirststateid: {transactionTxid: {_eq: "${market.marketStateByFirststateid.transaction.txid}"}}}}, order_by: {stateCount: asc}) {
+    market_state(where: { market: { marketStateByFirststateid: { state: {transactionTxid: {_eq: "${market.marketStateByFirststateid.state.transaction.txid}"}}}}}, order_by: {stateCount: asc}) {
       shares
       liquidity
       decided
       stateCount
-      transaction {
-        minerTimestamp
-        broadcastedAt
-     }
+      state {
+        transaction {
+          minerTimestamp
+          broadcastedAt
+        }
+      }
     }
   }
 `
@@ -36,8 +38,8 @@
   $: firstTimestamp =
     marketData &&
     new Date(
-      (marketData.market_state[0].transaction.broadcastedAt || marketData.market_state[0].transaction.minerTimestamp) +
-        "Z"
+      (marketData.market_state[0].state.transaction.broadcastedAt ||
+        marketData.market_state[0].state.transaction.minerTimestamp) + "Z"
     ).valueOf()
 
   let chart
@@ -116,7 +118,9 @@
       for (const [shareIndex, share] of marketState.shares.entries()) {
         // console.log("Pushing", lmsr.getProbability(balance, share), "to", JSON.stringify(shareData),"at pos", shareIndex )
 
-        const date = new Date((marketState.transaction.broadcastedAt || marketState.transaction.minerTimestamp) + "Z")
+        const date = new Date(
+          (marketState.state.transaction.broadcastedAt || marketState.state.transaction.minerTimestamp) + "Z"
+        )
         const timestamp = date.valueOf()
         shareData[shareIndex] = shareData[shareIndex].concat([
           {

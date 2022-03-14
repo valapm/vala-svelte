@@ -59,7 +59,7 @@
 
   $: orderQueries = [
     `market_state: { liquidity: ${direction} }`,
-    `marketStateByFirststateid: { transaction: { processedAt: ${direction} } }`,
+    `marketStateByFirststateid: { state: { transaction: { processedAt: ${direction} } } }`,
     `market_state: { liquidity: ${direction} }`
   ]
 
@@ -119,7 +119,7 @@
   let items
   $: {
     items = markets.map((market, index) => {
-      return { ...market, id: market.marketStateByFirststateid.transaction.txid + index }
+      return { ...market, id: market.marketStateByFirststateid.state.transaction.txid + index }
     })
     if (isCurrentOracle) items.unshift({ id: "createMarket" })
   }
@@ -146,8 +146,8 @@
       let:item={market}
     >
       <!-- <div
-      in:receive={{ key: item.marketStateByFirststateid.transaction.txid }}
-      out:send={{ key: item.marketStateByFirststateid.transaction.txid }}
+      in:receive={{ key: item.marketStateByFirststateid.state.transaction.txid }}
+      out:send={{ key: item.marketStateByFirststateid.state.transaction.txid }}
     > -->
       <Card item={market} />
       <!-- <MarketCard {market} /> -->

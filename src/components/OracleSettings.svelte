@@ -7,7 +7,6 @@
   import { testnet } from "../config"
   import { gql } from "graphql-request"
   import { gqlClient } from "../utils/graphql"
-  import { postBoostJobTx, postOracleDetails, postMarketTx, postBurnTx } from "../apis/web"
   import { onMount } from "svelte"
   import { price } from "../store/price"
   import { postTx } from "../utils/api"
@@ -224,8 +223,7 @@
 
     const newTx = await bp.transaction.getOracleVoteTx(currentTx, vote, $rabinPrivKey, $address, $utxos, $privateKey)
 
-    const postRes = await postMarketTx(newTx, testnet)
-    console.log(postRes)
+    await postTx(newTx, testnet)
   }
 
   async function commitToMarket(market) {
@@ -236,8 +234,7 @@
 
     const newTx = bp.transaction.getOracleCommitTx(currentTx, $rabinPrivKey, $address, $utxos, $privateKey)
 
-    const postRes = await postMarketTx(newTx, testnet)
-    console.log(postRes)
+    await postTx(newTx, testnet)
   }
 
   onMount(async () => {
