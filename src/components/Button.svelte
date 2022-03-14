@@ -9,8 +9,10 @@
   export let loading = false
 </script>
 
-<button on:click={() => dispatch("click")} class="{type} {disabled ? 'disabled' : ''} {active ? 'active' : ''}"
-  ><slot /></button
+<button
+  on:click={() => dispatch("click")}
+  class="{type} {disabled ? 'disabled' : ''} {loading ? 'loading' : ''} {active ? 'active' : ''}"
+  ><span style={loading ? "opacity: 0%;" : ""}><slot /></span></button
 >
 
 <style>
@@ -22,7 +24,14 @@
     align-items: center;
     color: white;
     border: 1px solid #01a781;
-    line-height: 1.1875em; /* Figma does this for some reason */
+    line-height: 1.1875em; /*
+    Figma does this for some reason */
+    position: relative;
+  }
+
+  span {
+    display: flex;
+    flex-direction: column;
   }
 
   .filled {
@@ -53,5 +62,35 @@
 
   .wide {
     padding: 0.625rem 3.5rem;
+  }
+
+  .full-width {
+    width: 100%;
+  }
+
+  .loading::after {
+    content: "";
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    border: 4px solid transparent;
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: button-loading-spinner 1s ease infinite;
+  }
+
+  @keyframes button-loading-spinner {
+    from {
+      transform: rotate(0turn);
+    }
+
+    to {
+      transform: rotate(1turn);
+    }
   }
 </style>
