@@ -3,7 +3,11 @@
 
   export let market
 
-  $: status = market && market.market_state.decided ? "Resolved" : "Live"
+  const labels = ["Unpublished", "Live", "Resolved"]
+
+  const colors = ["#6CD4FF", "#00FFC5", "rgba(255, 255, 255, 0.5)"]
+
+  $: status = market && market.market_state.decided ? 2 : market.market_state.market_oracles[0].committed ? 1 : 0
   $: creationDate =
     market && getCreationDate(market).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })
 </script>
@@ -13,8 +17,8 @@
   <div id="subheader">
     <div id="market-dates">Created: {creationDate}</div>
     <div id="status">
-      <div id="status-dot" style="background-color: {status === 'Live' ? '#00FFC5' : 'rgba(255, 255, 255, 0.5)'};" />
-      <div>{status}</div>
+      <div id="status-dot" style="background-color: {colors[status]};" />
+      <div>{labels[status]}</div>
     </div>
   </div>
 </div>

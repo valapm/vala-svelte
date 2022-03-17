@@ -1,7 +1,7 @@
 <script>
   export let status // 0-2
 
-  const labels = ["Unconfirmed", "Live Market", "Resolved"]
+  const labels = ["Unpublished", "Live Market", "Resolved"]
 
   const colors = ["#6CD4FF", "#00FFC5", "rgba(255, 255, 255, 0.5)"]
 </script>

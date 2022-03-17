@@ -14,6 +14,7 @@
   import { getNotificationsContext } from "svelte-notifications"
   import { pop } from "svelte-spa-router"
   import { postTx } from "../utils/api"
+  import { rabinPubKey } from "../store/oracle"
 
   import OracleCard from "../components/OracleCard.svelte"
   import Chart from "../components/Chart.svelte"
@@ -30,6 +31,7 @@
   import MarketBanner from "../components/MarketBanner.svelte"
   import Positions from "../components/Positions.svelte"
   import LiquidityPanel from "../components/LiquidityPanel.svelte"
+  import Button from "../components/Button.svelte"
 
   import SlCard from "@shoelace-style/shoelace/dist/components/card/card.js"
   import SlFormatNumber from "@shoelace-style/shoelace/dist/components/format-number/format-number"
@@ -128,6 +130,13 @@
     shares: new Array(market ? market.options.length : 0).fill(0),
     liquidity: 0
   }
+  $: status = market
+    ? market.market_state.decided
+      ? 2
+      : market.market_state.market_oracles[0].committed
+      ? 1
+      : 0
+    : undefined
 
   async function getMarket() {
     const res = await gqlClient.request(marketQuery)
@@ -232,8 +241,6 @@
     market = await getMarket()
     loading = false
   })
-
-  $: status = market && market.market_state.decided ? "Resolved" : "Open"
 
   $: hasBalance = balance.shares.reduce((partialSum, a) => partialSum + a, 0) > 0
 
@@ -353,8 +360,15 @@
     </div>
 
     <div class="side-panel">
+      {#if status === 0 && $rabinPubKey.toString() === market.market_state.market_oracles[0].oracle.pubKey}
+        <div class="card">
+          Market is Unpublished
+          <Button type="filled-blue full-width">Publish Market</Button>
+        </div>
+      {/if}
+
       {#each market.market_state.shares as shares, index}
-        <OptionPanel />
+        <OptionPanel {market} {balance} option={index} />
       {/each}
     </div>
   {:else}
@@ -385,7 +399,7 @@
     gap: 0.75rem;
   }
 
-  h1 {
+  /* h1 {
     font-size: 2.3rem;
     text-align: center;
     display: flex;
@@ -393,13 +407,13 @@
     align-items: center;
     width: min(90%, 50rem);
     font-weight: bold;
-  }
+  } */
 
-  h1 div {
+  /* h1 div {
     display: flex;
     align-items: center;
     font-size: 1.3rem;
-  }
+  } */
 
   .chart {
     width: 100%;
@@ -411,22 +425,32 @@
     grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
     align-items: stretch;
   }
-  .card-wide {
+  /* .card-wide {
     grid-column: span 2 / auto;
-  }
+  } */
 
-  .full-width {
+  /* .full-width {
     grid-column: 1 / -1;
-  }
+  } */
 
   .container {
     gap: 1rem;
   }
 
-  .txid {
+  /* .txid {
     font-size: var(--sl-font-size-x-small);
     color: var(--sl-color-gray-400);
     margin: 0.2rem;
+  } */
+
+  .card {
+    background-color: #323841;
+    border-radius: 0.376rem;
+    padding: 1.125rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    align-items: center;
   }
 
   #balances {

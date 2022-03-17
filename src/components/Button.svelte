@@ -40,6 +40,11 @@
     background: linear-gradient(149.62deg, #01a781 17.39%, #00ffc5 124.46%);
   }
 
+  .filled-blue {
+    border: none;
+    background: linear-gradient(149.62deg, #00acff 17.39%, #96d0ec 124.46%);
+  }
+
   .blue {
     border: none;
     background-color: #5184e7;
