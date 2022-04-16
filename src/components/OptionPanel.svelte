@@ -7,13 +7,14 @@
   import { tick } from "svelte"
   import { satBalance } from "../store/wallet"
 
+  import SidePanelCard from "../components/SidePanelCard.svelte"
   import NumberInput from "../components/NumberInput.svelte"
   import Button from "./Button.svelte"
+  import Switch from "../components/Switch.svelte"
 
   export let option = 0
   export let balance
   export let market
-  export let open = false
 
   const actions = ["Buy", "Sell"]
 
@@ -51,25 +52,25 @@
   $: canBuySell = change !== 0 && (action === 0 ? price <= $satBalance : -change <= balance.shares[option])
 </script>
 
-<div class="card">
-  <div class="header" on:click={() => (open = !open)}>
-    <div class="open" />
-    <h3>
-      <img src="./icons/chevron.svg" alt="open" style={open ? "transform: rotate(90deg);" : ""} />
-      <span>{market.options[option].name}</span>
-    </h3>
+<SidePanelCard
+  title={market.options[option].name}
+  gradient={probability ? Math.round(probability * 100) : 0}
+  deactivated={!market.market_state.market_oracles[0].committed}
+>
+  <div slot="header">
     <div class="price">${Math.round(priceBuyOneUSD * 100) / 100}</div>
+    {#if probability}
+      <span class="probability">{Math.round(probability * 100)}%</span>
+    {/if}
   </div>
-  {#if open}
+
+  <div slot="body" class="body">
     <div class="details">
       {market.options[option].details}
     </div>
-    <div class="buysell">
-      <button class={action === 0 ? "selected" : ""} on:click={() => (action = 0)}>Buy</button>
-      <button class={action === 1 ? "selected" : ""} on:click={() => (action = 1)}>Sell</button>
-    </div>
+    <Switch bind:selected={action} actions={["Buy", "Sell"]} />
     <div class="balance">Balance: <b>{balance.shares[option]}</b> Shares</div>
-    <NumberInput placeholder="Shares" bind:value={amount} max={action === 1 ? balance.shares[option] : undefined} />
+    <NumberInput placeholder="Shares" bind:value={amount} max={action === 1 ? balance.shares[option] : 0} />
     <div class="cost-table">
       {#if action === 0}
         <div>
@@ -93,55 +94,17 @@
         {#if price > 0} ${Math.round(usdPrice * 100) / 100} {/if}</b
       ></Button
     >
-  {/if}
-
-  {#if probability}
-    <span class="probability">{Math.round(probability * 100)}%</span>
-    <div class="probability-bg" style="width: {probability * 18.75}rem;" />
-  {/if}
-</div>
+  </div>
+</SidePanelCard>
 
 <style>
-  .open {
-    position: absolute;
-    width: 18.75rem;
-    height: 3.25rem;
-    left: 0;
-    top: 0;
-  }
-
-  .card {
-    width: 18.75rem;
-    padding: 1.125rem;
-    background-color: #323841;
-    border-radius: 0.375rem;
-    position: relative;
-    overflow: hidden;
+  .body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    z-index: 0;
     gap: 1.25rem;
-  }
-
-  .header {
-    display: flex;
-    justify-content: space-between;
-    cursor: pointer;
     width: 100%;
   }
-
-  .header > h3 {
-    display: flex;
-    align-items: center;
-    gap: 0.625rem;
-    font-weight: 700;
-  }
-
-  .header > h3 > span {
-    opacity: 92%;
-  }
-
   .probability {
     position: absolute;
     left: 50%;
@@ -151,37 +114,11 @@
     font-weight: 700;
     opacity: 50%;
     z-index: -1;
+    top: 1.25rem;
   }
-
-  .probability-bg {
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 5.875rem;
-    background: linear-gradient(180deg, #434c56 7.81%, rgba(67, 76, 86, 0) 100%);
-    z-index: -1;
-  }
-
   .price {
     font-family: "Roboto Mono", sans-serif;
     font-weight: 500;
-  }
-
-  .buysell {
-    border-radius: 0.375rem;
-    display: flex;
-    overflow: hidden;
-    border: 1px solid #39baf9;
-  }
-
-  .buysell > button {
-    width: 5.875rem;
-    padding: 0.3125rem;
-    background: rgba(57, 186, 249, 0.15);
-  }
-
-  .selected {
-    background: #39baf9 !important;
   }
 
   .details {

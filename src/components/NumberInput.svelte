@@ -3,11 +3,12 @@
   export let placeholder = undefined
   export let min = undefined
   export let max = undefined
+  export let color = "39baf9"
 </script>
 
-<div style={max ? "" : "padding-right: 1.25rem"}>
+<div style={max !== undefined ? "" : "padding-right: 1.25rem"}>
   <input type="number" {placeholder} {min} {max} bind:value />
-  {#if max !== undefined}<button on:click={() => (value = max)}>max</button>{/if}
+  {#if max !== undefined}<button on:click={() => (value = max)} style="border: 1px solid #{color};">max</button>{/if}
 </div>
 
 <style>
@@ -43,7 +44,6 @@
 
   button {
     padding: 0.375rem 1rem;
-    border: 1px solid #39baf9;
     border-radius: 0.375rem;
     font-family: "Roboto Mono", sans-serif;
     font-size: 0.875rem;

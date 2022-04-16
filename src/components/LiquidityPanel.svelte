@@ -7,7 +7,10 @@
   export let market
   export let entry
 
-  $: liquidityPercent = (entry.liquidity / market.market_state.liquidity) * 100
+  $: liquidity = entry && entry.liquidity ? entry.liquidity : 0
+  $: liquidityPoints = entry && entry.liquidityPoints ? entry.liquidityPoints : 0
+
+  $: liquidityPercent = (liquidity / market.market_state.liquidity) * 100
 
   $: marketBalance = market && {
     shares: market.market_state.shares,
@@ -18,13 +21,14 @@
     lmsr.getLmsrSats(marketBalance) -
     lmsr.getLmsrSats({
       shares: market.market_state.shares,
-      liquidity: market.market_state.liquidity - entry.liquidity
+      liquidity: market.market_state.liquidity - liquidity
     })
 
   $: liquidityBalanceUSD = round((liquidityBalance / 100000000) * $price)
 
-  $: feeChange = market.market_state.accLiquidityFeePool - entry.prevLiquidityPoolState
-  $: totalLiquidityPoints = entry.liquidityPoints + feeChange * entry.liquidity
+  $: feeChange =
+    entry && entry.prevLiquidityPoolState ? market.market_state.accLiquidityFeePool - entry.prevLiquidityPoolState : 0
+  $: totalLiquidityPoints = liquidityPoints + feeChange * liquidity
   $: earnings = (totalLiquidityPoints / market.market_state.liquidityPoints || 0) * market.market_state.liquidityFeePool
 
   $: earningUSD = earnings ? round((earnings / 100000000) * $price) : 0
@@ -42,7 +46,7 @@
   <tbody>
     <tr>
       <td>
-        {entry.liquidity} ({formatUSD(liquidityBalanceUSD)})
+        {liquidity} ({formatUSD(liquidityBalanceUSD)})
       </td>
       <td>
         {liquidityPercent}

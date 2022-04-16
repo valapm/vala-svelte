@@ -1,8 +1,7 @@
 <script>
   import { bsv } from "bitcoin-predict"
-  import { address, privateKey, utxos } from "../store/wallet"
+  import { address, privateKey, utxos, usdBalance } from "../store/wallet"
   import { testnet, feeb } from "../config"
-  import { usdBalance } from "../store/wallet"
   import { price } from "../store/price"
   import { broadcast, getUtxos } from "../utils/transaction"
   import { getNotificationsContext } from "svelte-notifications"

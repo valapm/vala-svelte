@@ -11,6 +11,7 @@ export async function postTx(tx: bsv.Transaction, testnet = false) {
   const host = testnet ? BACKEND_HOST_TESTNET : BACKEND_HOST
 
   console.log(`Posting transaction with txid ${tx.hash} to ${host}/tx`)
+  console.log("Transaction:", tx)
 
   const rawtx = tx.serialize({ disableDustOutputs: true })
   const postRes = await post(host + "/tx", { rawtx })

@@ -149,7 +149,8 @@ export function updateOutputs(tx: bsv.Transaction) {
 
     // Mark spent outputs as such
     for (const [index, input] of tx.inputs.entries()) {
-      const path = input.prevTxId.toString("hex") + "/" + index
+      const path = input.prevTxId.toString("hex") + "/" + input.outputIndex
+      console.log(`Marking utxo at ${path} as spent`)
 
       if (outs[path]) outs[path].spent = true
     }

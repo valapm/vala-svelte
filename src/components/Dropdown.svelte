@@ -1,8 +1,9 @@
 <script>
   export let show = false
+  export let position = "top: 0; left: 0;"
 </script>
 
-<div style="position: absolute; top: 0; left: 0">
+<div style="position: absolute; {position}">
   {#if show}
     <div class="modal-bg" on:click={() => (show = false)} />
   {/if}
@@ -14,7 +15,7 @@
 <style>
   .content {
     z-index: 30;
-    transition: all 0.3s ease;
+    transition: opacity 0.3s ease;
     position: relative;
   }
 

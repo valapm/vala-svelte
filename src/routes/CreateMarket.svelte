@@ -54,7 +54,7 @@
 
     let tx
     try {
-      tx = bp.transaction.getNewMarketTx(market, valaIndexTx, valaIndex.outputIndex)
+      tx = bp.transaction.getNewMarketTx(market, valaIndexTx, valaIndex.outputIndex, feeb)
     } catch (e) {
       console.error(e)
       addNotification({

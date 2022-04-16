@@ -10,7 +10,9 @@
 </script>
 
 <button
-  on:click={() => dispatch("click")}
+  on:click={() => {
+    if (!loading) dispatch("click")
+  }}
   class="{type} {disabled ? 'disabled' : ''} {loading ? 'loading' : ''} {active ? 'active' : ''}"
   ><span style={loading ? "opacity: 0%;" : ""}><slot /></span></button
 >

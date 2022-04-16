@@ -10,6 +10,7 @@ import Options from "./routes/Options.svelte"
 import Oracles from "./routes/Oracles.svelte"
 import Oracle from "./routes/Oracle.svelte"
 import Landingpage from "./routes/Landingpage.svelte"
+import Dev from "./routes/Dev.svelte"
 
 export const routes = {
   "/": Landingpage,
@@ -23,5 +24,6 @@ export const routes = {
   "/logout": Logout,
   "/register": Register,
   "/wallet": Wallet,
-  "/options": Options
+  "/options": Options,
+  "/dev": Dev
 }

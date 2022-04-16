@@ -26,7 +26,7 @@
   let markets = []
   let search = ""
   let sort = 0
-  let filter = [0, 1, 2]
+  let filter = [0, 2]
   let direction = "desc"
 
   const filterQueries = [

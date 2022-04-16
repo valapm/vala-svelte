@@ -14,7 +14,7 @@
   import { getNotificationsContext } from "svelte-notifications"
   import { pop } from "svelte-spa-router"
   import { postTx } from "../utils/api"
-  import { rabinPubKey } from "../store/oracle"
+  import { rabinPubKey, rabinPrivKey } from "../store/oracle"
 
   import OracleCard from "../components/OracleCard.svelte"
   import Chart from "../components/Chart.svelte"
@@ -31,6 +31,7 @@
   import MarketBanner from "../components/MarketBanner.svelte"
   import Positions from "../components/Positions.svelte"
   import LiquidityPanel from "../components/LiquidityPanel.svelte"
+  import LiquiditySidePanel from "../components/LiquiditySidePanel.svelte"
   import Button from "../components/Button.svelte"
 
   import SlCard from "@shoelace-style/shoelace/dist/components/card/card.js"
@@ -72,6 +73,7 @@
             transaction {
               txid
             }
+            outputIndex
           }
           decided
           decision
@@ -144,16 +146,21 @@
     return res.market[0]
   }
 
+  let updating = false
+
   /**
    * Creates and broadcasts market update transaction
    *
    * @param balance New Balance
    */
-  async function updateMarket(newBalance: lmsr.balance, redeemLiquidityPoints = false) {
+  async function updateMarket(newBalance: lmsr.balance, redeemLiquidityPoints = false, commit = false) {
+    if (updating) return // TODO: Show error
+    updating = true
+
     console.log(market.entries)
     const entries = getEntries(market)
 
-    const newTx = await getUpdateTx(newBalance, entries, redeemLiquidityPoints)
+    const newTx = commit ? await getCommitTx() : await getUpdateTx(newBalance, entries, redeemLiquidityPoints)
     console.log(newTx)
 
     try {
@@ -196,6 +203,7 @@
     $utxos = $utxos.concat(newUtxos)
 
     market = await getMarket()
+    updating = false
   }
 
   async function buySell(option: number, shareChange: number) {
@@ -213,7 +221,7 @@
   }
 
   async function getUpdateTx(newBalance, entries, redeemLiquidityPoints = false) {
-    const currentTx = await getTx(market.market_state.transaction.txid, gqlClient)
+    const currentTx = await getTx(market.market_state.state.transaction.txid, gqlClient)
 
     let updateTx
     if (existingEntry) {
@@ -230,10 +238,41 @@
         feeb
       )
     } else {
-      updateTx = pmTx.getAddEntryTx(currentTx, entries, $publicKey, newBalance, $address, $utxos, $privateKey, feeb)
+      updateTx = pmTx.getAddEntryTx(
+        currentTx,
+        entries,
+        $publicKey,
+        newBalance,
+        $address,
+        $utxos,
+        $privateKey,
+        market.market_state.state.outputIndex,
+        feeb
+      )
     }
 
     return updateTx
+  }
+
+  async function getCommitTx() {
+    const currentTx = await getTx(market.market_state.state.transaction.txid, gqlClient)
+    const updateTx = pmTx.getOracleCommitTx(
+      currentTx,
+      $rabinPrivKey,
+      $address,
+      $utxos,
+      $privateKey,
+      market.market_state.state.outputIndex,
+      feeb
+    )
+    return updateTx
+  }
+
+  let commitLoading = false
+  async function commit() {
+    commitLoading = true
+    await updateMarket(balance, false, true)
+    commitLoading = false
   }
 
   let loading = true
@@ -303,15 +342,13 @@
               Nothing here yet
             {/if}
           {:else if balanceTab === "liquidity"}
-            {#if existingEntry && existingEntry.liquidity}
-              <LiquidityPanel
-                {market}
-                entry={existingEntry}
-                on:add={e => payment_modal.show("buy", -1)}
-                on:remove={e => payment_modal.show("sell", -1)}
-                on:redeem={e => updateMarket(balance, true)}
-              />
-            {/if}
+            <LiquidityPanel
+              {market}
+              entry={existingEntry}
+              on:add={e => payment_modal.show("buy", -1)}
+              on:remove={e => payment_modal.show("sell", -1)}
+              on:redeem={e => updateMarket(balance, true)}
+            />
           {/if}
         {/if}
 
@@ -363,13 +400,23 @@
       {#if status === 0 && $rabinPubKey.toString() === market.market_state.market_oracles[0].oracle.pubKey}
         <div class="card">
           Market is Unpublished
-          <Button type="filled-blue full-width">Publish Market</Button>
+          <Button type="filled-blue full-width" on:click={commit} loading={commitLoading}>Publish Market</Button>
         </div>
       {/if}
 
-      {#each market.market_state.shares as shares, index}
-        <OptionPanel {market} {balance} option={index} />
-      {/each}
+      <div class="options">
+        {#each market.market_state.shares as shares, index}
+          <OptionPanel {market} {balance} option={index} />
+        {/each}
+      </div>
+
+      <LiquiditySidePanel
+        {market}
+        entry={existingEntry}
+        on:add={e => payment_modal.show("buy", -1)}
+        on:remove={e => payment_modal.show("sell", -1)}
+        on:redeem={e => updateMarket(balance, true)}
+      />
     </div>
   {:else}
     <NotFound />
@@ -394,6 +441,13 @@
 
   .side-panel {
     width: 18.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.75rem;
+  }
+
+  .options {
+    width: 100%;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;

@@ -116,7 +116,7 @@
     const prevTx = new bsv.Transaction()
     prevTx.fromString(valaState.transaction.hex)
 
-    const newTx = bp.transaction.getNewOracleTx($rabinPubKey, prevTx)
+    const newTx = bp.transaction.getNewOracleTx($rabinPubKey, prevTx, 0, feeb)
     bp.transaction.fundTx(newTx, $privateKey, $address, $utxos)
 
     return newTx
@@ -162,7 +162,7 @@
       }
 
       prevTx = initTx
-      prevOutputIndex = 0
+      prevOutputIndex = 1
     }
 
     const oracleDetails = {
@@ -170,15 +170,15 @@
       description: details
     }
 
-    const newTx = bp.transaction.getOracleUpdateTx(prevTx, prevOutputIndex, 0, oracleDetails, $rabinPrivKey)
-    bp.transaction.fundTx(newTx, $privateKey, $address, $utxos)
+    const newTx = bp.transaction.getOracleUpdateTx(prevTx, prevOutputIndex, 0, oracleDetails, $rabinPrivKey, feeb)
+    bp.transaction.fundTx(newTx, $privateKey, $address, $utxos, feeb)
 
     try {
       await postTx(newTx, testnet)
     } catch (e) {
       addNotification({
         type: "danger",
-        text: "Failed to broadcast transaction",
+        text: e.message,
         position: "top-right"
       })
       loading = false
@@ -191,9 +191,24 @@
       position: "top-right"
     })
 
-    // const oracleData = await gqlClient.request(oracleQuery)
-    // oracle = oracleData.oracle[0]
-    // loading = false
+    const newCurrentOracleState = {
+      details,
+      domain: domainName,
+      state: {
+        transaction: {
+          hex: newTx.uncheckedSerialize()
+        },
+        outputIndex: prevOutputIndex
+      }
+    }
+
+    if (oracle) {
+      oracle.oracleStateByCurrentstateid = newCurrentOracleState
+    } else {
+      oracle = { oracleStateByCurrentstateid: newCurrentOracleState }
+    }
+
+    loading = false
   }
 
   // FIXME: Duplicate code in Market.svelte
@@ -239,7 +254,8 @@
 
   onMount(async () => {
     if (oracle && oracle.oracleStateByCurrentstateid) {
-      domainName = parseHostname(oracle.oracleStateByCurrentstateid.domain)
+      const oracleDomain = oracle.oracleStateByCurrentstateid.domain
+      if (oracleDomain) domainName = parseHostname(oracleDomain)
       details = oracle.oracleStateByCurrentstateid.details
     }
   })

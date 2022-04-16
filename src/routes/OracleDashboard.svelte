@@ -68,9 +68,9 @@
     {:else if selected === 1}
       <OracleHistory {oracle} />
     {:else if selected === 2}
-      <OracleSettings {oracle} />
+      <OracleSettings bind:oracle />
     {/if}
   {:else}
-    <OracleSettings />
+    <OracleSettings bind:oracle />
   {/if}
 {/if}

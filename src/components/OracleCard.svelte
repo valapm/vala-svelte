@@ -34,7 +34,9 @@
   </div>
 
   {#if large}
-    {oracle.oracleStateByCurrentstateid.details}
+    {#if oracle.oracleStateByCurrentstateid.details}
+      {oracle.oracleStateByCurrentstateid.details}
+    {/if}
 
     <div class="footer">
       Joined: {new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(joined)}
