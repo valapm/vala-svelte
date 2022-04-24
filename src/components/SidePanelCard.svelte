@@ -1,4 +1,8 @@
 <script>
+  import { createEventDispatcher } from "svelte"
+
+  const dispatch = createEventDispatcher()
+
   import Chevron from "../components/Chevron.svelte"
 
   export let title
@@ -6,6 +10,8 @@
   export let deactivated = false
   export let gradient = 0
   export let color = "39BAF9"
+
+  $: if (open) dispatch("opened")
 </script>
 
 <div class="card" style={open ? `border: 1px solid #${color};` : ""}>

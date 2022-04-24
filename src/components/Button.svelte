@@ -11,7 +11,7 @@
 
 <button
   on:click={() => {
-    if (!loading) dispatch("click")
+    if (!loading && !disabled) dispatch("click")
   }}
   class="{type} {disabled ? 'disabled' : ''} {loading ? 'loading' : ''} {active ? 'active' : ''}"
   ><span style={loading ? "opacity: 0%;" : ""}><slot /></span></button
@@ -65,6 +65,7 @@
 
   .disabled {
     opacity: 50%;
+    cursor: default !important;
   }
 
   .wide {

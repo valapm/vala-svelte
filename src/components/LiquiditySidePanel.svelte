@@ -5,14 +5,19 @@
   import { lmsr } from "bitcoin-predict"
   import { satBalance } from "../store/wallet"
   import { feeb } from "../config"
+  import { createEventDispatcher } from "svelte"
 
   import SidePanelCard from "../components/SidePanelCard.svelte"
   import Switch from "../components/Switch.svelte"
   import NumberInput from "../components/NumberInput.svelte"
   import Button from "../components/Button.svelte"
 
+  const dispatch = createEventDispatcher()
+
   export let market
   export let entry
+  export let loadingUpdate
+  export let loadingRedeem
 
   let action = 0
   let actions = ["Add", "Remove"]
@@ -58,71 +63,84 @@
   $: earningUSD = earnings ? round((earnings / 100000000) * $bsvPrice) : 0
 
   $: insideLimits = isInsideLimits(marketBalance, -1, change)
-  $: canBuySell = change !== 0 && (action === 0 ? bsvPrice <= $satBalance : entry && -change <= entry.balance.liquidity)
+  $: canBuySell = change !== 0 && (action === 0 ? price <= $satBalance : entry && -change <= entry.liquidity)
 
   $: console.log("liquidityPoints", liquidityPoints)
+
+  let liquidityPanelOpened = false
+  let rewardsPanelOpened = false
 </script>
 
 {#if !market.market_state.decided || liquidity || liquidityPoints}
   <div class="panel">
     <h2>Liquidity</h2>
 
-    <div class="details">Earn fees as a liquidity provider</div>
+    <div class="description">Earn fees as a liquidity provider</div>
 
     {#if !market.market_state.decided}
-      <SidePanelCard title="Add/Remove Liquidity" gradient={100} color="01A781">
+      <SidePanelCard
+        title="Add/Remove Liquidity"
+        gradient={100}
+        color="01A781"
+        bind:open={liquidityPanelOpened}
+        on:opened={e => (rewardsPanelOpened = false)}
+      >
         <div slot="body" class="body">
           <Switch bind:selected={action} {actions} color="01A781" />
           <div class="balance">
-            Balance: <b>{liquidity}</b> Liquidity{#if liquidity} ({liquidityPercent}%){/if}
+            Balance: <b>{liquidity}</b> Liquidity
           </div>
-          <NumberInput placeholder="Amount" bind:value={amount} max={action === 1 ? liquidity : 0} color="01A781" />
+          <NumberInput
+            placeholder="Amount"
+            bind:value={amount}
+            max={action === 1 ? liquidity : undefined}
+            color="01A781"
+          />
           <div class="cost-table">
             <div>
               <div class="label">Total Fee</div>
               <div>${Math.round(usdFeeEstimate * 100) / 100}</div>
             </div>
           </div>
-          <Button type="filled full-width" disabled={!insideLimits || !canBuySell}
+          <Button
+            type="filled full-width"
+            disabled={!insideLimits || !canBuySell}
+            loading={loadingUpdate}
+            on:click={e => dispatch("update", { change })}
             ><b
               >{actions[action]}
-              {#if bsvPrice > 0} ${Math.round(usdPrice * 100) / 100} {/if}</b
+              {#if usdPrice > 0} ${Math.round(usdPrice * 100) / 100} {/if}</b
             ></Button
           >
         </div>
       </SidePanelCard>
 
-      <SidePanelCard title="Liquidity Rewards" deactivated={liquidityPoints <= 0} gradient={100} color="01A781" />
+      <SidePanelCard
+        title="Liquidity Rewards"
+        deactivated={liquidityPoints <= 0}
+        gradient={100}
+        color="01A781"
+        bind:open={rewardsPanelOpened}
+        on:opened={e => (liquidityPanelOpened = false)}
+        ><div slot="body" class="body">
+          <div class="details">Your earned Liquidity Tokens</div>
+          <div class="balance">Earned: <b>{totalLiquidityPoints}</b> Tokens</div>
+          <div class="cost-table">
+            <div>
+              <div class="label">Tx Fee</div>
+              <div>${Math.round(usdFeeEstimate * 100) / 100}</div>
+            </div>
+          </div>
+          <Button type="filled full-width" loading={loadingRedeem} on:click={e => dispatch("redeem")}
+            >Redeem {formatUSD(earningUSD)}</Button
+          >
+        </div>
+      </SidePanelCard>
     {:else}
       <SidePanelCard open={true} title="Liquidity & Rewards" color="01A781" />
     {/if}
   </div>
 {/if}
-
-<table id="liquidityPanel">
-  <thead>
-    <tr>
-      <th> Balance </th>
-      <th> Share </th>
-      <th> Earned Liquidity Tokens </th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        {liquidity} ({formatUSD(liquidityBalanceUSD)})
-      </td>
-      <td>
-        {liquidityPercent}
-      </td>
-      <td>
-        {totalLiquidityPoints}
-        {#if earningUSD}({formatUSD(earningUSD)}){/if}</td
-      >
-    </tr>
-  </tbody>
-</table>
 
 <style>
   .panel {
@@ -143,6 +161,11 @@
     width: 100%;
   }
 
+  .details {
+    opacity: 50%;
+    text-align: center;
+  }
+
   h2 {
     font-size: 1.25rem;
     font-weight: 700;
@@ -152,7 +175,7 @@
     font-size: 0.875rem;
   }
 
-  .details {
+  .description {
     font-size: 0.875rem;
     opacity: 80%;
   }

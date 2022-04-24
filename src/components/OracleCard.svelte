@@ -7,6 +7,7 @@
 
   export let oracle
   export let large = false
+  export let button = false
 
   const dispatch = createEventDispatcher()
 
@@ -16,7 +17,7 @@
   $: joined = large ? new Date(oracle.oracle_state.state.transaction.processedAt + "Z") : undefined
 </script>
 
-<div id="oracle_card" on:click={() => dispatch("click")}>
+<div id="oracle_card" on:click={() => dispatch("click")} class={button ? "button" : ""}>
   <div class="header">
     <div id="title">
       <img
@@ -54,6 +55,10 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 1.75rem;
+  }
+
+  .button {
+    cursor: pointer;
   }
 
   .header {

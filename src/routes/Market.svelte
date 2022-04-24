@@ -15,6 +15,7 @@
   import { pop } from "svelte-spa-router"
   import { postTx } from "../utils/api"
   import { rabinPubKey, rabinPrivKey } from "../store/oracle"
+  import { push } from "svelte-spa-router"
 
   import OracleCard from "../components/OracleCard.svelte"
   import Chart from "../components/Chart.svelte"
@@ -33,6 +34,7 @@
   import LiquidityPanel from "../components/LiquidityPanel.svelte"
   import LiquiditySidePanel from "../components/LiquiditySidePanel.svelte"
   import Button from "../components/Button.svelte"
+  import MarketDetailsPanel from "../components/MarketDetailsPanel.svelte"
 
   import SlCard from "@shoelace-style/shoelace/dist/components/card/card.js"
   import SlFormatNumber from "@shoelace-style/shoelace/dist/components/format-number/format-number"
@@ -54,6 +56,7 @@
         details
         version
         liquidityFee
+        creatorFee
         market_state {
           totalSatVolume
           accLiquidityFeePool
@@ -67,6 +70,16 @@
                 domain
               }
               pubKey
+              num_open_markets: market_oracles_aggregate(where: {market_state: {state: {_not: {states: {}}}, decided: {_eq: false}}}) {
+                aggregate {
+                  count
+                }
+              }
+              num_resolved_markets: market_oracles_aggregate(where: {market_state: {state: {_not: {states: {}}}, decided: {_eq: true}}}) {
+                aggregate {
+                  count
+                }
+              }
             }
           }
           state {
@@ -107,9 +120,6 @@
       }
     }
   `
-
-  let payment_modal
-  let redeem_modal
 
   let balanceTab = "positions"
 
@@ -175,8 +185,6 @@
       return
     }
 
-    redeem_modal.hide()
-    payment_modal.hide()
     addNotification({
       type: "success",
       text: "Successfully updated market",
@@ -186,21 +194,6 @@
       )}...</a>`,
       position: "top-right"
     })
-
-    const spentInputs = newTx.inputs.slice(1)
-    for (const input of spentInputs) {
-      $utxos = $utxos.filter(
-        utxo => utxo.txId !== input.prevTxId.toString("hex") || utxo.outputIndex !== input.outputIndex
-      )
-    }
-
-    const newUtxos = getUtxos(newTx)
-      .slice(1)
-      .filter(
-        utxo =>
-          utxo.script.toASM() === `OP_DUP OP_HASH160 ${$address.hashBuffer.toString("hex")} OP_EQUALVERIFY OP_CHECKSIG`
-      )
-    $utxos = $utxos.concat(newUtxos)
 
     market = await getMarket()
     updating = false
@@ -284,24 +277,51 @@
   $: hasBalance = balance.shares.reduce((partialSum, a) => partialSum + a, 0) > 0
 
   let tab = 1
+
+  let updatingLiquidity = false
+  let redeemingLiquidity = false
+  let updatingOption = undefined
+
+  async function updateBalance(option: number, change: number) {
+    updatingOption = option
+
+    const newBalance = {
+      shares: [...balance.shares],
+      liquidity: balance.liquidity
+    }
+    newBalance.shares[option] = balance.shares[option] + change
+
+    if (updatingOption === option) updatingOption = undefined
+  }
+
+  async function changeLiquidity(change: number) {
+    updatingLiquidity = true
+    const newBalance = {
+      shares: balance.shares,
+      liquidity: balance.liquidity + change
+    }
+    await updateMarket(newBalance)
+    updatingLiquidity = false
+  }
+
+  async function redeemLiquidity() {
+    redeemingLiquidity = true
+    await updateMarket(balance, true)
+    redeemingLiquidity = false
+  }
+
+  let openedPanels = []
+  function handleOpened(index) {
+    const newArray = new Array(market.options.length).fill(false)
+    newArray[index] = true
+    openedPanels = newArray
+  }
 </script>
 
 <SubHeader>
   <button class={tab === 1 ? "selected" : ""} on:click={() => (tab = 1)}>Overview</button>
   <button class={tab === 2 ? "selected" : ""} on:click={() => (tab = 2)}>Details</button>
 </SubHeader>
-
-{#if market && $seed}
-  <RedeemModal {market} bind:this={redeem_modal} {balance} on:update={e => updateMarket(e.detail.balance)} />
-
-  <PaymentModal
-    {market}
-    bind:this={payment_modal}
-    {balance}
-    on:buy={e => buySell(e.detail.option, e.detail.amount)}
-    on:sell={e => buySell(e.detail.option, -e.detail.amount)}
-  />
-{/if}
 
 <main>
   {#if loading}
@@ -342,57 +362,19 @@
               Nothing here yet
             {/if}
           {:else if balanceTab === "liquidity"}
-            <LiquidityPanel
-              {market}
-              entry={existingEntry}
-              on:add={e => payment_modal.show("buy", -1)}
-              on:remove={e => payment_modal.show("sell", -1)}
-              on:redeem={e => updateMarket(balance, true)}
-            />
+            <LiquidityPanel {market} entry={existingEntry} on:redeem={e => updateMarket(balance, true)} />
           {/if}
         {/if}
-
-        <div class="container">
-          <div class="cards">
-            <!-- <div class="full-width">
-            <OutcomeCard
-              {market}
-              {balance}
-              on:buy={e => payment_modal.show("buy", e.detail.option)}
-              on:sell={e => payment_modal.show("sell", e.detail.option)}
-            />
-          </div> -->
-
-            <!-- <div class="card-wide">
-            <MarketDetailsCard {market} />
-          </div> -->
-
-            {#if $seed && compatibleVersion}
-              <!-- <MarketMenu
-              {balance}
-              {market}
-              on:update={e => updateMarket(e.detail.balance)}
-              on:buy={e => payment_modal.show("buy", e.detail.option)}
-              on:sell={e => payment_modal.show("sell", e.detail.option)}
-              on:redeemInvalid={e => redeem_modal.show("redeemInvalid")}
-              on:redeemWinning={e => redeem_modal.show("redeemWinning")}
-              on:extractLiquidity={e => redeem_modal.show("extractLiquidity")}
-            /> -->
-            {/if}
-          </div>
-
-          {#if existingEntry && existingEntry.liquidity}
-            <LiquidityCard
-              {market}
-              entry={existingEntry}
-              on:add={e => payment_modal.show("buy", -1)}
-              on:remove={e => payment_modal.show("sell", -1)}
-              on:redeem={e => updateMarket(balance, true)}
-            />
-          {/if}
-        </div>
       {:else if tab === 2}
-        <OracleCard oracle={market.market_state.market_oracles[0].oracle} />
+        <div class="details-panel">
+          <MarketDetailsPanel {market} />
+          <h2>Oracle</h2>
+          <OracleCard
+            oracle={market.market_state.market_oracles[0].oracle}
+            button={true}
+            on:click={() => push("#/oracles/" + market.market_state.market_oracles[0].oracle.pubKey)}
+          />
+        </div>
       {/if}
     </div>
 
@@ -406,16 +388,25 @@
 
       <div class="options">
         {#each market.market_state.shares as shares, index}
-          <OptionPanel {market} {balance} option={index} />
+          <OptionPanel
+            on:opened={e => handleOpened(index)}
+            open={openedPanels[index]}
+            {market}
+            {balance}
+            option={index}
+            loading={updatingOption === index}
+            on:update={e => updateBalance(index, e.detail.change)}
+          />
         {/each}
       </div>
 
       <LiquiditySidePanel
         {market}
         entry={existingEntry}
-        on:add={e => payment_modal.show("buy", -1)}
-        on:remove={e => payment_modal.show("sell", -1)}
-        on:redeem={e => updateMarket(balance, true)}
+        on:update={e => changeLiquidity(e.detail.change)}
+        on:redeem={redeemLiquidity}
+        loadingUpdate={updatingLiquidity}
+        loadingRedeem={redeemingLiquidity}
       />
     </div>
   {:else}
@@ -431,11 +422,24 @@
     gap: 5.5rem;
   }
 
+  h2 {
+    font-weight: 500;
+    font-size: 1.5rem;
+    margin-top: 1.75rem;
+  }
+
   .main-panel {
     display: flex;
     flex-direction: column;
     gap: 2rem;
     align-items: center;
+    width: 100%;
+  }
+
+  .details-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
     width: 100%;
   }
 
@@ -453,49 +457,9 @@
     gap: 0.75rem;
   }
 
-  /* h1 {
-    font-size: 2.3rem;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: min(90%, 50rem);
-    font-weight: bold;
-  } */
-
-  /* h1 div {
-    display: flex;
-    align-items: center;
-    font-size: 1.3rem;
-  } */
-
   .chart {
     width: 100%;
   }
-
-  .cards {
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-    align-items: stretch;
-  }
-  /* .card-wide {
-    grid-column: span 2 / auto;
-  } */
-
-  /* .full-width {
-    grid-column: 1 / -1;
-  } */
-
-  .container {
-    gap: 1rem;
-  }
-
-  /* .txid {
-    font-size: var(--sl-font-size-x-small);
-    color: var(--sl-color-gray-400);
-    margin: 0.2rem;
-  } */
 
   .card {
     background-color: #323841;

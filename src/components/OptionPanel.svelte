@@ -12,9 +12,13 @@
   import Button from "./Button.svelte"
   import Switch from "../components/Switch.svelte"
 
+  const dispatch = createEventDispatcher()
+
   export let option = 0
   export let balance
   export let market
+  export let loading
+  export let open = false
 
   const actions = ["Buy", "Sell"]
 
@@ -24,19 +28,23 @@
   let satFeeEstimate = 63000 * feeb
   $: usdFeeEstimate = (satFeeEstimate * $bsvPrice) / 100000000
 
+  let version
+  $: try {
+    version = pm.getMarketVersion(market.version)
+  } catch {}
+
   // $: marketVersion = pm.getMarketVersion(market.version)
   $: marketBalance = {
     shares: market.market_state.shares,
     liquidity: market.market_state.liquidity
   }
   $: change = amount ? (action === 0 ? amount : -amount) : 0
-  $: price =
-    change !== 0
-      ? action === 0
-        ? getSharePrice(marketBalance, option, change) + satFeeEstimate
-        : Math.abs(getSharePrice(marketBalance, option, change)) - satFeeEstimate
-      : 0
+  $: newPrice = getSharePrice(marketBalance, option, change)
+  $: price = change !== 0 ? (action === 0 ? newPrice + satFeeEstimate : Math.abs(newPrice) - satFeeEstimate) : 0
   $: usdPrice = (price * $bsvPrice) / 100000000
+  $: marketFee = (newPrice / 100) * market.creatorFee
+  $: liquidityFee = (newPrice / 100) * market.liquidityFee
+  $: valaFee = version && newPrice * version.options.devFee
 
   $: priceBuyOneUSD = (getSharePrice(marketBalance, option, 1) * $bsvPrice) / 100000000
   $: probability = marketBalance.shares[option]
@@ -50,12 +58,17 @@
   $: potentialX = potentialAssetsUSD ? potentialAssetsUSD / usdPrice : 0
   $: insideLimits = isInsideLimits(marketBalance, option, change)
   $: canBuySell = change !== 0 && (action === 0 ? price <= $satBalance : -change <= balance.shares[option])
+
+  $: if (open) {
+    dispatch("opened")
+  }
 </script>
 
 <SidePanelCard
   title={market.options[option].name}
   gradient={probability ? Math.round(probability * 100) : 0}
   deactivated={!market.market_state.market_oracles[0].committed}
+  bind:open
 >
   <div slot="header">
     <div class="price">${Math.round(priceBuyOneUSD * 100) / 100}</div>
@@ -82,13 +95,35 @@
           <div>{Math.round(potentialX * 100) / 100}x</div>
         </div>
       {/if}
+
       <div>
-        <div class="label">Total Fee</div>
+        <div class="label">Tx Fee</div>
         <div>${Math.round(usdFeeEstimate * 100) / 100}</div>
       </div>
+
+      {#if action === 1}
+        <div>
+          <div class="label">Market Fee</div>
+          <div>{market.creatorFee}%</div>
+        </div>
+        <div>
+          <div class="label">Liquidity Fee</div>
+          <div>{market.liquidityFee}%</div>
+        </div>
+        {#if version}
+          <div>
+            <div class="label">Vala Fee</div>
+            <div>{version.options.devFee}%</div>
+          </div>
+        {/if}
+      {/if}
     </div>
 
-    <Button type="filled-blue full-width" disabled={!insideLimits || !canBuySell}
+    <Button
+      type="filled-blue full-width"
+      disabled={!insideLimits || !canBuySell}
+      on:click={() => dispatch("update", { change })}
+      {loading}
       ><b
         >{actions[action]}
         {#if price > 0} ${Math.round(usdPrice * 100) / 100} {/if}</b
