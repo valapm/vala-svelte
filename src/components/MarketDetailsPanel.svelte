@@ -4,7 +4,12 @@
 
   export let market
 
-  $: version = pm.getMarketVersion(market.version)
+  let version
+  $: {
+    try {
+      version = pm.getMarketVersion(market.version)
+    } catch {}
+  }
 
   let tab = 0
 </script>
@@ -22,7 +27,7 @@
       <div class="version">
         Market Version: <a
           href="https://{testnet ? 'test.' : ''}whatsonchain.com/tx/{market.market_state.state.transaction.txid}"
-          >{version.version}</a
+          >{version ? version.version : "?"}</a
         >
       </div>
     {:else}

@@ -5,7 +5,11 @@
 
   export let market
 
-  $: fees = round(market.liquidityFee + market.creatorFee + pm.getMarketVersion(market.version).options.devFee)
+  let version
+  $: try {
+    version = pm.getMarketVersion(market.version)
+  } catch {}
+  $: fees = version ? round(market.liquidityFee + market.creatorFee + version.options.devFee) : "?"
   $: totalInvested =
     (lmsr.getLmsrSats({ liquidity: market.market_state.liquidity, shares: market.market_state.shares }) * $price) /
     100000000

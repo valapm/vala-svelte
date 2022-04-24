@@ -330,6 +330,8 @@
     <div class="main-panel">
       <MarketHeader {market} />
 
+      <div class="warning">Unsupported market version!</div>
+
       {#if tab === 1}
         <MarketBanner {market} />
         <!-- <a href={`https://${testnet ? "test." : ""}whatsonchain.com/tx/${params.firstTxTxid}`} class="txid">
@@ -378,37 +380,39 @@
       {/if}
     </div>
 
-    <div class="side-panel">
-      {#if status === 0 && $rabinPubKey.toString() === market.market_state.market_oracles[0].oracle.pubKey}
-        <div class="card">
-          Market is Unpublished
-          <Button type="filled-blue full-width" on:click={commit} loading={commitLoading}>Publish Market</Button>
+    {#if compatibleVersion}
+      <div class="side-panel">
+        {#if status === 0 && $rabinPubKey.toString() === market.market_state.market_oracles[0].oracle.pubKey}
+          <div class="card">
+            Market is Unpublished
+            <Button type="filled-blue full-width" on:click={commit} loading={commitLoading}>Publish Market</Button>
+          </div>
+        {/if}
+
+        <div class="options">
+          {#each market.market_state.shares as shares, index}
+            <OptionPanel
+              on:opened={e => handleOpened(index)}
+              open={openedPanels[index]}
+              {market}
+              {balance}
+              option={index}
+              loading={updatingOption === index}
+              on:update={e => updateBalance(index, e.detail.change)}
+            />
+          {/each}
         </div>
-      {/if}
 
-      <div class="options">
-        {#each market.market_state.shares as shares, index}
-          <OptionPanel
-            on:opened={e => handleOpened(index)}
-            open={openedPanels[index]}
-            {market}
-            {balance}
-            option={index}
-            loading={updatingOption === index}
-            on:update={e => updateBalance(index, e.detail.change)}
-          />
-        {/each}
+        <LiquiditySidePanel
+          {market}
+          entry={existingEntry}
+          on:update={e => changeLiquidity(e.detail.change)}
+          on:redeem={redeemLiquidity}
+          loadingUpdate={updatingLiquidity}
+          loadingRedeem={redeemingLiquidity}
+        />
       </div>
-
-      <LiquiditySidePanel
-        {market}
-        entry={existingEntry}
-        on:update={e => changeLiquidity(e.detail.change)}
-        on:redeem={redeemLiquidity}
-        loadingUpdate={updatingLiquidity}
-        loadingRedeem={redeemingLiquidity}
-      />
-    </div>
+    {/if}
   {:else}
     <NotFound />
   {/if}
@@ -479,5 +483,11 @@
     justify-content: flex-start;
     font-weight: 500;
     width: 100%;
+  }
+
+  .warning {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #ff0060;
   }
 </style>
