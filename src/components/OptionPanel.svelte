@@ -83,7 +83,7 @@
     </div>
     <Switch bind:selected={action} actions={["Buy", "Sell"]} />
     <div class="balance">Balance: <b>{balance.shares[option]}</b> Shares</div>
-    <NumberInput placeholder="Shares" bind:value={amount} max={action === 1 ? balance.shares[option] : 0} />
+    <NumberInput placeholder="Shares" bind:value={amount} max={action === 1 ? balance.shares[option] : undefined} />
     <div class="cost-table">
       {#if action === 0}
         <div>

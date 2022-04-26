@@ -291,6 +291,8 @@
     }
     newBalance.shares[option] = balance.shares[option] + change
 
+    await updateMarket(newBalance)
+
     if (updatingOption === option) updatingOption = undefined
   }
 
@@ -330,7 +332,7 @@
     <div class="main-panel">
       <MarketHeader {market} />
 
-      <div class="warning">Unsupported market version!</div>
+      {#if !compatibleVersion}<div class="warning">Unsupported market version!</div>{/if}
 
       {#if tab === 1}
         <MarketBanner {market} />

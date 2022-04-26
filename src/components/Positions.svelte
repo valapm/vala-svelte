@@ -19,9 +19,9 @@
     <tr>
       <th> Outcome </th>
       <th> Qty Owned </th>
-      <th> Avg Price Paid </th>
+      <!-- <th> Avg Price Paid </th> -->
       <th> Current Value </th>
-      <th> P/L </th>
+      <!-- <th> P/L </th> -->
     </tr>
   </thead>
 
@@ -35,11 +35,11 @@
           <td>
             {shares}
           </td>
-          <td> ? </td>
+          <!-- <td> ? </td> -->
           <td>
             {formatUSD(usdPrices[index] * shares)}
           </td>
-          <td> ? </td>
+          <!-- <td> ? </td> -->
         </tr>
       {/if}
     {/each}
