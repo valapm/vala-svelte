@@ -105,11 +105,11 @@
   $: canComplete1 =
     options.length >= 2 &&
     !options.some(option => !option.name) &&
-    options.length <= bp.contracts.marketContracts[0].options.maxOptionCount
+    options.length <= bp.contracts.currentMarketContract.options.maxOptionCount
   $: canComplete2 = creatorFee >= 0 && liquidityFee >= 0
   $: canCreateMarket = canComplete0 && canComplete1 && canComplete2
 
-  const contract = bp.contracts.marketContracts[0]
+  const contract = bp.contracts.currentMarketContract
 
   $: market = canComplete2
     ? bp.pm.getNewMarket(

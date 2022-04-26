@@ -56,7 +56,7 @@
 
   let grid
 
-  const versions = contracts.marketContracts.map(v => v.identifier)
+  const versions = Object.keys(contracts.marketContracts)
 
   $: marketQuery = gql`
     {
