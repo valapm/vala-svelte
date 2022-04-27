@@ -1,8 +1,8 @@
 <script lang="ts">
   import { lmsr, transaction as pmTx, pm, bsv } from "bitcoin-predict"
   import { price } from "../store/price"
-  import { gql } from "graphql-request"
-  import { gqlClient } from "../utils/graphql"
+  // import { gql } from "graphql-request"
+  // import { gqlClient } from "../utils/graphql"
   import { onMount } from "svelte"
   import { publicKey, privateKey, address, seed } from "../store/wallet"
   import { utxos } from "../store/wallet"
@@ -16,6 +16,9 @@
   import { postTx } from "../utils/api"
   import { rabinPubKey, rabinPrivKey } from "../store/oracle"
   import { push } from "svelte-spa-router"
+
+  import { query, getClient } from "svelte-apollo"
+  import { gql } from "@apollo/client/core"
 
   import OracleCard from "../components/OracleCard.svelte"
   import Chart from "../components/Chart.svelte"
@@ -37,12 +40,35 @@
   import MarketDetailsPanel from "../components/MarketDetailsPanel.svelte"
   import Table from "../components/Table.svelte"
 
+  const gqlClient = getClient()
+
   const { addNotification } = getNotificationsContext()
 
   export let params
 
+  const marketStateQuery = gql`
+    query {
+      market_state {
+        totalSatVolume
+        accLiquidityFeePool
+        liquidityPoints
+        liquidityFeePool
+        satoshis
+        market_oracles {
+          committed
+        }
+        state {
+          transaction {
+            txid
+          }
+          outputIndex
+        }
+      }
+    }
+  `
+
   const marketQuery = gql`
-  {
+  query {
       market(where: {marketStateByFirststateid: { state: {transaction: {txid: {_eq: "${params.firstTxTxid}"}}}}}) {
         creatorPubKey
         creatorFee
@@ -116,8 +142,6 @@
 
   let balanceTab = "positions"
 
-  let market
-
   $: compatibleVersion = market && isCompatibleVersion(market.version)
   $: {
     if (compatibleVersion === false) {
@@ -143,11 +167,9 @@
       : 0
     : undefined
 
-  async function getMarket() {
-    const res = await gqlClient.request(marketQuery)
-    console.log(res.market[0])
-    return res.market[0]
-  }
+  const marketRes = query(marketQuery)
+  $: market = $marketRes.data ? $marketRes.data.market[0] : undefined
+  $: loading = $marketRes.loading
 
   let updating = false
 
@@ -187,8 +209,6 @@
       )}...</a>`,
       position: "top-right"
     })
-
-    market = await getMarket()
     updating = false
   }
 
@@ -260,12 +280,6 @@
     await updateMarket(balance, false, true)
     commitLoading = false
   }
-
-  let loading = true
-  onMount(async () => {
-    market = await getMarket()
-    loading = false
-  })
 
   $: hasBalance = balance.shares.reduce((partialSum, a) => partialSum + a, 0) > 0
 

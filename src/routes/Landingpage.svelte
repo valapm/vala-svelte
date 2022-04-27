@@ -4,11 +4,30 @@
   import { push } from "svelte-spa-router"
   import { fade } from "svelte/transition"
 
+  import { query } from "svelte-apollo"
+  import { gql } from "@apollo/client/core"
+
   import WaitlistSignup from "../components/WaitlistSignup.svelte"
   import LandingpageLogo from "../components/LandingpageLogo.svelte"
 
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
   import SlCard from "@shoelace-style/shoelace/dist/components/card/card.js"
+
+  const testQuery = query(gql`
+    query {
+      market {
+        market_state {
+          state {
+            transactionTxid
+          }
+          balanceMerkleRoot
+          shares
+        }
+      }
+    }
+  `)
+
+  $: console.log($testQuery)
 
   onMount(() => {
     if ($seed) push("#/markets")
