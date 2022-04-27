@@ -1,11 +1,10 @@
 <script>
   import { gql } from "graphql-request"
   import { gqlClient } from "../utils/graphql"
-  import { pm, contracts } from "bitcoin-predict"
-  import { fade, crossfade } from "svelte/transition"
+  import { contracts } from "bitcoin-predict"
+  import { fade } from "svelte/transition"
   import { rabinPubKey } from "../store/oracle"
 
-  import MarketCard from "../components/MarketCard.svelte"
   import Searchbar from "../components/Searchbar.svelte"
   import SearchOptions from "../components/SearchOptions.svelte"
   import Masonry from "../components/Masonry.svelte"
@@ -27,14 +26,6 @@
   let sort = 0
   let filter = [0, 1, 2]
   let direction = "desc"
-
-  // $: {
-  //   const filter = {
-  //     market_state: {
-
-  //     }
-  //   }
-  // }
 
   const filterQueries = [
     "market_state: {market_oracles: {committed: {_eq: true}}}",
@@ -65,7 +56,7 @@
 
   // $: console.log(`Search ${filter.join(", ")} by ${sort}`)
 
-  $: isCurrentOracle = $rabinPubKey.toString() === oracle.pubKey
+  $: isCurrentOracle = oracle && $rabinPubKey && $rabinPubKey.toString() === oracle.pubKey
 
   let grid
 
@@ -133,7 +124,10 @@
 
 <div class="markets" in:fade={{ duration: 300 }} out:fade={{ duration: 0 }}>
   <div class="search">
-    <Searchbar bind:value={search} placeholder="Search Bets by {oracle.oracleStateByCurrentstateid.domain}" />
+    <Searchbar
+      bind:value={search}
+      placeholder="Search Bets{oracle ? 'by ' + oracle.oracleStateByCurrentstateid.domain : ''}"
+    />
     <SearchOptions {sortOptions} {filterOptions} bind:sort bind:filter bind:direction />
   </div>
 
