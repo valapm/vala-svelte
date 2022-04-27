@@ -35,14 +35,7 @@
   import LiquiditySidePanel from "../components/LiquiditySidePanel.svelte"
   import Button from "../components/Button.svelte"
   import MarketDetailsPanel from "../components/MarketDetailsPanel.svelte"
-
-  import SlCard from "@shoelace-style/shoelace/dist/components/card/card.js"
-  import SlFormatNumber from "@shoelace-style/shoelace/dist/components/format-number/format-number"
-  import SlFormatDate from "@shoelace-style/shoelace/dist/components/format-date/format-date"
-  import SlMenu from "@shoelace-style/shoelace/dist/components/menu/menu"
-  import SlMenuItem from "@shoelace-style/shoelace/dist/components/menu-item/menu-item"
-  import SlMenuLabel from "@shoelace-style/shoelace/dist/components/menu-label/menu-label"
-  import SlIconButton from "@shoelace-style/shoelace/dist/components/icon-button/icon-button"
+  import Table from "../components/Table.svelte"
 
   const { addNotification } = getNotificationsContext()
 
@@ -346,7 +339,7 @@
     <button on:click={() => (num = num + 1000)}> Increase </button> -->
 
         {#if !$seed}
-          <a href="#/login"><sl-button type="primary">Login to trade</sl-button></a>
+          <a href="#/login"><Button type="filled">Login to trade</Button></a>
         {:else}
           <div id="balances">
             <button
@@ -382,13 +375,25 @@
       {/if}
     </div>
 
-    {#if compatibleVersion}
+    {#if compatibleVersion && $privateKey}
       <div class="side-panel">
-        {#if status === 0 && $rabinPubKey.toString() === market.market_state.market_oracles[0].oracle.pubKey}
-          <div class="card">
-            Market is Unpublished
-            <Button type="filled-blue full-width" on:click={commit} loading={commitLoading}>Publish Market</Button>
-          </div>
+        {#if $rabinPubKey.toString() === market.market_state.market_oracles[0].oracle.pubKey}
+          {#if status === 0}
+            <div class="card">
+              Market is Unpublished
+              <Button type="filled-blue full-width" on:click={commit} loading={commitLoading}>Publish Market</Button>
+            </div>
+          {:else if status === 1}
+            <div class="card">
+              <Table>
+                <div>
+                  <div class="label">Earnings Total</div>
+                  <div>???</div>
+                </div>
+              </Table>
+              <Button type="filled-blue full-width">Resolve Market</Button>
+            </div>
+          {/if}
         {/if}
 
         <div class="options">

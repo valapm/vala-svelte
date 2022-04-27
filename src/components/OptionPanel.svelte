@@ -11,6 +11,7 @@
   import NumberInput from "../components/NumberInput.svelte"
   import Button from "./Button.svelte"
   import Switch from "../components/Switch.svelte"
+  import Table from "../components/Table.svelte"
 
   const dispatch = createEventDispatcher()
 
@@ -47,9 +48,7 @@
   $: valaFee = version && newPrice * version.options.devFee
 
   $: priceBuyOneUSD = (getSharePrice(marketBalance, option, 1) * $bsvPrice) / 100000000
-  $: probability = marketBalance.shares[option]
-    ? lmsr.getProbability(marketBalance, marketBalance.shares[option])
-    : undefined
+  $: probability = lmsr.getProbability(marketBalance, marketBalance.shares[option])
 
   // $: max = action === 0 ? $satBalance / : balance.shares[option]
 
@@ -84,7 +83,7 @@
     <Switch bind:selected={action} actions={["Buy", "Sell"]} />
     <div class="balance">Balance: <b>{balance.shares[option]}</b> Shares</div>
     <NumberInput placeholder="Shares" bind:value={amount} max={action === 1 ? balance.shares[option] : undefined} />
-    <div class="cost-table">
+    <Table>
       {#if action === 0}
         <div>
           <div class="label">Potential Win</div>
@@ -117,7 +116,7 @@
           </div>
         {/if}
       {/if}
-    </div>
+    </Table>
 
     <Button
       type="filled-blue full-width"
@@ -163,22 +162,6 @@
 
   .balance {
     font-size: 0.875rem;
-  }
-
-  .cost-table {
-    font-family: "Roboto Mono", sans-serif;
-    padding: 0.5rem;
-    width: 100%;
-    font-size: 0.875rem;
-    gap: 0.6rem;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .cost-table > div {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
   }
 
   .label {

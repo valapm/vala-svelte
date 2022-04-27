@@ -68,6 +68,7 @@
     justify-content: space-between;
     cursor: pointer;
     width: 100%;
+    z-index: 1;
   }
 
   .header > h3 {

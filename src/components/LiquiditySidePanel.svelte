@@ -11,6 +11,7 @@
   import Switch from "../components/Switch.svelte"
   import NumberInput from "../components/NumberInput.svelte"
   import Button from "../components/Button.svelte"
+  import Table from "./Table.svelte"
 
   const dispatch = createEventDispatcher()
 
@@ -96,12 +97,12 @@
             max={action === 1 ? liquidity : undefined}
             color="01A781"
           />
-          <div class="cost-table">
+          <Table>
             <div>
               <div class="label">Total Fee</div>
               <div>${Math.round(usdFeeEstimate * 100) / 100}</div>
             </div>
-          </div>
+          </Table>
           <Button
             type="filled full-width"
             disabled={!insideLimits || !canBuySell}
@@ -125,12 +126,12 @@
         ><div slot="body" class="body">
           <div class="details">Your earned Liquidity Tokens</div>
           <div class="balance">Earned: <b>{totalLiquidityPoints}</b> Tokens</div>
-          <div class="cost-table">
+          <Table>
             <div>
               <div class="label">Tx Fee</div>
               <div>${Math.round(usdFeeEstimate * 100) / 100}</div>
             </div>
-          </div>
+          </Table>
           <Button type="filled full-width" loading={loadingRedeem} on:click={e => dispatch("redeem")}
             >Redeem {formatUSD(earningUSD)}</Button
           >
@@ -178,22 +179,6 @@
   .description {
     font-size: 0.875rem;
     opacity: 80%;
-  }
-
-  .cost-table {
-    font-family: "Roboto Mono", sans-serif;
-    padding: 0.5rem;
-    width: 100%;
-    font-size: 0.875rem;
-    gap: 0.6rem;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .cost-table > div {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
   }
 
   .label {
