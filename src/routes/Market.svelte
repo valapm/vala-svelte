@@ -2,8 +2,8 @@
   import { lmsr, transaction as pmTx, pm, bsv } from "bitcoin-predict"
   import { price } from "../store/price"
   import { gql } from "graphql-request"
-  import { gqlClient } from "../utils/graphql"
-  import { onMount } from "svelte"
+  import { gqlClient, createWSClient } from "../utils/graphql"
+  import { onMount, onDestroy } from "svelte"
   import { publicKey, privateKey, address, seed } from "../store/wallet"
   import { utxos } from "../store/wallet"
   import { getTx } from "../apis/web"
@@ -112,6 +112,40 @@
         }
       }
     }
+  `
+
+  const marketStateQuery = gql`
+  query {
+    market_state(where: {market: {marketStateByFirststateid: { state: {transaction: {txid: {_eq: "${params.firstTxTxid}"}}}}}}) {
+          totalSatVolume
+          accLiquidityFeePool
+          liquidityPoints
+          liquidityFeePool
+          satoshis
+          market_oracles {
+            committed
+          }
+          state {
+            transaction {
+              txid
+            }
+            outputIndex
+          }
+          decided
+          decision
+          shares
+          liquidity
+          entries {
+            liquidity
+            shares
+            investor {
+              pubKey
+            }
+            liquidityPoints
+            prevLiquidityPoolState
+          }
+        }
+  }
   `
 
   let balanceTab = "positions"
@@ -262,10 +296,19 @@
   }
 
   let loading = true
+  let wsClient
   onMount(async () => {
     market = await getMarket()
     loading = false
+
+    wsClient = await createWSClient()
+    wsClient.subscribe(marketStateQuery, {
+      next: ({ market_state }) => console.log(market_state),
+      complete: () => console.log("done")
+    })
   })
+
+  onDestroy(() => wsClient.close())
 
   $: hasBalance = balance.shares.reduce((partialSum, a) => partialSum + a, 0) > 0
 
