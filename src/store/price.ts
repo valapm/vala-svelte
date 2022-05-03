@@ -1,4 +1,4 @@
-import { asyncReadable } from "svelte-async-readable"
+import { asyncReadable, AsyncReadable } from "svelte-async-readable"
 import { gql } from "graphql-request"
 import { gqlClient } from "../utils/graphql"
 
@@ -20,7 +20,7 @@ async function getPrice(): Promise<number> {
   return snapshot.blockchair || snapshot.okex
 }
 
-export const price = asyncReadable({
+export const price: AsyncReadable<number> = asyncReadable({
   dataProvider: getPrice,
   initialValue: 0
 })

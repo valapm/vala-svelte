@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { ApolloClient, InMemoryCache } from "@apollo/client/core"
   import { setClient } from "svelte-apollo"
-  import { graphqlHost } from "./config"
+  import { client } from "./utils/apollo"
 
   import Notifications from "svelte-notifications"
   import Router from "svelte-spa-router"
@@ -9,10 +8,6 @@
   import Header from "./components/Header.svelte"
   import Notification from "./components/Notification.svelte"
 
-  const client = new ApolloClient({
-    uri: graphqlHost,
-    cache: new InMemoryCache()
-  })
   setClient(client)
 </script>
 

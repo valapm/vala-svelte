@@ -1,9 +1,10 @@
 <script>
-  import { gql } from "graphql-request"
-  import { gqlClient } from "../utils/graphql"
   import { contracts } from "bitcoin-predict"
   import { fade } from "svelte/transition"
   import { rabinPubKey } from "../store/oracle"
+
+  import { query } from "svelte-apollo"
+  import { gql } from "@apollo/client/core"
 
   import Searchbar from "../components/Searchbar.svelte"
   import SearchOptions from "../components/SearchOptions.svelte"
@@ -103,9 +104,11 @@
     }
   `
 
-  $: marketArray = Array(30).fill(markets).flat()
+  $: marketRes = query(marketQuery)
+  $: console.log($marketRes, marketQuery)
 
-  $: gqlClient.request(marketQuery).then(res => (markets = res.market))
+  $: markets = $marketRes.data ? $marketRes.data.market : []
+  $: marketArray = Array(30).fill(markets).flat()
 
   let items
   $: {
@@ -118,7 +121,6 @@
   function remToPixels(rem) {
     return rem * parseFloat(getComputedStyle(document.documentElement).fontSize)
   }
-
   // const [send, receive] = crossfade({ duration: 300, fallback: fade })
 </script>
 

@@ -14,16 +14,12 @@
     (lmsr.getLmsrSats({ liquidity: market.market_state.liquidity, shares: market.market_state.shares }) * $price) /
     100000000
   // $: totalVolume = (market.market_state.totalSatVolume * $price) / 100000000
-  $: marketOracle = market.market_state.market_oracles[0]
-  $: oracleId = marketOracle.oracle.oracleStateByCurrentstateid
-    ? marketOracle.oracle.oracleStateByCurrentstateid.domain
-    : "????"
 </script>
 
 <div id="banner">
   <div>
     <h2>Oracle</h2>
-    <div>{oracleId}</div>
+    <div>{market.oracle.oracleStateByCurrentstateid.domain}</div>
   </div>
   <div>
     <h2>Total Invested</h2>

@@ -17,8 +17,11 @@
   import { rabinPubKey, rabinPrivKey } from "../store/oracle"
   import { push } from "svelte-spa-router"
 
-  import { query, getClient } from "svelte-apollo"
+  import { query, subscribe } from "svelte-apollo"
   import { gql } from "@apollo/client/core"
+  import cloneDeep from "lodash/cloneDeep"
+  import merge from "lodash/merge"
+  import { client } from "../utils/apollo"
 
   import OracleCard from "../components/OracleCard.svelte"
   import Chart from "../components/Chart.svelte"
@@ -40,20 +43,26 @@
   import MarketDetailsPanel from "../components/MarketDetailsPanel.svelte"
   import Table from "../components/Table.svelte"
 
-  const gqlClient = getClient()
-
   const { addNotification } = getNotificationsContext()
 
   export let params
 
   const marketStateQuery = gql`
-    query {
-      market_state {
+    subscription {
+      market_state(where: {market: {marketStateByFirststateid: { state: {transaction: {txid: {_eq: "${
+        params.firstTxTxid
+      }"}}}}}}, order_by: {stateCount:desc}, limit: 1) {
         totalSatVolume
         accLiquidityFeePool
         liquidityPoints
         liquidityFeePool
         satoshis
+        decided
+        decision
+        shares
+        liquidity
+        creatorSatEarnings
+        id
         market_oracles {
           committed
         }
@@ -62,6 +71,12 @@
             txid
           }
           outputIndex
+        }
+        myEntry: entries(where: {investorPubKey: {_eq: "${$publicKey.toString()}"}}) {
+          liquidity
+          shares
+          liquidityPoints
+          prevLiquidityPoolState
         }
       }
     }
@@ -76,30 +91,33 @@
         version
         liquidityFee
         creatorFee
+        oracle {
+          pubKey
+          oracleStateByCurrentstateid {
+            details
+            domain
+          }
+          num_open_markets: market_oracles_aggregate(where: {market_state: {state: {_not: {states: {}}}, decided: {_eq: false}}}) {
+            aggregate {
+              count
+            }
+          }
+          num_resolved_markets: market_oracles_aggregate(where: {market_state: {state: {_not: {states: {}}}, decided: {_eq: true}}}) {
+            aggregate {
+              count
+            }
+          }
+        }
         market_state {
+          id
           totalSatVolume
           accLiquidityFeePool
           liquidityPoints
           liquidityFeePool
+          creatorSatEarnings
           satoshis
           market_oracles {
             committed
-            oracle {
-              oracleStateByCurrentstateid {
-                domain
-              }
-              pubKey
-              num_open_markets: market_oracles_aggregate(where: {market_state: {state: {_not: {states: {}}}, decided: {_eq: false}}}) {
-                aggregate {
-                  count
-                }
-              }
-              num_resolved_markets: market_oracles_aggregate(where: {market_state: {state: {_not: {states: {}}}, decided: {_eq: true}}}) {
-                aggregate {
-                  count
-                }
-              }
-            }
           }
           state {
             transaction {
@@ -111,12 +129,9 @@
           decision
           shares
           liquidity
-          entries {
+          myEntry: entries(where: {investorPubKey: {_eq: "${$publicKey.toString()}"}}) {
             liquidity
             shares
-            investor {
-              pubKey
-            }
             liquidityPoints
             prevLiquidityPoolState
           }
@@ -153,8 +168,7 @@
     }
   }
 
-  $: existingEntry =
-    $publicKey && market && market.market_state.entries.find(entry => entry.investor.pubKey === $publicKey.toString())
+  $: existingEntry = $publicKey && market && market.market_state.myEntry[0]
   $: balance = existingEntry || {
     shares: new Array(market ? market.options.length : 0).fill(0),
     liquidity: 0
@@ -168,8 +182,18 @@
     : undefined
 
   const marketRes = query(marketQuery)
-  $: market = $marketRes.data ? $marketRes.data.market[0] : undefined
+  $: market = $marketRes.data ? cloneDeep($marketRes.data.market[0]) : undefined
   $: loading = $marketRes.loading
+
+  const currentMarketState = subscribe(marketStateQuery)
+  console.log($currentMarketState)
+
+  $: if (market && $currentMarketState.data) {
+    merge(market.market_state, $currentMarketState.data.market_state[0])
+    market = market
+  }
+
+  $: console.log($currentMarketState.data)
 
   let updating = false
 
@@ -182,8 +206,27 @@
     if (updating) return // TODO: Show error
     updating = true
 
-    console.log(market.entries)
-    const entries = getEntries(market)
+    const entriesQuery = gql`
+      query {
+      entry(where: {market_state: {id: {_eq: ${market.market_state.id}}}}) {
+        liquidity
+        shares
+        liquidityPoints
+        prevLiquidityPoolState
+        investor {
+          pubKey
+        }
+    }}`
+
+    const entriesRes = await client.query({ query: entriesQuery })
+
+    if (entriesRes.error) {
+      console.error(entriesRes)
+      throw new Error("Failed to fetch entries")
+    }
+
+    console.log(entriesRes.data.entry)
+    const entries = getEntries(entriesRes.data.entry)
 
     const newTx = commit ? await getCommitTx() : await getUpdateTx(newBalance, entries, redeemLiquidityPoints)
     console.log(newTx)
@@ -212,22 +255,22 @@
     updating = false
   }
 
-  async function buySell(option: number, shareChange: number) {
-    const newBalance =
-      option === -1
-        ? {
-            shares: balance.shares,
-            liquidity: balance.liquidity + shareChange
-          }
-        : {
-            shares: balance.shares.map((shares, i) => (i === option ? shares + shareChange : shares)),
-            liquidity: balance.liquidity
-          }
-    updateMarket(newBalance)
-  }
+  // async function buySell(option: number, shareChange: number) {
+  //   const newBalance =
+  //     option === -1
+  //       ? {
+  //           shares: balance.shares,
+  //           liquidity: balance.liquidity + shareChange
+  //         }
+  //       : {
+  //           shares: balance.shares.map((shares, i) => (i === option ? shares + shareChange : shares)),
+  //           liquidity: balance.liquidity
+  //         }
+  //   updateMarket(newBalance)
+  // }
 
   async function getUpdateTx(newBalance, entries, redeemLiquidityPoints = false) {
-    const currentTx = await getTx(market.market_state.state.transaction.txid, gqlClient)
+    const currentTx = await getTx(market.market_state.state.transaction.txid)
 
     let updateTx
     if (existingEntry) {
@@ -261,7 +304,7 @@
   }
 
   async function getCommitTx() {
-    const currentTx = await getTx(market.market_state.state.transaction.txid, gqlClient)
+    const currentTx = await getTx(market.market_state.state.transaction.txid)
     const updateTx = pmTx.getOracleCommitTx(
       currentTx,
       $rabinPrivKey,
@@ -278,6 +321,7 @@
   async function commit() {
     commitLoading = true
     await updateMarket(balance, false, true)
+    market.market_state.market_oracles[0].committed = true
     commitLoading = false
   }
 
@@ -380,18 +424,14 @@
         <div class="details-panel">
           <MarketDetailsPanel {market} />
           <h2>Oracle</h2>
-          <OracleCard
-            oracle={market.market_state.market_oracles[0].oracle}
-            button={true}
-            on:click={() => push("#/oracles/" + market.market_state.market_oracles[0].oracle.pubKey)}
-          />
+          <OracleCard oracle={market.oracle} button={true} on:click={() => push("#/oracles/" + market.oracle.pubKey)} />
         </div>
       {/if}
     </div>
 
     {#if compatibleVersion && $privateKey}
       <div class="side-panel">
-        {#if $rabinPubKey.toString() === market.market_state.market_oracles[0].oracle.pubKey}
+        {#if $rabinPubKey.toString() === market.oracle.pubKey}
           {#if status === 0}
             <div class="card">
               Market is Unpublished
@@ -402,7 +442,7 @@
               <Table>
                 <div>
                   <div class="label">Earnings Total</div>
-                  <div>???</div>
+                  <div><b>${round((market.market_state.creatorSatEarnings * $price) / 100000000)}</b></div>
                 </div>
               </Table>
               <Button type="filled-blue full-width">Resolve Market</Button>
