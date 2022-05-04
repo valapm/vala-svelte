@@ -1,5 +1,6 @@
 <script>
   import { createEventDispatcher } from "svelte"
+  import { slide } from "svelte/transition"
 
   const dispatch = createEventDispatcher()
 
@@ -14,7 +15,13 @@
   $: if (open) dispatch("opened")
 </script>
 
-<div class="card" style={open ? `border: 1px solid #${color};` : ""}>
+<div
+  class="card"
+  style={open
+    ? `border: 1px solid #${color};
+box-shadow: 0 0 1.125rem #${color}80;`
+    : ""}
+>
   <div
     class="header"
     on:click={() => {
@@ -31,7 +38,11 @@
   </div>
 
   {#if open}
-    <slot name="body" />
+    <div transition:slide={{ duration: 300 }}>
+      <div class="body">
+        <slot name="body" />
+      </div>
+    </div>
   {/if}
 
   {#if gradient && !deactivated}
@@ -48,9 +59,13 @@
     top: 0;
   }
 
+  .body {
+    margin-top: 1.25rem;
+  }
+
   .card {
     width: 100%;
-    padding: 1.125rem;
+    padding: 1rem 1.125rem;
     background-color: #323841;
     border-radius: 0.375rem;
     position: relative;
@@ -59,8 +74,9 @@
     flex-direction: column;
     align-items: center;
     z-index: 0;
-    gap: 1.25rem;
+    /* gap: 1.25rem; */
     border: 1px solid #323841;
+    transition: all 0.15s ease-in-out;
   }
 
   .header {

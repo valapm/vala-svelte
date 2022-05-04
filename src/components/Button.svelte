@@ -47,6 +47,17 @@
     background: linear-gradient(149.62deg, #00acff 17.39%, #96d0ec 124.46%);
   }
 
+  .filled-yellow {
+    border: none;
+    background: linear-gradient(149.62deg, #ffa800 17.39%, #e0c592 124.46%);
+  }
+
+  .filled-grey {
+    border: none;
+    background-color: #323841;
+    color: #989ba0;
+  }
+
   .blue {
     border: none;
     background-color: #5184e7;

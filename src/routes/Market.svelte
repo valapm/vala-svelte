@@ -42,6 +42,7 @@
   import Button from "../components/Button.svelte"
   import MarketDetailsPanel from "../components/MarketDetailsPanel.svelte"
   import Table from "../components/Table.svelte"
+  import MarketCreatorCard from "../components/MarketCreatorCard.svelte"
 
   const { addNotification } = getNotificationsContext()
 
@@ -363,6 +364,10 @@
     redeemingLiquidity = false
   }
 
+  async function resolve(option) {
+    console.log("Resolving option " + option)
+  }
+
   let openedPanels = []
   function handleOpened(index) {
     const newArray = new Array(market.options.length).fill(false)
@@ -438,15 +443,7 @@
               <Button type="filled-blue full-width" on:click={commit} loading={commitLoading}>Publish Market</Button>
             </div>
           {:else if status === 1}
-            <div class="card">
-              <Table>
-                <div>
-                  <div class="label">Earnings Total</div>
-                  <div><b>${round((market.market_state.creatorSatEarnings * $price) / 100000000)}</b></div>
-                </div>
-              </Table>
-              <Button type="filled-blue full-width">Resolve Market</Button>
-            </div>
+            <MarketCreatorCard {market} on:resolve={e => resolve(e.detail.option)} />
           {/if}
         {/if}
 
