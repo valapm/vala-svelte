@@ -12,6 +12,8 @@
   import Button from "./Button.svelte"
   import Switch from "../components/Switch.svelte"
   import Table from "../components/Table.svelte"
+  import X from "../icons/x.svelte"
+  import Checkmark from "../icons/checkmark.svelte"
 
   const dispatch = createEventDispatcher()
 
@@ -43,9 +45,9 @@
   $: newPrice = getSharePrice(marketBalance, option, change)
   $: price = change !== 0 ? (action === 0 ? newPrice + satFeeEstimate : Math.abs(newPrice) - satFeeEstimate) : 0
   $: usdPrice = (price * $bsvPrice) / 100000000
-  $: marketFee = (newPrice / 100) * market.creatorFee
-  $: liquidityFee = (newPrice / 100) * market.liquidityFee
-  $: valaFee = version && newPrice * version.options.devFee
+  // $: marketFee = (newPrice / 100) * market.creatorFee
+  // $: liquidityFee = (newPrice / 100) * market.liquidityFee
+  // $: valaFee = version && newPrice * version.options.devFee
 
   $: priceBuyOneUSD = (getSharePrice(marketBalance, option, 1) * $bsvPrice) / 100000000
   $: probability = lmsr.getProbability(marketBalance, marketBalance.shares[option])
@@ -58,21 +60,30 @@
   $: insideLimits = isInsideLimits(marketBalance, option, change)
   $: canBuySell = change !== 0 && (action === 0 ? price <= $satBalance : -change <= balance.shares[option])
 
+  $: winning = market.market_state.decided && market.market_state.decision === option
+  $: loosing = market.market_state.decided && market.market_state.decision !== option
+  $: winningShares = winning ? balance.shares[option] : 0
+  $: winningUSD = (winningShares * lmsr.SatScaling * $bsvPrice) / 100000000
+
+  $: deactivated = !market.market_state.market_oracles[0].committed || loosing
+  $: gradient = winning ? 100 : loosing ? 0 : probability ? Math.round(probability * 100) : 0
+
   $: if (open) {
     dispatch("opened")
   }
 </script>
 
-<SidePanelCard
-  title={market.options[option].name}
-  gradient={probability ? Math.round(probability * 100) : 0}
-  deactivated={!market.market_state.market_oracles[0].committed}
-  bind:open
->
+<SidePanelCard title={market.options[option].name} {gradient} {deactivated} bind:open>
   <div slot="header">
-    <div class="price">${Math.round(priceBuyOneUSD * 100) / 100}</div>
-    {#if probability}
-      <span class="probability">{Math.round(probability * 100)}%</span>
+    {#if !market.market_state.decided}
+      <div class="price">${Math.round(priceBuyOneUSD * 100) / 100}</div>
+      {#if probability}
+        <span class="probability">{Math.round(probability * 100)}%</span>
+      {/if}
+    {:else if winning}
+      <Checkmark />
+    {:else}
+      <X />
     {/if}
   </div>
 
@@ -80,54 +91,69 @@
     <div class="details">
       {market.options[option].details}
     </div>
-    <Switch bind:selected={action} actions={["Buy", "Sell"]} />
-    <div class="balance">Balance: <b>{balance.shares[option]}</b> Shares</div>
-    <NumberInput placeholder="Shares" bind:value={amount} max={action === 1 ? balance.shares[option] : undefined} />
-    <Table>
-      {#if action === 0}
-        <div>
-          <div class="label">Potential Win</div>
-          <div>${potentialWin >= 0 ? Math.round(potentialWin * 100) / 100 : 0}</div>
-        </div>
-        <div>
-          <div class="label">Return</div>
-          <div>{Math.round(potentialX * 100) / 100}x</div>
-        </div>
-      {/if}
-
+    {#if !market.market_state.decided}
+      <Switch bind:selected={action} actions={["Buy", "Sell"]} />
+      <div class="balance">Balance: <b>{balance.shares[option]}</b> Shares</div>
+      <NumberInput placeholder="Shares" bind:value={amount} max={action === 1 ? balance.shares[option] : undefined} />
+    {/if}
+    {#if winningShares}
       <div>
-        <div class="label">Tx Fee</div>
-        <div>${Math.round(usdFeeEstimate * 100) / 100}</div>
+        Winnings: <b
+          >{winningShares} Share{#if winningShares > 1}s{/if}</b
+        >
       </div>
-
-      {#if action === 1}
-        <div>
-          <div class="label">Market Fee</div>
-          <div>{market.creatorFee}%</div>
-        </div>
-        <div>
-          <div class="label">Liquidity Fee</div>
-          <div>{market.liquidityFee}%</div>
-        </div>
-        {#if version}
+    {/if}
+    {#if !market.market_state.decided || winningShares}
+      <Table>
+        {#if action === 0 && !market.market_state.decided}
           <div>
-            <div class="label">Vala Fee</div>
-            <div>{version.options.devFee}%</div>
+            <div class="label">Potential Win</div>
+            <div>${potentialWin >= 0 ? Math.round(potentialWin * 100) / 100 : 0}</div>
+          </div>
+          <div>
+            <div class="label">Return</div>
+            <div>{Math.round(potentialX * 100) / 100}x</div>
           </div>
         {/if}
-      {/if}
-    </Table>
 
-    <Button
-      type="filled-blue full-width"
-      disabled={!insideLimits || !canBuySell}
-      on:click={() => dispatch("update", { change })}
-      {loading}
-      ><b
-        >{actions[action]}
-        {#if price > 0} ${Math.round(usdPrice * 100) / 100} {/if}</b
-      ></Button
-    >
+        <div>
+          <div class="label">Tx Fee</div>
+          <div>${Math.round(usdFeeEstimate * 100) / 100}</div>
+        </div>
+
+        {#if action === 1 || market.market_state.decided}
+          <div>
+            <div class="label">Market Fee</div>
+            <div>{market.creatorFee}%</div>
+          </div>
+          <div>
+            <div class="label">Liquidity Fee</div>
+            <div>{market.liquidityFee}%</div>
+          </div>
+          {#if version}
+            <div>
+              <div class="label">Vala Fee</div>
+              <div>{version.options.devFee}%</div>
+            </div>
+          {/if}
+        {/if}
+      </Table>
+
+      <Button
+        type="filled-blue full-width"
+        disabled={!winningShares && (!insideLimits || !canBuySell)}
+        on:click={() => (winningShares ? dispatch("redeem") : dispatch("update", { change }))}
+        {loading}
+        ><b
+          >{#if winningShares}
+            Redeem ${Math.round(winningUSD * 100) / 100}
+          {:else}
+            {actions[action]}
+            {#if price > 0} ${Math.round(usdPrice * 100) / 100} {/if}
+          {/if}</b
+        ></Button
+      >
+    {/if}
   </div>
 </SidePanelCard>
 

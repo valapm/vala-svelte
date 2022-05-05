@@ -18,7 +18,7 @@
 <button class={selected ? "selected" : ""} on:click={() => dispatch("click")}>
   <div class="content">
     <h3>{market.options[option].name}</h3>
-    <div>{Math.round(probability)}%</div>
+    <div>{Math.round(probability * 100)}%</div>
   </div>
   <div class="gradient" style="width: {probability * 100}%;" />
 </button>

@@ -204,7 +204,10 @@
    * @param balance New Balance
    */
   async function updateMarket(newBalance: lmsr.balance, redeemLiquidityPoints = false, commit = false) {
-    if (updating) return // TODO: Show error
+    if (updating) {
+      console.error("Already updating")
+      return
+    } // TODO: Show error
     updating = true
 
     const entriesQuery = gql`
@@ -223,6 +226,7 @@
 
     if (entriesRes.error) {
       console.error(entriesRes)
+      updating = false
       throw new Error("Failed to fetch entries")
     }
 
@@ -232,8 +236,13 @@
     const newTx = commit ? await getCommitTx() : await getUpdateTx(newBalance, entries, redeemLiquidityPoints)
     console.log(newTx)
 
+    await broadcast(newTx)
+    updating = false
+  }
+
+  async function broadcast(tx: bsv.Transaction) {
     try {
-      await postTx(newTx, testnet)
+      await postTx(tx, testnet)
     } catch (e) {
       addNotification({
         type: "danger",
@@ -241,19 +250,19 @@
         description: e.message,
         position: "top-right"
       })
-      return
+      return false
     }
 
     addNotification({
       type: "success",
       text: "Successfully updated market",
-      description: `<a href='https://${testnet ? "test." : ""}whatsonchain.com/tx/${newTx.hash}'>${newTx.hash.slice(
+      description: `<a href='https://${testnet ? "test." : ""}whatsonchain.com/tx/${tx.hash}'>${tx.hash.slice(
         0,
         20
       )}...</a>`,
       position: "top-right"
     })
-    updating = false
+    return true
   }
 
   // async function buySell(option: number, shareChange: number) {
@@ -304,6 +313,41 @@
     return updateTx
   }
 
+  let resolving = false
+  async function resolve(option: number) {
+    if (updating) return
+    updating = true
+
+    console.log("Resolving option " + option)
+    resolving = true
+
+    const currentTx = await getTx(market.market_state.state.transaction.txid)
+    const updateTx = await pmTx.getOracleVoteTx(currentTx, option, $rabinPrivKey, $address, $utxos, $privateKey, feeb)
+
+    const broadcasted = await broadcast(updateTx)
+
+    if (broadcasted) {
+      market.market_state.decision = option
+      market.market_state.decided = true
+    }
+
+    resolving = false
+    updating = false
+  }
+
+  let redeemingInvalid
+  async function redeemInvalid() {
+    redeemingInvalid = true
+
+    console.log("Redeeming invalid shares")
+    await updateMarket({
+      liquidity: market.market_state.liquidity,
+      shares: market.market_state.shares.map((s, i) => (i === market.market_state.decision ? i : 0))
+    })
+
+    redeemingInvalid = false
+  }
+
   async function getCommitTx() {
     const currentTx = await getTx(market.market_state.state.transaction.txid)
     const updateTx = pmTx.getOracleCommitTx(
@@ -320,11 +364,19 @@
 
   let commitLoading = false
   async function commit() {
+    if (updating) return
+    updating = true
     commitLoading = true
-    await updateMarket(balance, false, true)
-    market.market_state.market_oracles[0].committed = true
+    const tx = await getCommitTx()
+    const broadcasted = await broadcast(tx)
+
+    if (broadcasted) market.market_state.market_oracles[0].committed = true
+
     commitLoading = false
+    updating = false
   }
+
+  $: console.log("updating", updating)
 
   $: hasBalance = balance.shares.reduce((partialSum, a) => partialSum + a, 0) > 0
 
@@ -348,6 +400,19 @@
     if (updatingOption === option) updatingOption = undefined
   }
 
+  async function redeemShares() {
+    updatingOption = market.market_state.decision
+
+    const newBalance = {
+      shares: new Array(balance.shares.length).fill(0),
+      liquidity: balance.liquidity
+    }
+
+    await updateMarket(newBalance)
+
+    if (updatingOption === market.market_state.decision) updatingOption = undefined
+  }
+
   async function changeLiquidity(change: number) {
     updatingLiquidity = true
     const newBalance = {
@@ -364,8 +429,16 @@
     redeemingLiquidity = false
   }
 
-  async function resolve(option) {
-    console.log("Resolving option " + option)
+  async function redeemAll() {
+    redeemingLiquidity = true
+    await updateMarket(
+      {
+        shares: balance.shares,
+        liquidity: 0
+      },
+      true
+    )
+    redeemingLiquidity = false
   }
 
   let openedPanels = []
@@ -374,6 +447,8 @@
     newArray[index] = true
     openedPanels = newArray
   }
+
+  $: if (market && market.market_state.decided) openedPanels[market.market_state.decision] = true
 </script>
 
 <SubHeader>
@@ -442,8 +517,13 @@
               Market is Unpublished
               <Button type="filled-blue full-width" on:click={commit} loading={commitLoading}>Publish Market</Button>
             </div>
-          {:else if status === 1}
-            <MarketCreatorCard {market} on:resolve={e => resolve(e.detail.option)} />
+          {:else}
+            <MarketCreatorCard
+              {market}
+              on:resolve={e => resolve(e.detail.option)}
+              on:redeemInvalid={redeemInvalid}
+              loading={resolving || redeemingInvalid}
+            />
           {/if}
         {/if}
 
@@ -457,6 +537,7 @@
               option={index}
               loading={updatingOption === index}
               on:update={e => updateBalance(index, e.detail.change)}
+              on:redeem={redeemShares}
             />
           {/each}
         </div>
@@ -466,6 +547,7 @@
           entry={existingEntry}
           on:update={e => changeLiquidity(e.detail.change)}
           on:redeem={redeemLiquidity}
+          on:redeemAll={redeemAll}
           loadingUpdate={updatingLiquidity}
           loadingRedeem={redeemingLiquidity}
         />
@@ -510,6 +592,7 @@
     display: flex;
     flex-direction: column;
     gap: 2.75rem;
+    flex-shrink: 0;
   }
 
   .options {

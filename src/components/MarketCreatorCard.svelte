@@ -2,6 +2,7 @@
   import { createEventDispatcher } from "svelte"
   import { price } from "../store/price"
   import { round } from "../utils/format"
+  import { lmsr } from "bitcoin-predict"
 
   import Table from "../components/Table.svelte"
   import Modal from "../components/Modal.svelte"
@@ -10,10 +11,25 @@
 
   const dispatch = createEventDispatcher()
 
+  export let loading
   export let market
 
   let selectOption = false
   let selectedOption = market.market_state.shares.indexOf(Math.max(...market.market_state.shares))
+
+  $: redeemInvalid =
+    market.market_state.decided &&
+    market.market_state.shares.reduce((a, b, i) => (i === market.market_state.decision ? a : a + b)) > 0
+
+  $: redeemInvalidSats = redeemInvalid
+    ? lmsr.getLmsrSats(market.market_state) -
+      lmsr.getLmsrSats({
+        liquidity: market.market_state.liquidity,
+        shares: market.market_state.shares.map((a, i) => (i === market.market_state.decision ? a : 0))
+      })
+    : 0
+
+  $: redeemInvalidUSD = (redeemInvalidSats * $price) / 100000000
 
   function resolve() {
     selectOption = false
@@ -24,11 +40,17 @@
 <div class="card">
   <Table>
     <div>
-      <div class="label">Earnings Total</div>
+      <div class="label">Total Fee Earnings</div>
       <div><b>${round((market.market_state.creatorSatEarnings * $price) / 100000000)}</b></div>
     </div>
   </Table>
-  <Button type="filled-blue full-width" on:click={() => (selectOption = true)}>Resolve Market</Button>
+  {#if !market.market_state.decided}
+    <Button type="filled-blue full-width" on:click={() => (selectOption = true)} {loading}>Resolve Market</Button>
+  {:else if redeemInvalidSats}
+    <Button type="filled-blue full-width" on:click={() => dispatch("redeemInvalid")} {loading}>
+      Redeem Invalid Shares ${Math.round(redeemInvalidUSD * 100) / 100}
+    </Button>
+  {/if}
   <Modal bind:open={selectOption}>
     <div class="modal">
       <h1>Resolve Market</h1>

@@ -38,7 +38,7 @@
     liquidity: market.market_state.liquidity
   }
 
-  $: change = amount ? (action === 0 ? amount : -amount) : 0
+  $: change = market.market_state.decided ? -entry.liquidity : amount ? (action === 0 ? amount : -amount) : 0
 
   $: liquidityBalance =
     lmsr.getLmsrSats(marketBalance) -
@@ -67,6 +67,21 @@
   $: canBuySell = change !== 0 && (action === 0 ? price <= $satBalance : entry && -change <= entry.liquidity)
 
   $: console.log("liquidityPoints", liquidityPoints)
+
+  $: console.log("entry", entry)
+
+  $: redeemAllSats = market.market_state.decided
+    ? earnings -
+      lmsr.getLmsrSats({
+        liquidity: marketBalance.liquidity - entry.liquidity,
+        shares: marketBalance.shares.map((s, i) => s - entry.shares[i])
+      }) +
+      lmsr.getLmsrSats(marketBalance)
+    : 0
+
+  $: console.log(canBuySell, isInsideLimits)
+
+  $: redeemAllUSD = (redeemAllSats * $bsvPrice) / 100000000
 
   let liquidityPanelOpened = false
   let rewardsPanelOpened = false
@@ -138,7 +153,28 @@
         </div>
       </SidePanelCard>
     {:else}
-      <SidePanelCard open={true} title="Liquidity & Rewards" color="01A781" />
+      <SidePanelCard open={true} title="Liquidity & Rewards" color="01A781">
+        <div slot="body" class="body">
+          <div class="details">Redeem your Liquidity and Liquidity Rewards</div>
+          <div class="balance">
+            Liquidity: <b>{liquidity}</b><br />
+            Rewards: <b>{totalLiquidityPoints}</b> Tokens
+          </div>
+
+          <Table>
+            <div>
+              <div class="label">Tx Fee</div>
+              <div>${Math.round(usdFeeEstimate * 100) / 100}</div>
+            </div>
+          </Table>
+          <Button
+            type="filled full-width"
+            disabled={!insideLimits || !canBuySell}
+            loading={loadingRedeem}
+            on:click={e => dispatch("redeemAll")}><b>Redeem ${Math.round(redeemAllUSD * 100) / 100}</b></Button
+          >
+        </div>
+      </SidePanelCard>
     {/if}
   </div>
 {/if}
@@ -146,9 +182,9 @@
 <style>
   .panel {
     width: 18.75rem;
-    padding: 1rem;
-    border: 2px dashed #01a781;
-    border-radius: 0.375rem;
+    /* padding: 1rem; */
+    /* border: 2px dashed #01a781; */
+    /* border-radius: 0.375rem; */
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -165,6 +201,7 @@
   .details {
     opacity: 50%;
     text-align: center;
+    line-height: 1.625rem;
   }
 
   h2 {
@@ -174,6 +211,8 @@
 
   .balance {
     font-size: 0.875rem;
+    text-align: center;
+    line-height: 1.625rem;
   }
 
   .description {
