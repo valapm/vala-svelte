@@ -1,11 +1,12 @@
 <script>
   import OracleCard from "./OracleCard.svelte"
   import Markets from "./Markets.svelte"
+  import { fade } from "svelte/transition"
 
   export let oracle
 </script>
 
-<div id="overview">
+<div id="overview" in:fade>
   <OracleCard {oracle} large={true} />
   <Markets {oracle} />
 </div>

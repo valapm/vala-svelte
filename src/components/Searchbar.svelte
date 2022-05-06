@@ -1,10 +1,12 @@
 <script>
+  import Search from "../icons/Search.svelte"
+
   export let value = ""
   export let placeholder = "Search"
 </script>
 
 <div>
-  <img src="./icons/search.svg" alt="search" />
+  <Search />
   <input type="text" {placeholder} bind:value />
 </div>
 
@@ -35,8 +37,8 @@
     outline: none;
   }
 
-  img {
+  /* img {
     height: 1.375rem;
     width: auto;
-  }
+  } */
 </style>

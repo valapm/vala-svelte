@@ -34,8 +34,8 @@
     }
   })
 
-  $: console.log("width", masonryWidth)
-  $: console.log("ITEMS:", sortedItems)
+  // $: console.log("width", masonryWidth)
+  // $: console.log("ITEMS:", sortedItems)
 </script>
 
 <div class="masonry" bind:clientWidth={masonryWidth} bind:clientHeight={masonryHeight} style="gap: {gap}px;">

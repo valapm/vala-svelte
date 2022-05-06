@@ -55,18 +55,16 @@
   })
 </script>
 
+<SubHeader>
+  <button class={selected === 0 ? "selected" : ""} on:click={() => (selected = 0)}>Overview</button>
+  <!-- <button class={selected === 1 ? "selected" : ""} on:click={() => (selected = 1)}>History</button> -->
+  <button class={selected === 2 ? "selected" : ""} on:click={() => (selected = 2)}>Settings</button>
+</SubHeader>
+
 {#if !loading}
   {#if oracle && oracle.oracleStateByCurrentstateid && oracle.oracleStateByCurrentstateid.domain}
-    <SubHeader>
-      <button class={selected === 0 ? "selected" : ""} on:click={() => (selected = 0)}>Overview</button>
-      <button class={selected === 1 ? "selected" : ""} on:click={() => (selected = 1)}>History</button>
-      <button class={selected === 2 ? "selected" : ""} on:click={() => (selected = 2)}>Settings</button>
-    </SubHeader>
-
     {#if selected === 0}
       <OracleOverview {oracle} />
-    {:else if selected === 1}
-      <OracleHistory {oracle} />
     {:else if selected === 2}
       <OracleSettings bind:oracle />
     {/if}

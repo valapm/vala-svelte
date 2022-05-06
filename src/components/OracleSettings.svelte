@@ -296,38 +296,6 @@
     </div>
 
     <Button {loading} on:click={update}>Save</Button>
-
-    {#await gqlClient.request(uncommittedMarketQuery) then res}
-      {#if res.market.length > 0}
-        <h2>Oracle Requests</h2>
-        {#each res.market as market}
-          {market.resolve} <button on:click={() => commitToMarket(market)}>Sign commitment</button>
-        {/each}
-      {/if}
-    {/await}
-
-    {#await gqlClient.request(undecidedMarketQuery) then res}
-      {#if res.market.length > 0}
-        <h2>Running Markets</h2>
-        {#each res.market as market}
-          {market.resolve}
-          <div>
-            {#each market.options as option, index}
-              <button on:click={() => resolveMarket(market, index)}>Vote for {option.name}</button>
-            {/each}
-          </div>
-        {/each}
-      {/if}
-    {/await}
-
-    {#await gqlClient.request(decidedMarketQuery) then res}
-      {#if res.market.length > 0}
-        <h2>Closed Markets</h2>
-        {#each res.market as market}
-          {market.resolve}
-        {/each}
-      {/if}
-    {/await}
   {/if}
 </div>
 

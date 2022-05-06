@@ -2,6 +2,7 @@
   import { isValidUrl, parseHostname } from "../utils/url"
   import { createEventDispatcher } from "svelte"
   import { backendHost } from "../config"
+  import { fade } from "svelte/transition"
 
   import Property from "./Property.svelte"
 
@@ -17,7 +18,7 @@
   $: joined = large ? new Date(oracle.oracle_state.state.transaction.processedAt + "Z") : undefined
 </script>
 
-<div id="oracle_card" on:click={() => dispatch("click")} class={button ? "button" : ""}>
+<div id="oracle_card" on:click={() => dispatch("click")} class={button ? "button" : ""} in:fade>
   <div class="header">
     <div id="title">
       <img
