@@ -3,8 +3,6 @@
   import CreateMarketCard from "./CreateMarketCard.svelte"
 
   export let item
-
-  $: console.log(item)
 </script>
 
 {#if item.id === "createMarket"}

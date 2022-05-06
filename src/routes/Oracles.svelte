@@ -42,7 +42,7 @@
   $: gqlClient.request(oracleQuery).then(res => (oracles = res.oracle))
 </script>
 
-<div id="oracles" transition:fade={{ duration: 300 }}>
+<div id="oracles">
   <Searchbar bind:value={search} placeholder="Search Oracles" />
   <div class="oracle-list">
     {#each oracles as oracle}

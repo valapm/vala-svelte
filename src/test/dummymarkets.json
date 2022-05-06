@@ -1,0 +1,641 @@
+[
+  {
+    "market_state": {
+      "market_oracles": [
+        {
+          "committed": true,
+          "oracle": {
+            "oracleStateByCurrentstateid": {
+              "domain": "vala.ai"
+            }
+          }
+        }
+      ],
+      "satoshis": 96933,
+      "decided": true,
+      "shares": [0, 0],
+      "liquidity": 0,
+      "decision": 0
+    },
+    "marketStateByFirststateid": {
+      "state": {
+        "transaction": {
+          "txid": "363456356411234887",
+          "broadcastedAt": "2022-04-26T14:22:00.063",
+          "minerTimestamp": "2022-04-26T14:56:18.018",
+          "processedAt": "2022-04-26T14:22:00.063"
+        }
+      }
+    },
+    "resolve": "Testmarket 1",
+    "details": "Some Details",
+    "options": [
+      {
+        "name": "Option A"
+      },
+      {
+        "name": "Option B"
+      }
+    ]
+  },
+
+  {
+    "market_state": {
+      "market_oracles": [
+        {
+          "committed": true,
+          "oracle": {
+            "oracleStateByCurrentstateid": {
+              "domain": "vala.ai"
+            }
+          }
+        }
+      ],
+      "satoshis": 96933,
+      "decided": true,
+      "shares": [0, 0],
+      "liquidity": 0,
+      "decision": 0
+    },
+    "marketStateByFirststateid": {
+      "state": {
+        "transaction": {
+          "txid": "351c08c4b4ad9a6c41d555a601c4547b2a54af89efaed27a6897f64a1cd098c49d8",
+          "broadcastedAt": "2022-04-26T14:22:00.063",
+          "minerTimestamp": "2022-04-26T14:56:18.018",
+          "processedAt": "2022-04-26T14:22:00.063"
+        }
+      }
+    },
+    "resolve": "Testmarket 2",
+    "details": "Some Details",
+    "options": [
+      {
+        "name": "Option A"
+      },
+      {
+        "name": "Option B"
+      }
+    ]
+  },
+
+  {
+    "market_state": {
+      "market_oracles": [
+        {
+          "committed": true,
+          "oracle": {
+            "oracleStateByCurrentstateid": {
+              "domain": "vala.ai"
+            }
+          }
+        }
+      ],
+      "satoshis": 96933,
+      "decided": true,
+      "shares": [0, 0],
+      "liquidity": 0,
+      "decision": 0
+    },
+    "marketStateByFirststateid": {
+      "state": {
+        "transaction": {
+          "txid": "351c08c4b4ad9a6c41da601c4547b2a6654af89efaed27a6897f64a1cd098c49d8",
+          "broadcastedAt": "2022-04-26T14:22:00.063",
+          "minerTimestamp": "2022-04-26T14:56:18.018",
+          "processedAt": "2022-04-26T14:22:00.063"
+        }
+      }
+    },
+    "resolve": "Testmarket 3",
+    "details": "Some Details",
+    "options": [
+      {
+        "name": "Option A"
+      },
+      {
+        "name": "Option B"
+      }
+    ]
+  },
+
+  {
+    "market_state": {
+      "market_oracles": [
+        {
+          "committed": true,
+          "oracle": {
+            "oracleStateByCurrentstateid": {
+              "domain": "vala.ai"
+            }
+          }
+        }
+      ],
+      "satoshis": 96933,
+      "decided": true,
+      "shares": [0, 0],
+      "liquidity": 0,
+      "decision": 0
+    },
+    "marketStateByFirststateid": {
+      "state": {
+        "transaction": {
+          "txid": "351c08c4b24ad9a6c41da601c4547b2a54af89efaed27a6897f64a1cd098c49d8",
+          "broadcastedAt": "2022-04-26T14:22:00.063",
+          "minerTimestamp": "2022-04-26T14:56:18.018",
+          "processedAt": "2022-04-26T14:22:00.063"
+        }
+      }
+    },
+    "resolve": "Testmarket 4",
+    "details": "Some Details",
+    "options": [
+      {
+        "name": "Option A"
+      },
+      {
+        "name": "Option B"
+      }
+    ]
+  },
+
+  {
+    "market_state": {
+      "market_oracles": [
+        {
+          "committed": true,
+          "oracle": {
+            "oracleStateByCurrentstateid": {
+              "domain": "vala.ai"
+            }
+          }
+        }
+      ],
+      "satoshis": 96933,
+      "decided": true,
+      "shares": [0, 0],
+      "liquidity": 0,
+      "decision": 0
+    },
+    "marketStateByFirststateid": {
+      "state": {
+        "transaction": {
+          "txid": "351c08c4b4ad9a6c41da601c4547b2a54af89efaed27a6897f64a1cd0954648c49d8",
+          "broadcastedAt": "2022-04-26T14:22:00.063",
+          "minerTimestamp": "2022-04-26T14:56:18.018",
+          "processedAt": "2022-04-26T14:22:00.063"
+        }
+      }
+    },
+    "resolve": "Testmarket 5",
+    "details": "Some Details",
+    "options": [
+      {
+        "name": "Option A"
+      },
+      {
+        "name": "Option B"
+      }
+    ]
+  },
+
+  {
+    "market_state": {
+      "market_oracles": [
+        {
+          "committed": true,
+          "oracle": {
+            "oracleStateByCurrentstateid": {
+              "domain": "vala.ai"
+            }
+          }
+        }
+      ],
+      "satoshis": 96933,
+      "decided": true,
+      "shares": [0, 0],
+      "liquidity": 0,
+      "decision": 0
+    },
+    "marketStateByFirststateid": {
+      "state": {
+        "transaction": {
+          "txid": "351c08c4b4ad9a6c41da601c4547b2666a54af89efaed27a6897f64a1cd098c49d8",
+          "broadcastedAt": "2022-04-26T14:22:00.063",
+          "minerTimestamp": "2022-04-26T14:56:18.018",
+          "processedAt": "2022-04-26T14:22:00.063"
+        }
+      }
+    },
+    "resolve": "Testmarket 6",
+    "details": "Some Details",
+    "options": [
+      {
+        "name": "Option A"
+      },
+      {
+        "name": "Option B"
+      }
+    ]
+  },
+
+  {
+    "market_state": {
+      "market_oracles": [
+        {
+          "committed": true,
+          "oracle": {
+            "oracleStateByCurrentstateid": {
+              "domain": "vala.ai"
+            }
+          }
+        }
+      ],
+      "satoshis": 96933,
+      "decided": true,
+      "shares": [0, 0],
+      "liquidity": 0,
+      "decision": 0
+    },
+    "marketStateByFirststateid": {
+      "state": {
+        "transaction": {
+          "txid": "351c08c4b4ad9a6c41da601c4533847b2a54af89efaed27a6897f64a1cd098c49d8",
+          "broadcastedAt": "2022-04-26T14:22:00.063",
+          "minerTimestamp": "2022-04-26T14:56:18.018",
+          "processedAt": "2022-04-26T14:22:00.063"
+        }
+      }
+    },
+    "resolve": "Testmarket 7",
+    "details": "Some Details",
+    "options": [
+      {
+        "name": "Option A"
+      },
+      {
+        "name": "Option B"
+      }
+    ]
+  },
+
+  {
+    "market_state": {
+      "market_oracles": [
+        {
+          "committed": true,
+          "oracle": {
+            "oracleStateByCurrentstateid": {
+              "domain": "vala.ai"
+            }
+          }
+        }
+      ],
+      "satoshis": 96933,
+      "decided": true,
+      "shares": [0, 0],
+      "liquidity": 0,
+      "decision": 0
+    },
+    "marketStateByFirststateid": {
+      "state": {
+        "transaction": {
+          "txid": "351c08c4b4ad9a6c41d098a601c4547b2a54af89efaed27a6897f64a1cd098c49d8",
+          "broadcastedAt": "2022-04-26T14:22:00.063",
+          "minerTimestamp": "2022-04-26T14:56:18.018",
+          "processedAt": "2022-04-26T14:22:00.063"
+        }
+      }
+    },
+    "resolve": "Testmarket 8",
+    "details": "Some Details",
+    "options": [
+      {
+        "name": "Option A"
+      },
+      {
+        "name": "Option B"
+      }
+    ]
+  },
+
+  {
+    "market_state": {
+      "market_oracles": [
+        {
+          "committed": true,
+          "oracle": {
+            "oracleStateByCurrentstateid": {
+              "domain": "vala.ai"
+            }
+          }
+        }
+      ],
+      "satoshis": 96933,
+      "decided": true,
+      "shares": [0, 0],
+      "liquidity": 0,
+      "decision": 0
+    },
+    "marketStateByFirststateid": {
+      "state": {
+        "transaction": {
+          "txid": "351c08c4b4ad9a6c41da601c4547b2a23454af89efaed27a6897f64a1cd098c49d8",
+          "broadcastedAt": "2022-04-26T14:22:00.063",
+          "minerTimestamp": "2022-04-26T14:56:18.018",
+          "processedAt": "2022-04-26T14:22:00.063"
+        }
+      }
+    },
+    "resolve": "Testmarket 9",
+    "details": "Some Details",
+    "options": [
+      {
+        "name": "Option A"
+      },
+      {
+        "name": "Option B"
+      }
+    ]
+  },
+
+  {
+    "market_state": {
+      "market_oracles": [
+        {
+          "committed": true,
+          "oracle": {
+            "oracleStateByCurrentstateid": {
+              "domain": "vala.ai"
+            }
+          }
+        }
+      ],
+      "satoshis": 96933,
+      "decided": true,
+      "shares": [0, 0],
+      "liquidity": 0,
+      "decision": 0
+    },
+    "marketStateByFirststateid": {
+      "state": {
+        "transaction": {
+          "txid": "351c08c4b4ad9a6c41da601c4547b2a54af89efaed27a68909807f64a1cd098c49d8",
+          "broadcastedAt": "2022-04-26T14:22:00.063",
+          "minerTimestamp": "2022-04-26T14:56:18.018",
+          "processedAt": "2022-04-26T14:22:00.063"
+        }
+      }
+    },
+    "resolve": "Testmarket 10",
+    "details": "Some Details",
+    "options": [
+      {
+        "name": "Option A"
+      },
+      {
+        "name": "Option B"
+      }
+    ]
+  },
+
+  {
+    "market_state": {
+      "market_oracles": [
+        {
+          "committed": true,
+          "oracle": {
+            "oracleStateByCurrentstateid": {
+              "domain": "vala.ai"
+            }
+          }
+        }
+      ],
+      "satoshis": 96933,
+      "decided": true,
+      "shares": [0, 0],
+      "liquidity": 0,
+      "decision": 0
+    },
+    "marketStateByFirststateid": {
+      "state": {
+        "transaction": {
+          "txid": "351c083c4b4ad9a6c41da601c4547b2a544af89efaed27a6897f64a1cd098c49d8",
+          "broadcastedAt": "2022-04-26T14:22:00.063",
+          "minerTimestamp": "2022-04-26T14:56:18.018",
+          "processedAt": "2022-04-26T14:22:00.063"
+        }
+      }
+    },
+    "resolve": "Testmarket 11",
+    "details": "Some Details",
+    "options": [
+      {
+        "name": "Option A"
+      },
+      {
+        "name": "Option B"
+      }
+    ]
+  },
+
+  {
+    "market_state": {
+      "market_oracles": [
+        {
+          "committed": true,
+          "oracle": {
+            "oracleStateByCurrentstateid": {
+              "domain": "vala.ai"
+            }
+          }
+        }
+      ],
+      "satoshis": 96933,
+      "decided": true,
+      "shares": [0, 0],
+      "liquidity": 0,
+      "decision": 0
+    },
+    "marketStateByFirststateid": {
+      "state": {
+        "transaction": {
+          "txid": "351c08c4b4a5d9a6c41da601c4547b2444a54af89efaed27a6897f64a1cd098c49d8",
+          "broadcastedAt": "2022-04-26T14:22:00.063",
+          "minerTimestamp": "2022-04-26T14:56:18.018",
+          "processedAt": "2022-04-26T14:22:00.063"
+        }
+      }
+    },
+    "resolve": "Testmarket 12",
+    "details": "Some Details",
+    "options": [
+      {
+        "name": "Option A"
+      },
+      {
+        "name": "Option B"
+      }
+    ]
+  },
+
+  {
+    "market_state": {
+      "market_oracles": [
+        {
+          "committed": true,
+          "oracle": {
+            "oracleStateByCurrentstateid": {
+              "domain": "vala.ai"
+            }
+          }
+        }
+      ],
+      "satoshis": 96933,
+      "decided": true,
+      "shares": [0, 0],
+      "liquidity": 0,
+      "decision": 0
+    },
+    "marketStateByFirststateid": {
+      "state": {
+        "transaction": {
+          "txid": "351c08c4b4ad9a6c41666a601c4547b2a54af89efaed27a6897f64a1c33d098c49d8",
+          "broadcastedAt": "2022-04-26T14:22:00.063",
+          "minerTimestamp": "2022-04-26T14:56:18.018",
+          "processedAt": "2022-04-26T14:22:00.063"
+        }
+      }
+    },
+    "resolve": "Testmarket 13",
+    "details": "Some Details",
+    "options": [
+      {
+        "name": "Option A"
+      },
+      {
+        "name": "Option B"
+      }
+    ]
+  },
+
+  {
+    "market_state": {
+      "market_oracles": [
+        {
+          "committed": true,
+          "oracle": {
+            "oracleStateByCurrentstateid": {
+              "domain": "vala.ai"
+            }
+          }
+        }
+      ],
+      "satoshis": 96933,
+      "decided": true,
+      "shares": [0, 0],
+      "liquidity": 0,
+      "decision": 0
+    },
+    "marketStateByFirststateid": {
+      "state": {
+        "transaction": {
+          "txid": "351c08c4b4ad9a6c41da601c4663547b2a54af89efaed27a6897f64a31cd098c49d8",
+          "broadcastedAt": "2022-04-26T14:22:00.063",
+          "minerTimestamp": "2022-04-26T14:56:18.018",
+          "processedAt": "2022-04-26T14:22:00.063"
+        }
+      }
+    },
+    "resolve": "Testmarket 14",
+    "details": "Some Details",
+    "options": [
+      {
+        "name": "Option A"
+      },
+      {
+        "name": "Option B"
+      }
+    ]
+  },
+
+  {
+    "market_state": {
+      "market_oracles": [
+        {
+          "committed": true,
+          "oracle": {
+            "oracleStateByCurrentstateid": {
+              "domain": "vala.ai"
+            }
+          }
+        }
+      ],
+      "satoshis": 96933,
+      "decided": true,
+      "shares": [0, 0],
+      "liquidity": 0,
+      "decision": 0
+    },
+    "marketStateByFirststateid": {
+      "state": {
+        "transaction": {
+          "txid": "351c08c4b4ad9a6c41da601c4547b2a54af869efaed27a33336897f64a1cd098c49d8",
+          "broadcastedAt": "2022-04-26T14:22:00.063",
+          "minerTimestamp": "2022-04-26T14:56:18.018",
+          "processedAt": "2022-04-26T14:22:00.063"
+        }
+      }
+    },
+    "resolve": "Testmarket 15",
+    "details": "Some Details",
+    "options": [
+      {
+        "name": "Option A"
+      },
+      {
+        "name": "Option B"
+      }
+    ]
+  },
+
+  {
+    "market_state": {
+      "market_oracles": [
+        {
+          "committed": true,
+          "oracle": {
+            "oracleStateByCurrentstateid": {
+              "domain": "vala.ai"
+            }
+          }
+        }
+      ],
+      "satoshis": 96933,
+      "decided": true,
+      "shares": [0, 0],
+      "liquidity": 0,
+      "decision": 0
+    },
+    "marketStateByFirststateid": {
+      "state": {
+        "transaction": {
+          "txid": "351c08c4b4ad9a6c41da601c46663547b2a54af89efaed27a6897f64a1cd098c49d8",
+          "broadcastedAt": "2022-04-26T14:22:00.063",
+          "minerTimestamp": "2022-04-26T14:56:18.018",
+          "processedAt": "2022-04-26T14:22:00.063"
+        }
+      }
+    },
+    "resolve": "Testmarket 16",
+    "details": "Some Details",
+    "options": [
+      {
+        "name": "Option A"
+      },
+      {
+        "name": "Option B"
+      }
+    ]
+  }
+]

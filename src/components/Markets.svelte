@@ -11,6 +11,8 @@
   import Masonry from "../components/Masonry.svelte"
   import Card from "../components/Card.svelte"
 
+  // import dummyMarkets from "../test/dummymarkets.json"
+
   const sortOptions = [
     "Market Cap",
     // "Total Volume",
@@ -107,13 +109,13 @@
   $: marketRes = query(marketQuery)
   $: console.log($marketRes, marketQuery)
 
-  $: markets = $marketRes.data ? $marketRes.data.market : []
-  $: marketArray = Array(30).fill(markets).flat()
+  // For debugging the masonry grid
+  // $: if ($marketRes.data) markets = dummyMarkets.filter(e => Math.random() > 0.5)
 
-  let items
-  $: {
-    items = markets.map((market, index) => {
-      return { ...market, id: market.marketStateByFirststateid.state.transaction.txid + index }
+  let items = []
+  $: if ($marketRes.data) {
+    items = $marketRes.data.market.map((market, index) => {
+      return { ...market, id: market.marketStateByFirststateid.state.transaction.txid }
     })
     if (isCurrentOracle) items.unshift({ id: "createMarket" })
   }
@@ -121,10 +123,13 @@
   function remToPixels(rem) {
     return rem * parseFloat(getComputedStyle(document.documentElement).fontSize)
   }
+
+  $: console.log("items markets", items)
+
   // const [send, receive] = crossfade({ duration: 300, fallback: fade })
 </script>
 
-<div class="markets" in:fade={{ duration: 300 }} out:fade={{ duration: 0 }}>
+<div class="markets">
   <div class="search">
     <Searchbar
       bind:value={search}
@@ -149,7 +154,7 @@
       <!-- <MarketCard {market} /> -->
       <!-- </div> -->
     </Masonry>
-  {:else}
+  {:else if !$marketRes.loading}
     <p id="nothing_found">Nothing found!</p>
   {/if}
 </div>
