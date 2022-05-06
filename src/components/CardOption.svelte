@@ -11,20 +11,26 @@
   $: barWidth = element ? Math.round(probability * element.clientWidth) : 0
 </script>
 
-<div class="option" bind:this={element} style={probability === 1 ? "border: 1px solid #01a781;" : ""}>
+<div class="option {probability === 1 ? 'winning' : ''}" bind:this={element}>
   <div class="labels">
     <div class="name">{option.name}</div>
     {#if !resolved}
       <div class="price">{formatUSD(price)}</div>
     {/if}
   </div>
-  {#if !isNaN(probability) && probability > 0 && probability < 100}
+  {#if !isNaN(probability) && probability > 0 && probability < 1}
     <div class="percent">{Math.round(probability * 100)}%</div>
   {/if}
   <div class="bar" style="width: {barWidth}px;" />
 </div>
 
 <style>
+  .winning {
+    border: 1px solid #01a781;
+    border: 1px solid #01a781;
+    box-shadow: 0 0 1.125rem #01a78180;
+  }
+
   .option {
     background-color: #323841;
     padding: 0 1.25rem;

@@ -80,7 +80,7 @@
           {option}
           price={shares[index].usdPrice}
           probability={shares[index].probability}
-          resolved={market.market_state.resolved}
+          resolved={market.market_state.decided}
         />
       {/each}
     </div>

@@ -38,7 +38,7 @@ box-shadow: 0 0 1.125rem #${color}80;`
   </div>
 
   {#if open}
-    <div transition:slide={{ duration: 300 }} style="width: 100%">
+    <div transition:slide|local={{ duration: 300 }} style="width: 100%">
       <div class="body">
         <slot name="body" />
       </div>

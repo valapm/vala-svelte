@@ -124,7 +124,7 @@
     return rem * parseFloat(getComputedStyle(document.documentElement).fontSize)
   }
 
-  $: console.log("items markets", items)
+  // $: console.log("items markets", items)
 
   // const [send, receive] = crossfade({ duration: 300, fallback: fade })
 </script>
@@ -133,7 +133,7 @@
   <div class="search">
     <Searchbar
       bind:value={search}
-      placeholder="Search Bets{oracle ? 'by ' + oracle.oracleStateByCurrentstateid.domain : ''}"
+      placeholder="Search Bets {oracle ? 'by ' + oracle.oracleStateByCurrentstateid.domain : ''}"
     />
     <SearchOptions {sortOptions} {filterOptions} bind:sort bind:filter bind:direction />
   </div>
