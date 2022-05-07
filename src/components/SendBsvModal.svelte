@@ -4,13 +4,11 @@
   import { testnet, feeb } from "../config"
   import { price } from "../store/price"
   import { broadcast, getUtxos } from "../utils/transaction"
-  import { getNotificationsContext } from "svelte-notifications"
+  import { notify } from "../store/notifications"
 
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
   import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js"
   import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js"
-
-  const { addNotification } = getNotificationsContext()
 
   let dialog
   let recipient_input
@@ -72,25 +70,23 @@
     } catch (e) {
       console.error(e)
       error = e.message
-      addNotification({
+      notify({
         type: "danger",
         text: "Failed to broadcast transaction",
-        description: error,
-        position: "top-right"
+        description: error
       })
     }
     sending = false
 
     if (success) {
       dialog.hide()
-      addNotification({
+      notify({
         type: "success",
         text: "Successfully broadcasted transaction",
         description: `<a href='https://${testnet ? "test." : ""}whatsonchain.com/tx/${tx.hash}'>${tx.hash.slice(
           0,
           20
-        )}...</a>`,
-        position: "top-right"
+        )}...</a>`
       })
     }
   }

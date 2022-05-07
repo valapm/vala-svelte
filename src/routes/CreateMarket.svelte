@@ -12,7 +12,7 @@
   import { push } from "svelte-spa-router"
   import { tick } from "svelte"
   import { rabinPubKey } from "../store/oracle"
-  import { getNotificationsContext } from "svelte-notifications"
+  import { notify } from "../store/notifications"
   import { onMount } from "svelte"
 
   import Button from "../components/Button.svelte"
@@ -21,7 +21,6 @@
   import PercentInput from "../components/PercentInput.svelte"
 
   const { fundTx, buildTx } = bp.transaction
-  const { addNotification } = getNotificationsContext()
 
   let resolve
   let details
@@ -57,10 +56,9 @@
       tx = bp.transaction.getNewMarketTx(market, valaIndexTx, valaIndex.outputIndex, feeb)
     } catch (e) {
       console.error(e)
-      addNotification({
+      notify({
         type: "danger",
-        text: "Failed to create transaction",
-        position: "top-right"
+        text: "Failed to create transaction"
       })
       loading = false
     }
@@ -68,11 +66,10 @@
     if ($satBalance < tx.outputs[0].satoshis) {
       loading = false
       error = "Not enough funds"
-      addNotification({
+      notify({
         type: "danger",
         text: "Failed to broadcast transaction",
-        description: error,
-        position: "top-right"
+        description: error
       })
       return
     }
@@ -86,11 +83,10 @@
       await tick()
     } catch (e) {
       console.error(e)
-      addNotification({
+      notify({
         type: "danger",
         text: "Failed to broadcast transaction",
-        description: e,
-        position: "top-right"
+        description: e
       })
       loading = false
       return

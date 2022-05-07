@@ -6,15 +6,14 @@
   import { AUTH_HOST } from "../config"
   import Loader from "../components/Loader.svelte"
   import { onMount } from "svelte"
-  import { getNotificationsContext } from "svelte-notifications"
   import { EMAIL_REGEX } from "../utils/email"
+  import { notify } from "../store/notifications"
 
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
   import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js"
   import SlAlert from "@shoelace-style/shoelace/dist/components/alert/alert.js"
   import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js"
 
-  const { addNotification } = getNotificationsContext()
   const unspecificErrorMessage = { title: "Something went wrong", details: "Please try again or contact Support." }
 
   let valaauth
@@ -45,11 +44,10 @@
   async function generateSeed() {
     if (password !== password2) {
       error = { title: "Passwords do not match" }
-      addNotification({
+      notify({
         type: "danger",
         text: error.title,
-        description: error.details || "",
-        position: "top-right"
+        description: error.details || ""
       })
       return
     }
@@ -79,11 +77,10 @@
         error = unspecificErrorMessage
       }
       dialog.hide()
-      addNotification({
+      notify({
         type: "danger",
         text: error.title,
-        description: error.details || "",
-        position: "top-right"
+        description: error.details || ""
       })
       loading = false
       return

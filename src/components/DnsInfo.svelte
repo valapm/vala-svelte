@@ -1,16 +1,13 @@
 <script>
-  import { getNotificationsContext } from "svelte-notifications"
+  import { notify } from "../store/notifications"
 
   export let oracle
 
-  const { addNotification } = getNotificationsContext()
-
   async function copyValue() {
     await navigator.clipboard.writeText(`vala:oracle:${oracle.pubKey}`)
-    addNotification({
+    notify({
       type: "success",
-      text: "Copied to clipboard",
-      position: "top-right"
+      text: "Copied to clipboard"
     })
   }
 </script>

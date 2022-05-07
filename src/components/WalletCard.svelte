@@ -1,212 +1,73 @@
 <script>
-  import { onMount, tick } from "svelte"
+  import { usdBalance, satBalance } from "../store/wallet"
 
-  import SlCard from "@shoelace-style/shoelace/dist/components/card/card"
-  import SlQrCode from "@shoelace-style/shoelace/dist/components/qr-code/qr-code"
-  import SlIconButton from "@shoelace-style/shoelace/dist/components/icon-button/icon-button"
-  import SlTooltip from "@shoelace-style/shoelace/dist/components/tooltip/tooltip"
+  import Eye from "../icons/Eye.svelte"
+  import Qr from "../icons/Qr.svelte"
+  import ReceiveBsvModal from "./ReceiveBsvModal.svelte"
+  import SeedPhraseModal from "./SeedPhraseModal.svelte"
 
-  export let address
-  export let username
-
-  let card
-  let clipboardTooltip
-
-  let counter = 0
-  let updateRate = 10
-  let isTimeToUpdate = function () {
-    return counter++ % updateRate === 0
-  }
-
-  let cardCenterX
-  let cardCenterY
-
-  function handleMousemove(event) {
-    // if (isTimeToUpdate(event)) {
-    update(event)
-    // }
-  }
-
-  function handleMouseleave(event) {
-    // card.style = ""
-    card.style.transition = "all 0.5s ease"
-    card.style.transform = `rotateY(0deg) rotateX(0deg)`
-  }
-
-  async function handleMouseenter(event) {
-    card.style.transition = "none"
-    update(event)
-  }
-
-  function update(event) {
-    const x = event.clientX - cardCenterX
-    const y = (event.clientY - cardCenterY) * -1
-    const xDeg = ((10 * y) / card.offsetHeight).toFixed(2)
-    const yDeg = ((10 * x) / card.offsetWidth).toFixed(2)
-    var style = "rotateX(" + xDeg + "deg) rotateY(" + yDeg + "deg)"
-    card.style.transform = style
-    card.style.webkitTransform = style
-    card.style.mozTransform = style
-    card.style.msTransform = style
-    card.style.oTransform = style
-
-    // let xAxis = (window.innerWidth / 2 - event.pageX) / 25
-    // let yAxis = (window.innerHeight / 2 - event.pageY) / 25
-    // card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`
-  }
-
-  async function copyAddress(event) {
-    await navigator.clipboard.writeText(address)
-    clipboardTooltip.show()
-    setTimeout(() => clipboardTooltip.hide(), 1000)
-  }
-
-  onMount(async () => {
-    await tick()
-    recenter()
-  })
-
-  function recenter() {
-    cardCenterX = card.offsetLeft + Math.floor(card.offsetWidth / 2)
-    cardCenterY = card.offsetTop + Math.floor(card.offsetHeight / 2)
-  }
+  let receiveModal = false
+  let seedPhraseModal = false
 </script>
 
-<svelte:body on:mousemove={handleMousemove} on:mouseenter={handleMouseenter} on:mouseleave={handleMouseleave} />
-
-<svelte:window on:resize={recenter} />
-
-<div class="wrapper">
-  <div class="container">
-    <sl-card bind:this={card}>
-      <div class="body">
-        <div class="info">
-          <div class="label">
-            ADDRESS
-            <sl-tooltip content="Copied to clipboard" trigger="manual" bind:this={clipboardTooltip}>
-              <sl-button type="text" size="small" style="display: inline;" on:click={copyAddress}>
-                <sl-icon slot="prefix" name="clipboard" />
-                COPY</sl-button
-              >
-            </sl-tooltip>
-          </div>
-          <div class="address">
-            {address}
-          </div>
-        </div>
-        <sl-qr-code value={address} fill="white" background="transparent" />
-      </div>
-      <div class="footer">
-        <span
-          >{#if username}{username.toUpperCase()}{/if}</span
-        >
-        <div class="logo-wrapper">
-          <img src="/bitcoinsv_white.png" alt="Bitcoin SV" />
-        </div>
-      </div>
-    </sl-card>
+<div class="card">
+  <div>
+    <div class="balances">
+      <div class="title">Wallet Ballance</div>
+      <div class="balance">${Math.round($usdBalance * 100) / 100}</div>
+      <div class="satBalance">{Math.round(($satBalance / 100000000) * 10000) / 10000} BSV</div>
+    </div>
+    <button id="showPhraseButton" on:click={() => (seedPhraseModal = true)}>
+      <Eye />
+      Recovery Phrase</button
+    >
   </div>
+  <button id="showQrButton" on:click={() => (receiveModal = true)}><Qr /></button>
 </div>
 
+<ReceiveBsvModal bind:open={receiveModal} />
+<SeedPhraseModal bind:open={seedPhraseModal} />
+
 <style>
-  @import url("https://fonts.googleapis.com/css2?family=Overpass+Mono&display=swap");
-  .wrapper {
-    perspective: 1000px;
-  }
-
-  sl-card {
-    color: white;
-    font-family: "Overpass Mono", monospace;
-    width: 21.9rem;
-    perspective: 1000px;
-  }
-
-  sl-card::part(base) {
-    height: 13.9rem;
-    width: 21.9rem;
-    border-radius: 0.6rem;
-    background-image: linear-gradient(to right bottom, #fd696b, #fa616e, #f65871, #f15075, #ec4879);
-  }
-
-  sl-card::part(body) {
-    border-radius: 0.6rem;
-    box-shadow: 0 1rem 1rem rgba(0, 0, 0, 0.15), 0px 0px 50px rgba(0, 0, 0, 0.15);
-  }
-
-  .footer {
-    display: flex;
-    height: 2.5rem;
-    justify-content: space-between;
-    align-items: flex-end;
-  }
-
-  .footer img {
-    height: 3.5rem;
-    margin-bottom: -0.8rem;
-  }
-
-  .logo-wrapper {
-    width: 128px;
-    display: flex;
-    justify-content: space-around;
-    align-items: flex-end;
-  }
-
-  .footer > span {
-    filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.3));
-    letter-spacing: 2.5px;
-  }
-
-  sl-qr-code::part(base) {
-    margin: 0.4rem 0;
-  }
-
-  .body {
+  .card {
+    border-radius: 0.75rem;
+    height: 12.5rem;
+    width: min(21rem, 90%);
+    background-color: #323841;
+    color: #d8d9e5;
+    padding: 1rem;
+    box-shadow: 0 0.25rem 1.5rem #00000040;
     display: flex;
     justify-content: space-between;
-    gap: 1rem;
-    align-items: stretch;
+    align-items: flex-start;
   }
 
-  .info {
+  .card > div {
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
   }
 
-  .address {
-    font-size: 1.15em;
-    letter-spacing: 2.5px;
-    filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.3));
-    word-break: break-all;
-
-    display: block;
-    word-wrap: break-word;
-    columns: 2;
-    column-gap: 0.2em;
+  .title {
+    font-size: 1rem;
   }
 
-  .label {
-    font-size: 0.8rem;
-    filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.3));
-    letter-spacing: 2px;
-    color: var(--sl-color-gray-200);
+  .balance {
+    font-weight: 500;
+    font-size: 1.875rem;
+  }
+
+  .balances {
     display: flex;
-    justify-content: left;
-    gap: 1rem;
+    flex-direction: column;
+    gap: 0.44rem;
+  }
+
+  #showPhraseButton {
+    font-size: 0.875rem;
+    display: flex;
     align-items: center;
-  }
-
-  .label sl-button::part(base) {
-    color: white;
-  }
-
-  .label sl-button::part(base):hover,
-  .label sl-button::part(base):focus {
-    color: white;
-    box-shadow: none;
-  }
-
-  .label sl-button::part(base):active {
-    color: white;
+    gap: 0.5rem;
   }
 </style>

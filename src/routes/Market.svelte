@@ -11,11 +11,11 @@
   import { getEntries, isCompatibleVersion } from "../utils/pm"
   import { round } from "../utils/format"
   import { getUtxos } from "../utils/transaction"
-  import { getNotificationsContext } from "svelte-notifications"
   import { pop } from "svelte-spa-router"
   import { postTx } from "../utils/api"
   import { rabinPubKey, rabinPrivKey } from "../store/oracle"
   import { push } from "svelte-spa-router"
+  import { notify } from "../store/notifications"
 
   import { query, subscribe } from "svelte-apollo"
   import { gql } from "@apollo/client/core"
@@ -43,8 +43,6 @@
   import MarketDetailsPanel from "../components/MarketDetailsPanel.svelte"
   import Table from "../components/Table.svelte"
   import MarketCreatorCard from "../components/MarketCreatorCard.svelte"
-
-  const { addNotification } = getNotificationsContext()
 
   export let params
 
@@ -161,7 +159,7 @@
   $: compatibleVersion = market && isCompatibleVersion(market.version)
   $: {
     if (compatibleVersion === false) {
-      addNotification({
+      notify({
         type: "danger",
         text: "Market version not supported",
         position: "top-right"
@@ -244,23 +242,21 @@
     try {
       await postTx(tx, testnet)
     } catch (e) {
-      addNotification({
+      notify({
         type: "danger",
         text: "Failed to updated market",
-        description: e.message,
-        position: "top-right"
+        description: e.message
       })
       return false
     }
 
-    addNotification({
+    notify({
       type: "success",
       text: "Successfully updated market",
       description: `<a href='https://${testnet ? "test." : ""}whatsonchain.com/tx/${tx.hash}'>${tx.hash.slice(
         0,
         20
-      )}...</a>`,
-      position: "top-right"
+      )}...</a>`
     })
     return true
   }

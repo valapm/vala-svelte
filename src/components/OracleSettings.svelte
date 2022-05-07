@@ -10,15 +10,13 @@
   import { onMount } from "svelte"
   import { price } from "../store/price"
   import { postTx } from "../utils/api"
-  import { getNotificationsContext } from "svelte-notifications"
   import { tick } from "svelte"
   import { isValidUrl, parseHostname } from "../utils/url"
+  import { notify } from "../store/notifications"
 
   import DnsInfo from "../components/DnsInfo.svelte"
   import Button from "../components/VariantButton.svelte"
   import SubHeader from "../components/SubHeader.svelte"
-
-  const { addNotification } = getNotificationsContext()
 
   const rabin = new rab.RabinSignature()
 
@@ -130,10 +128,9 @@
     let prevOutputIndex
 
     if (!isValidUrl(domainName)) {
-      addNotification({
+      notify({
         type: "danger",
-        text: "Invalid domain name",
-        position: "top-right"
+        text: "Invalid domain name"
       })
       loading = false
       return
@@ -152,10 +149,9 @@
         await tick()
       } catch (e) {
         console.error(e)
-        addNotification({
+        notify({
           type: "danger",
-          text: "Failed to broadcast transaction",
-          position: "top-right"
+          text: "Failed to broadcast transaction"
         })
         loading = false
         return
@@ -176,19 +172,17 @@
     try {
       await postTx(newTx, testnet)
     } catch (e) {
-      addNotification({
+      notify({
         type: "danger",
-        text: e.message,
-        position: "top-right"
+        text: e.message
       })
       loading = false
       return
     }
 
-    addNotification({
+    notify({
       type: "success",
-      text: "Profile saved",
-      position: "top-right"
+      text: "Profile saved"
     })
 
     const newCurrentOracleState = {

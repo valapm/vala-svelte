@@ -1,10 +1,12 @@
 <script>
+  import { fade } from "svelte/transition"
+
   export let open = false
 </script>
 
 {#if open}
   <div class="modal-background" on:click={() => (open = false)} />
-  <div class="modal">
+  <div class="modal" in:fade|local={{ duration: 200 }}>
     <slot />
   </div>
 {/if}

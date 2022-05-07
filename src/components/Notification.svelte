@@ -1,35 +1,23 @@
 <script>
   import { onMount } from "svelte"
-
-  import SlAlert from "@shoelace-style/shoelace/dist/components/alert/alert"
+  import { fade } from "svelte/transition"
 
   export let notification = {}
-  export let onRemove = null
-
-  let alert
-
-  const handleButtonClick = () => {
-    onRemove()
-  }
 </script>
 
-<sl-alert
-  class="notification"
-  type={notification.type}
-  duration="3000"
-  bind:this={alert}
-  open="true"
-  on:hide={handleButtonClick}
-  closable
->
-  <sl-icon slot="icon" name="exclamation-octagon" />
+<button class="notification {notification.type}" on:click={notification.remove} transition:fade={{ duration: 200 }}>
   <strong>{notification.text}</strong><br />
   {@html notification.description || ""}
-</sl-alert>
+</button>
 
 <style>
-  sl-alert {
-    margin: 1rem;
+  .notification {
+    padding: 1rem;
+    min-width: 15rem;
+    background-color: #323841;
+    border-radius: 0.375rem;
+    color: white;
+    box-shadow: 0 0.25rem 1.5rem #00000040;
   }
 
   .notification :global(a) {

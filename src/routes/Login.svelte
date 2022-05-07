@@ -6,15 +6,14 @@
   import Loader from "../components/Loader.svelte"
   import { AUTH_HOST } from "../config"
   import { onMount } from "svelte"
-  import { getNotificationsContext } from "svelte-notifications"
   import { EMAIL_REGEX } from "../utils/email"
+  import { notify } from "../store/notifications"
 
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
   import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js"
 
   let valaauth
 
-  const { addNotification } = getNotificationsContext()
   const unspecificErrorMessage = { title: "Something went wrong", details: "Please try again or contact Support." }
 
   let email = ""
@@ -65,11 +64,10 @@
       }
       console.log(e)
       loading = false
-      addNotification({
+      notify({
         type: "danger",
         text: error.title,
-        description: error.details || "",
-        position: "top-right"
+        description: error.details || ""
       })
       return
     }
@@ -81,11 +79,10 @@
     } catch (e) {
       error = unspecificErrorMessage
       loading = false
-      addNotification({
+      notify({
         type: "danger",
         text: error.title,
-        description: error.details || "",
-        position: "top-right"
+        description: error.details || ""
       })
       return
     }
@@ -95,12 +92,11 @@
     $emailSave = email
 
     if (!verified) {
-      addNotification({
+      notify({
         type: "warning",
         text: "Email verfication",
         description:
-          "Verify your email address by clicking the link in the email you have received or receive a new email in the settings.",
-        position: "top-right"
+          "Verify your email address by clicking the link in the email you have received or receive a new email in the settings."
       })
     }
 

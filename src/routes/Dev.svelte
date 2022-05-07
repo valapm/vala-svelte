@@ -5,12 +5,10 @@
   import { testnet, feeb } from "../config"
   import { broadcast } from "../utils/transaction"
   import indexContract from "bitcoin-predict/scripts/935ec6b78a842b25fb12b353f8a204c7.json"
-  import { getNotificationsContext } from "svelte-notifications"
+  import { notify } from "../store/notifications"
   import { gql } from "graphql-request"
   import { gqlClient } from "../utils/graphql"
   import { postTx } from "../utils/api"
-
-  const { addNotification } = getNotificationsContext()
 
   let loading = false
 
@@ -41,25 +39,23 @@
       console.error(e)
       loading = false
       error = e.message
-      addNotification({
+      notify({
         type: "danger",
         text: "Failed to broadcast transaction",
-        description: error,
-        position: "top-right"
+        description: error
       })
       return
     }
 
     loading = false
 
-    addNotification({
+    notify({
       type: "success",
       text: "Successfully broadcasted transaction",
       description: `<a href='https://${testnet ? "test." : ""}whatsonchain.com/tx/${tx.hash}'>${tx.hash.slice(
         0,
         20
-      )}...</a>`,
-      position: "top-right"
+      )}...</a>`
     })
   }
 
@@ -93,25 +89,23 @@
       console.error(e)
       loading = false
       error = e.message
-      addNotification({
+      notify({
         type: "danger",
         text: "Failed to broadcast transaction",
-        description: error,
-        position: "top-right"
+        description: error
       })
       return
     }
 
     loading = false
 
-    addNotification({
+    notify({
       type: "success",
       text: "Successfully broadcasted transaction",
       description: `<a href='https://${testnet ? "test." : ""}whatsonchain.com/tx/${tx.hash}'>${tx.hash.slice(
         0,
         20
-      )}...</a>`,
-      position: "top-right"
+      )}...</a>`
     })
 
     loading = false

@@ -17,12 +17,14 @@
 
   $: entryQuery = gql`
       {
-        entry(where: { _not: { market_state: {market_states: {}} }, investorPubKey: { _eq: "${$publicKey.toString()}"}}) {
+        entry(where: { _not: { market_state: {state: {states: {}}}}, investorPubKey: { _eq: "${$publicKey.toString()}"}}) {
           liquidity
           shares
           market_state {
             liquidity
             shares
+            decided
+            decision
           }
         }
       }
@@ -35,17 +37,21 @@
   $: totalAssets = usdPositions + $usdBalance
 
   async function getPositions() {
-    console.log("test")
     const res = await gqlClient.request(entryQuery)
 
     let sats = 0
     for (const entry of res.entry) {
-      const changedBalance = {
-        liquidity: entry.market_state.liquidity - entry.liquidity,
-        shares: entry.market_state.shares.map((shares, index) => shares - entry.shares[index])
-      }
+      let satChange
+      if (entry.market_state.decided) {
+        satChange = entry.shares[entry.market_state.decision] * lmsr.SatScaling
+      } else {
+        const changedBalance = {
+          liquidity: entry.market_state.liquidity - entry.liquidity,
+          shares: entry.market_state.shares.map((shares, index) => shares - entry.shares[index])
+        }
 
-      const satChange = lmsr.getLmsrSats(entry.market_state) - lmsr.getLmsrSats(changedBalance)
+        satChange = lmsr.getLmsrSats(entry.market_state) - lmsr.getLmsrSats(changedBalance)
+      }
       sats += satChange
     }
     satPositions = sats
@@ -93,6 +99,7 @@
     gap: 3rem;
     margin-bottom: 5rem;
     width: min(65rem, 95%);
+    margin-top: 6.5rem;
   }
 
   .balances {

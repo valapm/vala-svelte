@@ -72,38 +72,3 @@ body {
 *:focus {
   outline: none;
 }
-
-:root {
-  /* Shoelace colors */
-  --sl-color-primary-50: #ffffff !important;
-  --sl-color-primary-100: #dce3fc !important;
-  --sl-color-primary-200: #b9c6f9 !important;
-  --sl-color-primary-300: #95aaf6 !important;
-  --sl-color-primary-400: #728ef3 !important;
-  --sl-color-primary-500: #4f71f0 !important;
-  --sl-color-primary-600: #2c55ed !important;
-  --sl-color-primary-700: #133fe0 !important;
-  --sl-color-primary-800: #1035bc !important;
-  --sl-color-primary-900: #0d2b99 !important;
-  --sl-color-primary-950: #0a2176 !important;
-
-  --sl-font-sans: Roboto !important;
-}
-
-sl-dialog::part(body) {
-  overflow-x: hidden;
-}
-
-/* svelte-notifications */
-.default-position-style-top-left,
-.default-position-style-top-center,
-.default-position-style-top-right,
-.default-position-style-bottom-left,
-.default-position-style-bottom-center,
-.default-position-style-bottom-right {
-  width: auto !important;
-}
-
-.default-position-style-top-right {
-  top: 3rem !important;
-}

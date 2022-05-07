@@ -2,14 +2,12 @@
   import { AUTH_HOST } from "../config"
   import { post } from "../utils/fetch"
   import { EMAIL_REGEX } from "../utils/email"
-  import { getNotificationsContext } from "svelte-notifications"
+  import { notify } from "../store/notifications"
 
   import Button from "./Button.svelte"
 
   import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
   import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js"
-
-  const { addNotification } = getNotificationsContext()
 
   let email = ""
   let loading = false
@@ -25,31 +23,28 @@
         email
       })
     } catch (error) {
-      addNotification({
+      notify({
         type: "danger",
         text: error.message,
-        description: "",
-        position: "top-right"
+        description: ""
       })
       loading = false
       return
     }
 
     if (res.success) {
-      addNotification({
+      notify({
         type: "success",
         text: "Thank you for joining!",
-        description: "",
-        position: "top-right"
+        description: ""
       })
       email = ""
       signedUp = true
     } else {
-      addNotification({
+      notify({
         type: "danger",
         text: "Failed to register email address",
-        description: "",
-        position: "top-right"
+        description: ""
       })
     }
     loading = false

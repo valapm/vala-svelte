@@ -3,11 +3,9 @@
   import { email, verified } from "../store/profile"
   import { post } from "../utils/fetch"
   import { AUTH_HOST } from "../config"
-  import { getNotificationsContext } from "svelte-notifications"
+  import { notify } from "../store/notifications"
 
   import Button from "../components/Button.svelte"
-
-  const { addNotification } = getNotificationsContext()
 
   async function requestEmail() {
     let res
@@ -21,18 +19,16 @@
     console.log(res)
 
     if (fail || !res || !res.success) {
-      addNotification({
+      notify({
         type: "danger",
         text: "Failed to send verification email",
-        description: fail,
-        position: "top-right"
+        description: fail
       })
     } else {
-      addNotification({
+      notify({
         type: "success",
         text: "Send new verification email",
-        description: "",
-        position: "top-right"
+        description: ""
       })
     }
   }
