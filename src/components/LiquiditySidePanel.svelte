@@ -79,7 +79,7 @@
       lmsr.getLmsrSats(marketBalance)
     : 0
 
-  $: console.log(canBuySell, isInsideLimits)
+  $: console.log(canBuySell, insideLimits)
 
   $: redeemAllUSD = (redeemAllSats * $bsvPrice) / 100000000
 

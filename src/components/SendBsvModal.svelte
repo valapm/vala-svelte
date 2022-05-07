@@ -87,7 +87,6 @@
     <h1>Send BSV</h1>
     <NumberInput
       placeholder="USD Amount"
-      name="amount"
       max={$usdBalance}
       bind:value={amount}
       color="01a781"

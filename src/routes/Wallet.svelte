@@ -32,8 +32,8 @@
     `
   const entries = query(entryQuery)
 
-  $: satPositions = entries.data
-    ? entries.data.reduce((sats, entry) => {
+  $: satPositions = $entries.data
+    ? $entries.data.entry.reduce((sats, entry) => {
         if (entry.market_state.decided) {
           return sats + entry.shares[entry.market_state.decision] * lmsr.SatScaling
         } else {
@@ -43,17 +43,18 @@
           }
           return sats + lmsr.getLmsrSats(entry.market_state) - lmsr.getLmsrSats(changedBalance)
         }
-      })
+      }, 0)
     : 0
 
-  $: liquiditySats = entries.data
-    ? entries.data.reduce((sats, entry) => {
+  $: liquiditySats = $entries.data
+    ? $entries.data.entry.reduce((sats, entry) => {
+        console.log(entry)
         const changedBalance = {
-          liquidity: 0,
+          liquidity: entry.market_state.liquidity - entry.liquidity,
           shares: entry.market_state.shares
         }
         return sats + lmsr.getLmsrSats(entry.market_state) - lmsr.getLmsrSats(changedBalance)
-      })
+      }, 0)
     : 0
 
   $: usdLiquidity = ($price * liquiditySats) / 100000000
