@@ -40,6 +40,13 @@
     overflow: hidden;
   }
 
+  .name {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 40%;
+  }
+
   .labels {
     display: flex;
     justify-content: space-between;

@@ -2,8 +2,9 @@
   import { onMount, onDestroy } from "svelte"
   // import { Chart, LineElement, LineController } from "chart.js"
   import Chart from "chart.js/auto"
-  import { gql } from "graphql-request"
-  import { gqlClient } from "../utils/graphql"
+  import { query, subscribe } from "svelte-apollo"
+  import { gql } from "@apollo/client/core"
+  import { client } from "../utils/apollo"
   import { lmsr } from "bitcoin-predict"
   // import "chartjs-adapter-date-fns"
   import "chartjs-adapter-moment"
@@ -15,101 +16,76 @@
   const colors = ["#FF0060", "#00ACFF", "#C4A4FF", "#00FFE0", "#05FF00", "#0029FF"]
 
   const priceQuery = gql`
-  {
-    market_state(where: { market: { marketStateByFirststateid: { state: {transactionTxid: {_eq: "${market.marketStateByFirststateid.state.transaction.txid}"}}}}}, order_by: {stateCount: asc}) {
-      shares
-      liquidity
-      decided
-      stateCount
-      state {
-        transaction {
-          minerTimestamp
-          broadcastedAt
+    query {
+      market_state(where: { market: { marketStateByFirststateid: { state: {transactionTxid: {_eq: "${market.marketStateByFirststateid.state.transaction.txid}"}}}}, decided: {_eq: false}}, order_by: {stateCount: asc}) {
+        shares
+        liquidity
+        decided
+        stateCount
+        state {
+          transaction {
+            minerTimestamp
+            broadcastedAt
+          }
         }
       }
     }
-  }
-`
-
-  let marketData
-  $: if (market) updateMarketData()
-  $: datasets = marketData && getDataSets()
-  $: labels = marketData && marketData.market_state.map(market => market.stateCount)
-  $: firstTimestamp =
-    marketData &&
-    new Date(
-      (marketData.market_state[0].state.transaction.broadcastedAt ||
-        marketData.market_state[0].state.transaction.minerTimestamp) + "Z"
-    ).valueOf()
+  `
+  const priceSubscription = gql`
+    subscription {
+      market_state(where: { market: { marketStateByFirststateid: { state: {transactionTxid: {_eq: "${market.marketStateByFirststateid.state.transaction.txid}"}}}}, decided: {_eq: false}}, order_by: {stateCount: desc}, limit: 1) {
+        shares
+        liquidity
+        decided
+        stateCount
+        state {
+          transaction {
+            minerTimestamp
+            broadcastedAt
+          }
+        }
+      }
+    }
+  `
+  const marketDataSubscription = subscribe(priceSubscription)
 
   let chart
+  let labels = []
 
-  $: if (datasets) updateChart()
+  $: if (chart && $marketDataSubscription.data) {
+    const marketState = $marketDataSubscription.data.market_state[0]
+    console.log("New price data:", marketState)
 
-  function updateChart() {
-    if (!chart) {
-      chart = getChart()
-      console.log("Initialized chart")
-    } else {
-      chart.data.labels = labels
-      chart.data.datasets = datasets
-      chart.update()
-      console.log("Updated chart")
+    chart.data.labels.push(marketState.stateCount)
+
+    const balance = {
+      shares: marketState.shares,
+      liquidity: marketState.liquidity
     }
+
+    for (const [shareIndex, share] of marketState.shares.entries()) {
+      chart.data.datasets[shareIndex].data.push({
+        x: new Date().valueOf(),
+        y: lmsr.getProbability(balance, share)
+      })
+    }
+
+    chart.update()
+    console.log("Updated chart")
   }
 
-  async function updateMarketData() {
-    console.log("Fetching price history")
-    marketData = await gqlClient.request(priceQuery)
-    console.log(marketData.market_state.length)
+  function getOptionName(index) {
+    const name = market.options[index].name
+    if (name.length > 30) {
+      return name.slice(0, 30) + "..."
+    }
+    return name
   }
 
-  // function updateDataSets() {
-  //   const newStates = marketData.market_state.slice(datasets[0].data.length, marketData.marketState.length -1)
-
-  //   for (const [index, _] of chart.data.datasets.entries()) {
-  //     const set = chart.data.datasets[index]
-  //     delete set[set.length -1]
-  //   }
-
-  //   for (const [stateIndex, marketState] of newStates.entries()) {
-  //     const balance = {
-  //       shares: marketState.shares,
-  //       liquidity: marketState.liquidity
-  //     }
-
-  //     for (const [shareIndex, share] of marketState.shares.entries()) {
-  //       const date = new Date((marketState.transaction.broadcastedAt || marketState.transaction.minerTimestamp) + "Z")
-  //       const timestamp = date.valueOf()
-  //       chart.data.datasets[shareIndex].data.push(
-  //         {
-  //           x: timestamp,
-  //           y: lmsr.getProbability(balance, share)
-  //         }
-  //       )
-  //       // console.log("Result", JSON.stringify(shareData))
-
-  //       // Add current time to the end
-  //       if (stateIndex === marketData.market_state.length - 1) {
-  //         shareData[shareIndex] = shareData[shareIndex].concat([
-  //           {
-  //             x: new Date().valueOf(),
-  //             y: lmsr.getProbability(balance, share)
-  //           }
-  //         ])
-  //       }
-  //     }
-  //   }
-  // }
-
-  function getDataSets() {
+  function getDataSets(data) {
     const shareData = new Array(market.options.length).fill([])
 
-    for (const [stateIndex, marketState] of marketData.market_state.entries()) {
-      if (marketState.decided) {
-        break
-      }
-
+    for (const [stateIndex, marketState] of data.market_state.entries()) {
       const balance = {
         shares: marketState.shares,
         liquidity: marketState.liquidity
@@ -131,7 +107,7 @@
         // console.log("Result", JSON.stringify(shareData))
 
         // Add current time to the end
-        if (stateIndex === marketData.market_state.length - 1) {
+        if (stateIndex === data.market_state.length - 1) {
           shareData[shareIndex] = shareData[shareIndex].concat([
             {
               x: new Date().valueOf(),
@@ -150,17 +126,19 @@
       // gradient.addColorStop(1, "rgba(255,255,255,0)")
 
       return {
-        label: market.options[index].name,
-        data: shareData[index],
-        fill: false,
+        label: getOptionName(index),
+        data,
+        // fill: false,
         cubicInterpolationMode: "monotone",
-        borderColor: [colors[index % 6]]
+        borderColor: [colors[index % 6]],
+        borderWidth: 1,
+        radius: 0
         // backgroundColor: gradient // Only works after canvas is loaded
       }
     })
   }
 
-  function getChart() {
+  function getChart(datasets, labels, firstTimestamp) {
     return new Chart(canvas, {
       type: "line",
       data: {
@@ -201,6 +179,26 @@
       }
     })
   }
+
+  onMount(async () => {
+    const marketData = await client.query({ query: priceQuery })
+
+    if (marketData.error) {
+      console.error(res)
+      throw new Error("Failed to fetch prices")
+    }
+
+    const datasets = getDataSets(marketData.data)
+
+    labels = marketData.data.market_state.map(market => market.stateCount)
+    const firstTimestamp = new Date(
+      (marketData.data.market_state[0].state.transaction.broadcastedAt ||
+        marketData.data.market_state[0].state.transaction.minerTimestamp) + "Z"
+    ).valueOf()
+
+    chart = getChart(datasets, labels, firstTimestamp)
+    console.log("Initialized chart")
+  })
 
   onDestroy(() => {
     if (chart) chart.destroy()

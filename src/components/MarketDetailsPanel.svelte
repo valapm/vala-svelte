@@ -18,7 +18,8 @@
   <div class="header">
     <button class={tab === 0 ? "selected" : ""} on:click={e => (tab = 0)}>Description</button>
     {#each market.options as option, index}
-      <button class={tab === index + 1 ? "selected" : ""} on:click={e => (tab = index + 1)}>{option.name}</button>
+      <button class="name {tab === index + 1 ? 'selected' : ''}" on:click={e => (tab = index + 1)}>{option.name}</button
+      >
     {/each}
   </div>
   <div class="body">
@@ -31,6 +32,7 @@
         >
       </div>
     {:else}
+      <h1>{market.options[tab - 1].name}</h1>
       {market.options[tab - 1].details}
     {/if}
   </div>
@@ -61,6 +63,7 @@
     font-weight: 400;
     display: flex;
     flex-direction: column;
+    gap: 1rem;
   }
 
   .version {
@@ -84,5 +87,17 @@
     background: linear-gradient(150deg, rgba(1, 167, 129, 1) 0%, rgba(0, 255, 197, 1) 100%);
     background-clip: text;
     color: transparent;
+  }
+
+  .name {
+    overflow: hidden;
+    max-width: 6rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 500;
   }
 </style>

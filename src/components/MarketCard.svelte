@@ -111,6 +111,12 @@
   h3 {
     font-weight: 500;
     font-size: 20px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    /* line-clamp: 2; */
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
   }
 
   .header {

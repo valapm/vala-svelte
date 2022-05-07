@@ -73,7 +73,7 @@
   }
 </script>
 
-<SidePanelCard title={market.options[option].name} {gradient} {deactivated} bind:open>
+<SidePanelCard title={market.options[option].name} {gradient} {deactivated} limitTitle="6rem" bind:open>
   <div slot="header">
     {#if !market.market_state.decided}
       <div class="price">${Math.round(priceBuyOneUSD * 100) / 100}</div>
