@@ -4,9 +4,10 @@
   export let min = undefined
   export let max = undefined
   export let color = "39baf9"
+  export let backgroundColor = "434c56"
 </script>
 
-<div style={max !== undefined ? "" : "padding-right: 1.25rem"}>
+<div style="{max !== undefined ? '' : 'padding-right: 1.25rem'} background-color: #{backgroundColor}">
   <input type="number" {placeholder} {min} {max} bind:value />
   {#if max !== undefined}<button on:click={() => (value = max)} style="border: 1px solid #{color};">max</button>{/if}
 </div>
@@ -17,7 +18,6 @@
     width: 100%;
     height: 2.8125rem;
     padding: 0 0.4375rem 0 1.25rem;
-    background-color: #434c56;
     display: flex;
     align-items: center;
     gap: 0.75rem;

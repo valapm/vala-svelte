@@ -32,7 +32,7 @@
   .card {
     border-radius: 0.75rem;
     height: 12.5rem;
-    width: min(21rem, 90%);
+    width: min(21rem, 100%);
     background-color: #323841;
     color: #d8d9e5;
     padding: 1rem;

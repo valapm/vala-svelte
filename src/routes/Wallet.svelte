@@ -2,21 +2,22 @@
   import { address, seed, usdBalance, publicKey } from "../store/wallet"
   import { username } from "../store/profile"
   import WalletCard from "../components/WalletCard.svelte"
-  import { gql } from "graphql-request"
-  import { gqlClient } from "../utils/graphql"
   import { pm, lmsr } from "bitcoin-predict"
   import { price } from "../store/price"
   import { round } from "../utils/format"
 
+  import { gql } from "@apollo/client/core"
+  import { query } from "svelte-apollo"
+
   import SendBsvModal from "../components/SendBsvModal.svelte"
+  import Button from "../components/Button.svelte"
+  import ReceiveBsvModal from "../components/ReceiveBsvModal.svelte"
 
-  import SlFormatNumber from "@shoelace-style/shoelace/dist/components/format-number/format-number"
-  import SlButton from "@shoelace-style/shoelace/dist/components/button/button"
+  let showReceiveModal = false
+  let showSendModal = false
 
-  let payment_modal
-
-  $: entryQuery = gql`
-      {
+  const entryQuery = gql`
+      query {
         entry(where: { _not: { market_state: {state: {states: {}}}}, investorPubKey: { _eq: "${$publicKey.toString()}"}}) {
           liquidity
           shares
@@ -29,66 +30,79 @@
         }
       }
     `
+  const entries = query(entryQuery)
 
-  $: if ($publicKey) getPositions()
-
-  let satPositions = 0
-  $: usdPositions = ($price * satPositions) / 100000000
-  $: totalAssets = usdPositions + $usdBalance
-
-  async function getPositions() {
-    const res = await gqlClient.request(entryQuery)
-
-    let sats = 0
-    for (const entry of res.entry) {
-      let satChange
-      if (entry.market_state.decided) {
-        satChange = entry.shares[entry.market_state.decision] * lmsr.SatScaling
-      } else {
-        const changedBalance = {
-          liquidity: entry.market_state.liquidity - entry.liquidity,
-          shares: entry.market_state.shares.map((shares, index) => shares - entry.shares[index])
+  $: satPositions = entries.data
+    ? entries.data.reduce((sats, entry) => {
+        if (entry.market_state.decided) {
+          return sats + entry.shares[entry.market_state.decision] * lmsr.SatScaling
+        } else {
+          const changedBalance = {
+            liquidity: entry.market_state.liquidity,
+            shares: entry.market_state.shares.map((shares, index) => shares - entry.shares[index])
+          }
+          return sats + lmsr.getLmsrSats(entry.market_state) - lmsr.getLmsrSats(changedBalance)
         }
+      })
+    : 0
 
-        satChange = lmsr.getLmsrSats(entry.market_state) - lmsr.getLmsrSats(changedBalance)
-      }
-      sats += satChange
-    }
-    satPositions = sats
-  }
+  $: liquiditySats = entries.data
+    ? entries.data.reduce((sats, entry) => {
+        const changedBalance = {
+          liquidity: 0,
+          shares: entry.market_state.shares
+        }
+        return sats + lmsr.getLmsrSats(entry.market_state) - lmsr.getLmsrSats(changedBalance)
+      })
+    : 0
+
+  $: usdLiquidity = ($price * liquiditySats) / 100000000
+  $: usdPositions = ($price * satPositions) / 100000000
+  $: totalAssets = usdPositions + $usdBalance + usdLiquidity
 </script>
 
 <div class="container">
   {#if $seed}
-    <WalletCard address={$address.toString()} username={$username} />
+    <div class="card">
+      <WalletCard address={$address.toString()} username={$username} />
 
-    <div class="wallet-buttons">
-      <sl-button type="primary" on:click={() => payment_modal.show()}>Send BSV</sl-button>
+      <div class="wallet-buttons">
+        <Button type="filled-grey full-width" on:click={() => (showReceiveModal = true)}>Receive BSV</Button>
+        <Button type="filled-green full-width" on:click={() => (showSendModal = true)}>Send BSV</Button>
+      </div>
     </div>
 
-    <SendBsvModal bind:this={payment_modal} />
+    <ReceiveBsvModal bind:open={showReceiveModal} />
+    <SendBsvModal bind:open={showSendModal} />
 
     <div class="balances">
-      <div>
+      <!-- <div>
         <label for="usdBalance">Wallet Balance</label>
         <div name="usdBalance">
-          <sl-format-number type="currency" currency="USD" value={$usdBalance} locale="en-US" />
+          ${Math.round($usdBalance * 100) / 100}
         </div>
-      </div>
+      </div> -->
 
       <div>
         <label for="usdPositions">Positions</label>
         <div name="usdPositions">
-          <sl-format-number type="currency" currency="USD" value={usdPositions} locale="en-US" />
+          ${Math.round(usdPositions * 100) / 100}
         </div>
       </div>
 
       <div>
-        <label for="totalAssets">Total Assets</label>
-        <div name="totalAssets">
-          <sl-format-number type="currency" currency="USD" value={totalAssets} locale="en-US" />
+        <label for="usdPositions">Provided Liquidity</label>
+        <div name="usdLiquidity">
+          ${Math.round(usdLiquidity * 100) / 100}
         </div>
       </div>
+
+      <!-- <div>
+        <label for="totalAssets">Total Assets</label>
+        <div name="totalAssets">
+          ${Math.round(totalAssets * 100) / 100}
+        </div>
+      </div> -->
     </div>
   {/if}
 </div>
@@ -111,20 +125,30 @@
 
   .balances label {
     font-weight: bold;
-    color: var(--sl-color-gray-400);
   }
-  .balances sl-format-number {
-    font-weight: bold;
-    font-size: 2rem;
-  }
-
   .balances > div {
     display: flex;
     flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .balances > div > div {
+    font-size: 2rem;
   }
 
   .wallet-buttons {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
+    /* width: min(21rem, 90%); */
+    width: 100%;
+    gap: 1rem;
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: min(21rem, 90%);
   }
 </style>

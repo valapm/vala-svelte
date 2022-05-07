@@ -36,7 +36,8 @@
     flex-direction: column;
   }
 
-  .filled {
+  .filled,
+  .filled-green {
     border: none;
     /* background-color: #01a781; */
     background: linear-gradient(149.62deg, #01a781 17.39%, #00ffc5 124.46%);

@@ -1,22 +1,17 @@
 <script>
   import { bsv } from "bitcoin-predict"
-  import { address, privateKey, utxos, usdBalance } from "../store/wallet"
+  import { address, privateKey, utxos, usdBalance, satBalance } from "../store/wallet"
   import { testnet, feeb } from "../config"
   import { price } from "../store/price"
   import { broadcast, getUtxos } from "../utils/transaction"
   import { notify } from "../store/notifications"
+  import { updateOutputs } from "../store/wallet"
 
-  import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
-  import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js"
-  import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js"
+  import Modal from "./Modal.svelte"
+  import Button from "./Button.svelte"
+  import NumberInput from "./NumberInput.svelte"
 
-  let dialog
-  let recipient_input
-  let amount_input
-
-  export function show() {
-    dialog.show()
-  }
+  export let open = false
 
   let recipient
   let amount
@@ -26,6 +21,7 @@
   $: validRecipient = recipient && isValidRecipient()
   $: validAmount = amount && amount <= $usdBalance
   $: console.log(validAmount, validRecipient)
+  $: console.log("my address:", $address.toString())
   function isValidRecipient() {
     try {
       bsv.Address.fromString(recipient, testnet ? "testnet" : "livenet")
@@ -37,7 +33,10 @@
 
   async function send() {
     sending = true
-    const satAmount = Math.ceil((amount / $price) * 100000000)
+
+    let satAmount = Math.ceil((amount / $price) * 100000000)
+    if (satAmount > satBalance) satAmount = satBalance
+
     const recipientAddress = recipient
 
     const tx = new bsv.Transaction()
@@ -55,18 +54,7 @@
       console.log(res)
       success = true
 
-      for (const input of tx.inputs) {
-        $utxos = $utxos.filter(
-          utxo => utxo.txId !== input.prevTxId.toString("hex") || utxo.outputIndex !== input.outputIndex
-        )
-      }
-
-      const newUtxos = getUtxos(tx).filter(
-        utxo =>
-          utxo.script.toASM() === `OP_DUP OP_HASH160 ${$address.hashBuffer.toString("hex")} OP_EQUALVERIFY OP_CHECKSIG`
-      )
-      console.log(newUtxos)
-      $utxos = $utxos.concat(newUtxos)
+      updateOutputs(tx)
     } catch (e) {
       console.error(e)
       error = e.message
@@ -79,7 +67,6 @@
     sending = false
 
     if (success) {
-      dialog.hide()
       notify({
         type: "success",
         text: "Successfully broadcasted transaction",
@@ -88,32 +75,66 @@
           20
         )}...</a>`
       })
+      recipient = undefined
+      amount = undefined
+      open = false
     }
   }
 </script>
 
-<sl-dialog bind:this={dialog} label="Send BSV">
-  <form>
-    <sl-input
-      placeholder="USD"
-      type="number"
+<Modal bind:open>
+  <div class="modal">
+    <h1>Send BSV</h1>
+    <NumberInput
+      placeholder="USD Amount"
       name="amount"
-      label="USD Amount"
-      bind:this={amount_input}
-      on:input={() => (amount = parseFloat(amount_input.value))}
-      value={amount !== undefined ? amount : ""}
+      max={$usdBalance}
+      bind:value={amount}
+      color="01a781"
+      backgroundColor="323841"
     />
-    <sl-input
-      placeholder="Address"
-      name="recipient"
-      type="text"
-      label="Recipient Address"
-      bind:this={recipient_input}
-      value={recipient !== undefined ? recipient : ""}
-      on:input={() => (recipient = recipient_input.value)}
-    />
-  </form>
-  <sl-button slot="footer" type="primary" on:click={send} disabled={!validAmount || !validRecipient} loading={sending}
-    >Send</sl-button
-  >
-</sl-dialog>
+    <input placeholder="Recipient Address" name="recipient" type="text" bind:value={recipient} />
+    <div class="buttons">
+      <Button type="filled-grey full-width" on:click={() => (open = false)}>Cancel</Button>
+      <Button
+        type="filled-green full-width"
+        on:click={send}
+        disabled={!validAmount || !validRecipient}
+        loading={sending}>Send</Button
+      >
+    </div>
+  </div>
+</Modal>
+
+<style>
+  .modal {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    align-items: center;
+    padding: 3.125rem;
+    color: white;
+  }
+
+  h1 {
+    font-size: 2.125rem;
+    font-weight: 700;
+  }
+
+  .buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+  input {
+    background-color: #323841;
+    border-radius: 0.375rem;
+    font-size: 1rem;
+    font-weight: 500;
+    width: 100%;
+    height: 2.8125rem;
+    padding: 0 1.25rem;
+  }
+</style>
