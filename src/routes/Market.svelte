@@ -41,7 +41,7 @@
   import LiquiditySidePanel from "../components/LiquiditySidePanel.svelte"
   import Button from "../components/Button.svelte"
   import MarketDetailsPanel from "../components/MarketDetailsPanel.svelte"
-  import Table from "../components/Table.svelte"
+  import Table from "../components/CardTable.svelte"
   import MarketCreatorCard from "../components/MarketCreatorCard.svelte"
 
   export let params

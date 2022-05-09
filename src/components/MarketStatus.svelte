@@ -1,13 +1,17 @@
 <script>
   export let status // 0-2
 
+  export let label = true
+
   const labels = ["Unpublished", "Live Market", "Resolved"]
 
   const colors = ["#6CD4FF", "#00FFC5", "rgba(255, 255, 255, 0.5)"]
 </script>
 
 <div class="status">
-  <div class="label">{labels[status]}</div>
+  {#if label}
+    <div class="label">{labels[status]}</div>
+  {/if}
   <div class="dot" style="background-color: {colors[status]};" />
 </div>
 
@@ -27,5 +31,6 @@
     border-radius: 50%;
     width: 0.6875rem;
     height: 0.6875rem;
+    flex-shrink: 0;
   }
 </style>

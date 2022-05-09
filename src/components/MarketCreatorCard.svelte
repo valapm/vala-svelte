@@ -4,7 +4,7 @@
   import { round } from "../utils/format"
   import { lmsr } from "bitcoin-predict"
 
-  import Table from "../components/Table.svelte"
+  import Table from "./CardTable.svelte"
   import Modal from "../components/Modal.svelte"
   import Button from "../components/Button.svelte"
   import OutcomeSelect from "./OutcomeSelect.svelte"

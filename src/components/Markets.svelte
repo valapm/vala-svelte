@@ -23,6 +23,7 @@
   const filterOptions = ["Live Markets", "Unconfirmed Markets", "Resolved Markets"]
 
   export let oracle = undefined
+  export let pubKeyFilter = undefined
 
   let markets = []
   let search = ""
@@ -47,7 +48,9 @@
       ? filterQueries[filter[0]]
       : `_or: [ ${filter.map(fIndex => `{ ${filterQueries[fIndex]} }`).join(", ")} ]`
 
-  $: fullFilterQuery = oracle
+  $: fullFilterQuery = pubKeyFilter
+    ? `_and: [{${filterQuery}}, {market_state: {entries: {investorPubKey: {_eq: "${pubKeyFilter}"}}}}]`
+    : oracle
     ? `_and: [{${filterQuery}}, {market_state: {market_oracles: {oraclePubKey: {_eq: "${oracle.pubKey}" }}}}]`
     : filterQuery
 

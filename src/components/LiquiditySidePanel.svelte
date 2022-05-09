@@ -11,7 +11,7 @@
   import Switch from "../components/Switch.svelte"
   import NumberInput from "../components/NumberInput.svelte"
   import Button from "../components/Button.svelte"
-  import Table from "./Table.svelte"
+  import Table from "./CardTable.svelte"
 
   const dispatch = createEventDispatcher()
 
@@ -78,8 +78,6 @@
       }) +
       lmsr.getLmsrSats(marketBalance)
     : 0
-
-  $: console.log(canBuySell, insideLimits)
 
   $: redeemAllUSD = (redeemAllSats * $bsvPrice) / 100000000
 

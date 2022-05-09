@@ -11,7 +11,7 @@
   import NumberInput from "../components/NumberInput.svelte"
   import Button from "./Button.svelte"
   import Switch from "../components/Switch.svelte"
-  import Table from "../components/Table.svelte"
+  import Table from "./CardTable.svelte"
   import X from "../icons/x.svelte"
   import Checkmark from "../icons/checkmark.svelte"
 

@@ -3,6 +3,8 @@
   import { getSharePrice } from "../utils/lmsr"
   import { round, formatUSD } from "../utils/format"
 
+  import Table from "./Table.svelte"
+
   export let market
   export let balance
 
@@ -14,7 +16,7 @@
   $: usdPrices = satPrices.map(sats => round((sats / 100000000) * $price))
 </script>
 
-<table id="positions">
+<Table>
   <thead>
     <tr>
       <th> Outcome </th>
@@ -44,40 +46,4 @@
       {/if}
     {/each}
   </tbody>
-</table>
-
-<style>
-  #positions {
-    width: 100%;
-    border-radius: 0.375rem;
-    border: 1px solid #60616d;
-    background-color: #272c33;
-    border-collapse: separate;
-    font-size: 0.875rem;
-    border-spacing: 0;
-    overflow: hidden;
-  }
-
-  thead {
-    background-color: #323841;
-  }
-
-  th {
-    font-weight: 500;
-  }
-
-  td {
-    font-weight: 400;
-  }
-
-  th,
-  td {
-    padding: 0.875rem;
-    text-align: left;
-  }
-
-  th:first-of-type,
-  td:first-of-type {
-    min-width: 10rem;
-  }
-</style>
+</Table>
