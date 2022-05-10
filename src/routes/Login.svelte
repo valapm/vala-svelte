@@ -9,8 +9,8 @@
   import { EMAIL_REGEX } from "../utils/email"
   import { notify } from "../store/notifications"
 
-  import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
-  import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js"
+  import Button from "../components/Button.svelte"
+  import PasswordInput from "../components/PasswordInput.svelte"
 
   let valaauth
 
@@ -22,19 +22,10 @@
 
   $: isValidEmail = email && EMAIL_REGEX.test(email)
 
-  let email_input
-  let password_input
-  let login_button
-
   let error = {}
 
   function initAuth() {
     console.debug("vala-auth loaded")
-  }
-
-  async function loginDefault() {
-    // Necessary bc can't pass variables to shoelace
-    return login(email, password)
   }
 
   async function login(email, password) {
@@ -108,20 +99,13 @@
     if (event.keyCode === 13) {
       event.preventDefault()
       if (isValidEmail && password) {
-        loginDefault()
+        login(email, password)
       }
     }
   }
 
   onMount(() => {
     if ($seed) push("/")
-
-    email_input.addEventListener("sl-input", () => {
-      email = email_input.value
-    })
-    password_input.addEventListener("sl-input", () => {
-      password = password_input.value
-    })
   })
 </script>
 
@@ -134,45 +118,19 @@
 <div class="login">
   <h1>Login to Vala</h1>
 
-  <form method="POST">
-    <input
-      style="display: none;"
-      id="email"
-      autocomplete="email"
-      placeholder="Email"
-      name="email"
-      type="email"
-      bind:value={email}
-    />
-    <sl-input placeholder="Email" name="email" type="email" bind:this={email_input} value={email} />
-    <input
-      style="display: none;"
-      id="password"
-      placeholder="Password"
-      type="password"
-      name="password"
-      autocomplete="password-current"
-      bind:value={password}
-    />
-    <sl-input
-      placeholder="Password"
-      type="password"
-      name="password"
-      bind:this={password_input}
-      value={password}
-      toggle-password
-    />
-  </form>
+  <div class="inputs">
+    <input placeholder="Email" name="email" type="email" bind:value={email} />
+    <PasswordInput placeholder="Password" bind:value={password} />
+  </div>
 
   <div class="buttons">
-    <sl-button
-      type="primary"
-      on:click={loginDefault}
-      bind:this={login_button}
+    <Button
+      type="filled full-width"
+      on:click={() => login(email, password)}
       disabled={!isValidEmail || !password}
-      {loading}>Login</sl-button
+      {loading}>Login</Button
     >
-    <a href="#/register"><sl-button>Create a new account</sl-button></a>
+    <Button type="full-width" on:click={() => push("/register")}>Create a new account</Button>
   </div>
 </div>
 
@@ -188,13 +146,14 @@
     text-align: center;
     /* width: min(90%, 15rem); */
     align-items: center;
-    width: min(65rem, 95%);
+    width: min(18rem, 95%);
   }
 
-  .login form {
+  .inputs {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    width: 100%;
   }
 
   h1 {
@@ -207,5 +166,14 @@
     flex-direction: column;
     gap: 1rem;
     align-items: center;
+    width: 100%;
+  }
+
+  input {
+    border-radius: 0.375rem;
+    width: 100%;
+    height: 2.8125rem;
+    padding: 0 1.25rem;
+    background-color: #323841;
   }
 </style>

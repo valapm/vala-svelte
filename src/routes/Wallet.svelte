@@ -58,16 +58,9 @@
   $: satPositions = $entries.data
     ? $entries.data.entry.map(entry => {
         const stateBalance = lmsr.getLmsrSats(entry.market_state)
-        const sharesArray = []
 
-        for (const [shareIndex, shares] of entry.shares.entries()) {
-          if (entry.market_state.decided) {
-            if (entry.market_state.decision === shareIndex) {
-              sharesArray.push(shares * lmsr.SatScaling)
-            } else {
-              sharesArray.push(0)
-            }
-          } else {
+        const sharesArray = entry.shares.reduce((sharesArray, shares, shareIndex) => {
+          if (!entry.market_state.decided) {
             const changedBalance = {
               liquidity: entry.market_state.liquidity,
               shares: entry.market_state.shares.map((marketShares, index) =>
@@ -75,8 +68,17 @@
               )
             }
             sharesArray.push(stateBalance - lmsr.getLmsrSats(changedBalance))
+            return sharesArray
           }
-        }
+
+          if (entry.market_state.decision === shareIndex) {
+            sharesArray.push(shares * lmsr.SatScaling)
+            return sharesArray
+          }
+
+          sharesArray.push(0)
+          return sharesArray
+        }, [])
 
         return sharesArray
       })
