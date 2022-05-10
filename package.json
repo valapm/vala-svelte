@@ -30,6 +30,7 @@
     "crypto-browserify": "^3.12.0",
     "css-loader": "^5.2.7",
     "dotenv": "^8.6.0",
+    "fast-password-entropy": "^1.1.1",
     "graphql": "^15.8.0",
     "graphql-request": "^3.7.0",
     "lodash": "^4.17.21",
