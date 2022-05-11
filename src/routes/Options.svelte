@@ -49,7 +49,7 @@
 
   Logged in as {$email}
 
-  {#if !$verified}<sl-button on:click={requestEmail}>Resend verification email</sl-button>{/if}
+  {#if !$verified}<Button on:click={requestEmail}>Resend verification email</Button>{/if}
 
   <!-- <div>
     Use Testnet

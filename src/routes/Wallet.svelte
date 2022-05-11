@@ -101,7 +101,6 @@
     ($price *
       satPositions.reduce((total, shares) => total + shares.reduce((totalSats, sats) => totalSats + sats, 0), 0)) /
     100000000
-  $: totalAssets = usdPositions + $usdBalance + usdLiquidity
 
   let selected = 0
 </script>
@@ -127,51 +126,71 @@
       <ReceiveBsvModal bind:open={showReceiveModal} />
       <SendBsvModal bind:open={showSendModal} />
     {:else if selected === 1}
-      <div class="balances">
-        <!-- <div>
+      {#if $entries.data}
+        {#if usdLiquidity === 0 && usdPositions === 0}
+          <p class="nothing_found">Nothing here yet. Go make some bets!</p>
+        {:else}
+          <div class="balances">
+            <!-- <div>
         <label for="usdBalance">Wallet Balance</label>
         <div name="usdBalance">
           ${Math.round($usdBalance * 100) / 100}
         </div>
       </div> -->
 
-        <div>
-          <label for="usdPositions">Positions</label>
-          <div name="usdPositions">
-            ${Math.round(usdPositions * 100) / 100}
-          </div>
-        </div>
+            <div>
+              <label for="usdPositions">Positions</label>
+              <div name="usdPositions">
+                ${Math.round(usdPositions * 100) / 100}
+              </div>
+            </div>
 
-        <div>
-          <label for="usdPositions">Provided Liquidity</label>
-          <div name="usdLiquidity">
-            ${Math.round(usdLiquidity * 100) / 100}
-          </div>
-        </div>
+            <div>
+              <label for="usdPositions">Provided Liquidity</label>
+              <div name="usdLiquidity">
+                ${Math.round(usdLiquidity * 100) / 100}
+              </div>
+            </div>
 
-        <!-- <div>
+            <!-- <div>
         <label for="totalAssets">Total Assets</label>
         <div name="totalAssets">
           ${Math.round(totalAssets * 100) / 100}
         </div>
       </div> -->
-      </div>
+          </div>
 
-      {#if $entries.data && $entries.data.entry.length}
-        <Table>
-          <thead>
-            <tr>
-              <th>Market</th>
-              <th />
-              <th>Option</th>
-              <th>Amount</th>
-              <th>Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each $entries.data.entry as entry, entryIndex}
-              {#each entry.shares as shares, shareIndex}
-                {#if shares > 0}
+          <Table>
+            <thead>
+              <tr>
+                <th>Market</th>
+                <th />
+                <th>Option</th>
+                <th>Amount</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {#each $entries.data.entry as entry, entryIndex}
+                {#each entry.shares as shares, shareIndex}
+                  {#if shares > 0}
+                    <tr
+                      on:click={() =>
+                        push("/market/" + entry.market_state.market.marketStateByFirststateid.state.transactionTxid)}
+                    >
+                      <td>{entry.market_state.market.resolve}</td>
+
+                      <td><MarketStatus status={getMarketStatus(entry)} label={false} /></td>
+                      <td>{entry.market_state.market.options[shareIndex].name}</td>
+                      <td>{shares}</td>
+                      <td
+                        ><b>${Math.round(((satPositions[entryIndex][shareIndex] * $price) / 100000000) * 100) / 100}</b
+                        ></td
+                      >
+                    </tr>
+                  {/if}
+                {/each}
+                {#if entry.liquidity > 0}
                   <tr
                     on:click={() =>
                       push("/market/" + entry.market_state.market.marketStateByFirststateid.state.transactionTxid)}
@@ -179,31 +198,15 @@
                     <td>{entry.market_state.market.resolve}</td>
 
                     <td><MarketStatus status={getMarketStatus(entry)} label={false} /></td>
-                    <td>{entry.market_state.market.options[shareIndex].name}</td>
-                    <td>{shares}</td>
-                    <td
-                      ><b>${Math.round(((satPositions[entryIndex][shareIndex] * $price) / 100000000) * 100) / 100}</b
-                      ></td
-                    >
+                    <td>Liquidity</td>
+                    <td>{entry.liquidity}</td>
+                    <td><b>${Math.round(((liquiditySats[entryIndex] * $price) / 100000000) * 100) / 100}</b></td>
                   </tr>
                 {/if}
               {/each}
-              {#if entry.liquidity > 0}
-                <tr
-                  on:click={() =>
-                    push("/market/" + entry.market_state.market.marketStateByFirststateid.state.transactionTxid)}
-                >
-                  <td>{entry.market_state.market.resolve}</td>
-
-                  <td><MarketStatus status={getMarketStatus(entry)} label={false} /></td>
-                  <td>Liquidity</td>
-                  <td>{entry.liquidity}</td>
-                  <td><b>${Math.round(((liquiditySats[entryIndex] * $price) / 100000000) * 100) / 100}</b></td>
-                </tr>
-              {/if}
-            {/each}
-          </tbody>
-        </Table>
+            </tbody>
+          </Table>
+        {/if}
       {/if}
     {/if}
   {/if}
@@ -265,5 +268,11 @@
 
   tbody tr:hover {
     background-color: #434c56;
+  }
+
+  .nothing_found {
+    font-size: 2rem;
+    opacity: 60%;
+    font-weight: 700;
   }
 </style>

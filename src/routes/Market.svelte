@@ -46,6 +46,15 @@
 
   export let params
 
+  const myEntryQuery = $publicKey
+    ? `myEntry: entries(where: {investorPubKey: {_eq: "${$publicKey.toString()}"}}) {
+          liquidity
+          shares
+          liquidityPoints
+          prevLiquidityPoolState
+        }`
+    : ""
+
   const marketStateQuery = gql`
     subscription {
       market_state(where: {market: {marketStateByFirststateid: { state: {transaction: {txid: {_eq: "${
@@ -71,12 +80,7 @@
           }
           outputIndex
         }
-        myEntry: entries(where: {investorPubKey: {_eq: "${$publicKey.toString()}"}}) {
-          liquidity
-          shares
-          liquidityPoints
-          prevLiquidityPoolState
-        }
+        ${$publicKey ? myEntryQuery : ""}
       }
     }
   `
@@ -128,12 +132,7 @@
           decision
           shares
           liquidity
-          myEntry: entries(where: {investorPubKey: {_eq: "${$publicKey.toString()}"}}) {
-            liquidity
-            shares
-            liquidityPoints
-            prevLiquidityPoolState
-          }
+          ${$publicKey ? myEntryQuery : ""}
         }
         marketStateByFirststateid {
           state {

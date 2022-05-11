@@ -6,9 +6,6 @@
 
   import Button from "./Button.svelte"
 
-  import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js"
-  import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js"
-
   let email = ""
   let loading = false
   let signedUp = false
@@ -16,6 +13,14 @@
   $: isValidEmail = email && EMAIL_REGEX.test(email)
 
   async function joinWaitlist() {
+    if (!isValidEmail) {
+      notify({
+        type: "danger",
+        text: "Enter a valid email"
+      })
+      return
+    }
+
     loading = true
     let res
     try {
@@ -54,7 +59,7 @@
 {#if !signedUp}
   <div class="waitlist_input">
     <input type="email" placeholder="Email" name="email" bind:value={email} />
-    <Button type="blue" on:click={joinWaitlist} disabled={!isValidEmail} {loading}>Join Waitlist</Button>
+    <Button type="filled-blue" on:click={joinWaitlist} {loading}>Join Waitlist</Button>
   </div>
 {:else}
   <p>Thank you for joining!</p>
