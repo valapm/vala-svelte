@@ -24,6 +24,8 @@
 
   export let oracle = undefined
   export let pubKeyFilter = undefined
+  export let searchBar = true
+  export let limit = undefined
 
   let markets = []
   let search = ""
@@ -74,7 +76,7 @@
         orderQueries[sort]
       } }, where: { resolve: {_ilike: "%${search}%"}, version: { _in: ${JSON.stringify(
     versions
-  )}}, ${fullFilterQuery}}) {
+  )}}, ${fullFilterQuery}}${limit ? ", limit: " + limit : ""}) {
         market_state {
           market_oracles {
             committed
@@ -133,13 +135,15 @@
 </script>
 
 <div class="markets">
-  <div class="search">
-    <Searchbar
-      bind:value={search}
-      placeholder="Search Bets {oracle ? 'by ' + oracle.oracleStateByCurrentstateid.domain : ''}"
-    />
-    <SearchOptions {sortOptions} {filterOptions} bind:sort bind:filter bind:direction />
-  </div>
+  {#if searchBar}
+    <div class="search">
+      <Searchbar
+        bind:value={search}
+        placeholder="Search Bets {oracle ? 'by ' + oracle.oracleStateByCurrentstateid.domain : ''}"
+      />
+      <SearchOptions {sortOptions} {filterOptions} bind:sort bind:filter bind:direction />
+    </div>
+  {/if}
 
   {#if items.length}
     <Masonry

@@ -9,6 +9,7 @@
 
   import Button from "./Button.svelte"
   import DropdownMenu from "./DropdownMenu.svelte"
+  import Logo from "./Logo.svelte"
 
   function round(n) {
     return Math.round(n * 100) / 100
@@ -41,10 +42,7 @@
 <nav>
   <div class="menu-main">
     <div class="menu-left">
-      <a href={$seed ? "#/markets" : "#/"} class="logo">
-        <img src="/logo.svg" alt="vala-logo" />
-        <img src="/logo_text.svg" alt="vala-logo-text" />
-      </a>
+      <Logo />
 
       <div class="menu-center" />
     </div>
@@ -114,20 +112,6 @@
 
   .menu-main img {
     height: 2rem;
-  }
-
-  .logo {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-  }
-
-  .logo img[alt="vala-logo"] {
-    height: 2.4rem;
-  }
-  .logo img[alt="vala-logo-text"] {
-    height: 1.2rem;
   }
   .menu-left {
     display: flex;

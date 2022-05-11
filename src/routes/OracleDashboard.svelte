@@ -1,8 +1,10 @@
 <script>
+  import { seed } from "../store/wallet"
   import { rabinPubKey, rabinPrivKey } from "../store/oracle"
   import { onMount } from "svelte"
   import { gqlClient } from "../utils/graphql"
   import { gql } from "graphql-request"
+  import { push } from "svelte-spa-router"
 
   import SubHeader from "../components/SubHeader.svelte"
   import OracleOverview from "../components/OracleOverview.svelte"
@@ -49,6 +51,10 @@
     }`
 
   onMount(async () => {
+    if (!$seed) {
+      push("/login")
+    }
+
     const oracleData = await gqlClient.request(oracleQuery)
     oracle = oracleData.oracle[0]
     loading = false

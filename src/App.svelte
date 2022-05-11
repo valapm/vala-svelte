@@ -5,6 +5,8 @@
   import Router from "svelte-spa-router"
   import { routes } from "./routes"
   import Header from "./components/Header.svelte"
+
+  import Footer from "./components/Footer.svelte"
   import Notifications from "./components/Notifications.svelte"
 
   setClient(client)
@@ -13,13 +15,21 @@
 <Header />
 <div>
   <Router {routes} />
+  <Notifications />
 </div>
-<Notifications />
+<Footer />
 
 <style>
   div {
     display: flex;
     flex-direction: column;
     align-items: center;
+    flex-grow: 1;
+  }
+
+  :global(body) {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
   }
 </style>
