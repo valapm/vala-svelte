@@ -19,6 +19,7 @@
     query {
       oracle(where: {pubKey: {_eq: "${$rabinPubKey}"}}) {
         pubKey
+        iconType
         hasCorrectDNS
         oracle_state {
           state {

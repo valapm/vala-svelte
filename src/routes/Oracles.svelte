@@ -15,6 +15,7 @@
           domain
           details
         }
+        iconType
         oracle_state {
           state {
             transaction {

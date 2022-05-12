@@ -1,11 +1,13 @@
 <script>
+  import { seed } from "../store/wallet"
+
   import Logo from "../icons/Logo.svelte"
   import LogoText from "../icons/LogoText.svelte"
 
   export let greyscale = false
 </script>
 
-<a href="#/" class="logo {greyscale ? 'grey' : ''}">
+<a href={$seed ? "#/markets" : "#/"} class="logo {greyscale ? 'grey' : ''}">
   <Logo />
   <LogoText />
 </a>

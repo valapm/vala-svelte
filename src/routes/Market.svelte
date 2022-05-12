@@ -95,6 +95,7 @@
         liquidityFee
         creatorFee
         oracle {
+          iconType
           pubKey
           oracleStateByCurrentstateid {
             details

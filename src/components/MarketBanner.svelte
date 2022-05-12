@@ -2,6 +2,9 @@
   import { pm, lmsr } from "bitcoin-predict"
   import { price } from "../store/price"
   import { round, formatUSD } from "../utils/format"
+  import { parseHostname } from "../utils/url"
+
+  import OracleIcon from "./OracleIcon.svelte"
 
   export let market
 
@@ -14,12 +17,19 @@
     (lmsr.getLmsrSats({ liquidity: market.market_state.liquidity, shares: market.market_state.shares }) * $price) /
     100000000
   // $: totalVolume = (market.market_state.totalSatVolume * $price) / 100000000
+
+  $: oracleHostname = parseHostname(market.oracle.oracleStateByCurrentstateid.domain)
 </script>
 
 <div id="banner">
   <div>
     <h2>Oracle</h2>
-    <div>{market.oracle.oracleStateByCurrentstateid.domain}</div>
+    <div class="oracle">
+      {#if market.oracle.iconType}
+        <OracleIcon oracle={market.oracle} />
+      {/if}
+      {oracleHostname}
+    </div>
   </div>
   <div>
     <h2>Total Invested</h2>
@@ -57,7 +67,19 @@
     flex-grow: 1;
   }
 
+  #banner > div > div {
+    height: 1.3rem;
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+    height: 1.5rem;
+  }
+
   #banner > div + div {
     border-left: 1px solid rgba(255, 255, 255, 0.5);
+  }
+
+  .oracle :global(img) {
+    height: 2rem;
   }
 </style>

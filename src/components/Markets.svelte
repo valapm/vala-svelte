@@ -81,6 +81,7 @@
           market_oracles {
             committed
             oracle {
+              iconType
               oracleStateByCurrentstateid {
                 domain
               }

@@ -10,8 +10,7 @@ export function isValidUrl(string) {
 
 export function parseHostname(string) {
   // Make sure that url has scheme
-  const parts = string.split("://")
-  const url = parts.length > 1 ? parts.join("://") : "https://" + parts[0]
-
-  return new URL(url).hostname
+  const domainNameRegex = /(?:www\.)?(?<url>\w+(?:\.\w+)+)/gm
+  const matches = domainNameRegex.exec(string)
+  return matches.groups.url
 }

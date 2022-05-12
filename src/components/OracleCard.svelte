@@ -5,14 +5,13 @@
   import { fade } from "svelte/transition"
 
   import Property from "./Property.svelte"
+  import OracleIcon from "./OracleIcon.svelte"
 
   export let oracle
   export let large = false
   export let button = false
 
   const dispatch = createEventDispatcher()
-
-  let icon
 
   $: hostname = parseHostname(oracle.oracleStateByCurrentstateid.domain)
   $: joined = large ? new Date(oracle.oracle_state.state.transaction.processedAt + "Z") : undefined
@@ -21,13 +20,10 @@
 <div id="oracle_card" on:click={() => dispatch("click")} class={button ? "button" : ""} in:fade>
   <div class="header">
     <div id="title">
-      <img
-        src="{backendHost}/static/{hostname}.ico"
-        alt="icon"
-        bind:this={icon}
-        on:error={() => (icon.style.display = "none")}
-      />
-      <h2>{oracle.oracleStateByCurrentstateid.domain}</h2>
+      {#if oracle.iconType}
+        <OracleIcon {oracle} />
+      {/if}
+      <h2>{hostname}</h2>
     </div>
     <div class="properties">
       <Property label="Open Markets">{oracle.num_open_markets.aggregate.count}</Property>
@@ -85,10 +81,6 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-  }
-
-  .header img {
-    height: 2.75rem;
   }
 
   h2 {

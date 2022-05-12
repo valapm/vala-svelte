@@ -6,10 +6,12 @@
   import { getCreationDate } from "../utils/pm"
   // import { navigateTo } from 'svelte-spa-router'
   import { formatUSD } from "../utils/format"
+  import { parseHostname } from "../utils/url"
 
   import CardOption from "./CardOption.svelte"
   import MarketStatus from "./MarketStatus.svelte"
   import Tag from "./Tag.svelte"
+  import OracleIcon from "./OracleIcon.svelte"
 
   export let market
 
@@ -61,12 +63,14 @@
   function round(n) {
     return Math.round(n * 100) / 100
   }
+
+  $: oracleHostname = parseHostname(market.market_state.market_oracles[0].oracle.oracleStateByCurrentstateid.domain)
 </script>
 
 <a class="market" href="#/market/{txid}">
   <div class="header">
     <div class="tags">
-      <Tag name="Other" />
+      <!-- <Tag name="Other" /> -->
     </div>
     <MarketStatus {status} />
   </div>
@@ -85,8 +89,16 @@
       {/each}
     </div>
     <div class="footer">
-      <label for="volume">Market Cap</label>
-      <div id="volume">{formatUSD(usdTotal, true)}</div>
+      <div>
+        <label for="volume">Market Cap</label>
+        <div id="volume">{formatUSD(usdTotal, true)}</div>
+      </div>
+      <div class="oracle">
+        {#if market.market_state.market_oracles[0].oracle.iconType}
+          <OracleIcon oracle={market.market_state.market_oracles[0].oracle} />
+        {/if}
+        {oracleHostname}
+      </div>
     </div>
   </div>
 </a>
@@ -136,16 +148,31 @@
     display: flex;
     align-items: center;
     gap: 0.25rem;
+    justify-content: space-between;
+    height: 1rem;
+  }
+
+  .footer > div {
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
   }
 
   label {
     font-size: 0.75rem;
-    opacity: 25%;
+    opacity: 50%;
   }
 
   #volume {
     font-family: "Roboto Mono", sans-serif;
     font-size: 0.75rem;
-    opacity: 50%;
+  }
+
+  .oracle {
+    font-size: 0.75rem;
+  }
+
+  .oracle :global(img) {
+    height: 1.7rem;
   }
 </style>

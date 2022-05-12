@@ -21,6 +21,7 @@
             }
           }
         }
+        iconType
         oracleStateByCurrentstateid {
           details
           domain
