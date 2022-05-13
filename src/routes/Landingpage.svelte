@@ -22,9 +22,9 @@
 <main>
   <div class="header">
     <div class="title">
-      <h1>Bitcoin's First <br />Peer to Peer <br />Prediction Markets</h1>
+      <h1>Bitcoin's First <br />Peer to Peer <br />Prediction Market <br />Platform</h1>
 
-      <p>Bet on anything you can imagine using Bitcoin SV.</p>
+      <!-- <p>Making Information tradable</p> -->
       <WaitlistSignup />
     </div>
     <LandingpageLogo />
