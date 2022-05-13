@@ -69,7 +69,7 @@
 </SubHeader>
 
 {#if !loading}
-  {#if oracle && oracle.oracleStateByCurrentstateid && oracle.oracleStateByCurrentstateid.domain}
+  {#if oracle && oracle.oracleStateByCurrentstateid && oracle.oracleStateByCurrentstateid.domain && oracle.hasCorrectDNS}
     {#if selected === 0}
       <OracleOverview {oracle} />
     {:else if selected === 2}

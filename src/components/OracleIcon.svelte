@@ -25,7 +25,7 @@
   }
 
   .image {
-    border-radius: 10rem;
+    border-radius: 0.375rem;
     overflow: hidden;
     max-width: 3rem;
     max-height: 3rem;

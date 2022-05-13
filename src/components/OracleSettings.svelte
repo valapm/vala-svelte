@@ -188,6 +188,7 @@
     const newCurrentOracleState = {
       details,
       domain: domainName,
+      hasCorrectDNS: false,
       state: {
         transaction: {
           hex: newTx.uncheckedSerialize()
@@ -197,7 +198,16 @@
     }
 
     if (oracle) {
+      const newDate = new Date(Date.now()).toISOString()
+
       oracle.oracleStateByCurrentstateid = newCurrentOracleState
+      oracle.oracle_state = {
+        state: {
+          transaction: {
+            processedAt: newDate.slice(0, newDate.length - 1) // Remove the Z
+          }
+        }
+      }
     } else {
       oracle = { oracleStateByCurrentstateid: newCurrentOracleState }
     }
