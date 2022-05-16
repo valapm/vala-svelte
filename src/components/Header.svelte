@@ -74,7 +74,7 @@
         <DropdownMenu {isOracle} />
       {:else}
         <a href="#/login"><Button>Sign in</Button></a>
-        <a href="#/register"><Button type="filled">Sign up</Button></a>
+        <!-- <a href="#/register"><Button type="filled">Sign up</Button></a> -->
       {/if}
     </div>
   </div>

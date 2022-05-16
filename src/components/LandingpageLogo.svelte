@@ -58,13 +58,19 @@
 
   #vector1 {
     transform: translate(-70%, 70%);
+    filter: drop-shadow(0px 0px 0.5rem #00ffc2);
+    /* box-shadow: 0px 0px 0.5rem #00ffc270; */
   }
 
   #vector2 {
     transform: translate(70%, 70%);
+    filter: drop-shadow(0px 0px 0.5rem #00b2ff);
+    /* box-shadow: 0px 0px 0.5rem #00b2ff70; */
   }
 
   #vector3 {
     transform: translate(-70%, 10%);
+    filter: drop-shadow(0px 0px 0.5rem #00ffe3);
+    /* box-shadow: 0px 0px 0.5rem #00ffe370; */
   }
 </style>

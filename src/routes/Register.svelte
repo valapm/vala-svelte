@@ -26,8 +26,6 @@
   let password = ""
   let password2 = ""
 
-  $: isValidEmail = email && EMAIL_REGEX.test(email)
-
   let generatedSeed = null
   $: publicKey = generatedSeed ? generatedSeed.toHDPrivateKey("livenet").deriveChild(derivationPath).publicKey : null
 
@@ -40,12 +38,19 @@
   }
 
   async function generateSeed() {
-    if (password !== password2) {
-      error = { title: "Passwords do not match" }
+    const isValidEmail = email && EMAIL_REGEX.test(email)
+    if (!isValidEmail) {
       notify({
         type: "danger",
-        text: error.title,
-        description: error.details || ""
+        text: "Please enter a valid email address"
+      })
+      return
+    }
+
+    if (password !== password2) {
+      notify({
+        type: "danger",
+        text: "Passwords do not match"
       })
       return
     }
@@ -140,7 +145,7 @@
         {/each}
       {/if}
     </div>
-    <p class="warning-message">If you loose your password, you will loose access to your wallet!</p>
+    <p class="warning-message">If you lose your password, you will lose access to your wallet!</p>
     <Button type="filled" on:click={() => register(email, password)} {loading}>Finish Registration</Button>
   </div>
 </Modal>
@@ -159,21 +164,21 @@
   </div>
 
   <div class="checkboxes">
-    <div class="checkbox">
-      <Checkbox bind:value={checked1} />
-      <p>I understand that Vala cannot recover my wallet should I loose my password</p>
-    </div>
+    <button class="checkbox" on:click={() => (checked1 = !checked1)}>
+      <Checkbox bind:checked={checked1} />
+      <p>I understand that Vala cannot recover my wallet should I lose my password</p>
+    </button>
 
-    <div class="checkbox">
-      <Checkbox bind:value={checked2} />
+    <button class="checkbox" on:click={() => (checked2 = !checked2)}>
+      <Checkbox bind:checked={checked2} />
       <p>This password is <b>unique</b> and I have not used it on any other websites</p>
-    </div>
+    </button>
   </div>
 
   <div class="buttons">
     <Button
       type="filled full-width"
-      disabled={!isValidEmail || !password || !password2 || !checked1 || !checked2}
+      disabled={!email || !password || !password2 || !checked1 || !checked2}
       on:click={generateSeed}>Register</Button
     >
     <Button type="full-width" on:click={() => push("/login")}>Login</Button>
@@ -184,10 +189,7 @@
   .login {
     display: flex;
     flex-direction: column;
-    transform: translate(-50%, -50%);
-    position: absolute;
-    left: 50%;
-    top: 50%;
+    margin-top: 10rem;
     gap: 2rem;
     text-align: center;
     /* width: min(90%, 15rem); */
@@ -201,6 +203,10 @@
     flex-direction: column;
     gap: 1rem;
     width: 100%;
+  }
+
+  .checkbox {
+    cursor: pointer;
   }
 
   .inputs input {

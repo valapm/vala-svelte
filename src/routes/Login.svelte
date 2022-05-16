@@ -20,8 +20,6 @@
   let password = ""
   let loading = false
 
-  $: isValidEmail = email && EMAIL_REGEX.test(email)
-
   let error = {}
 
   function initAuth() {
@@ -30,6 +28,17 @@
 
   async function login(email, password) {
     loading = true
+
+    const isValidEmail = email && EMAIL_REGEX.test(email)
+    if (!isValidEmail) {
+      notify({
+        type: "danger",
+        text: "Please enter a valid email address"
+      })
+      loading = false
+      return
+    }
+
     let savedSeed
     let verified
     try {
@@ -98,7 +107,7 @@
   function handleKeydown(event) {
     if (event.keyCode === 13) {
       event.preventDefault()
-      if (isValidEmail && password) {
+      if (email && password) {
         login(email, password)
       }
     }
@@ -124,11 +133,8 @@
   </div>
 
   <div class="buttons">
-    <Button
-      type="filled full-width"
-      on:click={() => login(email, password)}
-      disabled={!isValidEmail || !password}
-      {loading}>Login</Button
+    <Button type="filled full-width" on:click={() => login(email, password)} disabled={!email || !password} {loading}
+      >Login</Button
     >
     <Button type="full-width" on:click={() => push("/register")}>Create a new account</Button>
   </div>
@@ -138,10 +144,7 @@
   .login {
     display: flex;
     flex-direction: column;
-    transform: translate(-50%, -50%);
-    position: absolute;
-    left: 50%;
-    top: 50%;
+    margin-top: 10rem;
     gap: 2rem;
     text-align: center;
     /* width: min(90%, 15rem); */

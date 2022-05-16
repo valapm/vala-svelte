@@ -1,8 +1,8 @@
 <script>
-  export let value
+  export let checked
 </script>
 
-<input type="checkbox" bind:value />
+<input type="checkbox" bind:checked />
 
 <style>
   input[type="checkbox"] {
