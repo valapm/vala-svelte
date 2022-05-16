@@ -14,4 +14,4 @@ export const backendHost = testnet ? BACKEND_HOST_TESTNET : BACKEND_HOST
 export const graphqlHost = testnet ? GRAPHQL_HOST_TESTNET : GRAPHQL_HOST
 export const graphqlWsHost = testnet ? GRAPHQL_WS_HOST_TESTNET : GRAPHQL_WS_HOST
 
-export const feeb = testnet ? 0.6 : 0.05
+export const feeb = testnet ? 0.6 : 0.1
