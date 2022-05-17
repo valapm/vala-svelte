@@ -41,10 +41,10 @@
 
     const tx = new bsv.Transaction()
 
+    tx.from($utxos)
     tx.to(recipientAddress, satAmount)
     tx.feePerKb(feeb * 1000)
     tx.change($address)
-    tx.from($utxos)
     tx.sign($privateKey)
 
     console.log(tx)

@@ -43,8 +43,6 @@
   <div class="menu-main">
     <div class="menu-left">
       <Logo />
-
-      <div class="menu-center" />
     </div>
     <div class="menu-right">
       <a href="#/markets"
@@ -114,11 +112,10 @@
     height: 2rem;
   }
   .menu-left {
-    display: flex;
-    column-gap: 2rem;
-    row-gap: 1rem;
-    align-items: center;
-    flex-wrap: wrap;
+    height: 2.4rem;
+    overflow: hidden;
+    flex-shrink: 1;
+    min-width: 2.4rem;
   }
 
   .menu-center,

@@ -14,10 +14,11 @@
 
 <style>
   .logo {
-    flex-shrink: 0;
+    flex-wrap: wrap;
     display: flex;
     align-items: center;
     gap: 0.4rem;
+    justify-content: space-around;
   }
 
   .grey :global(svg path) {
@@ -30,6 +31,8 @@
 
   a :global(svg):first-child {
     height: 2.4rem;
+    /* width: 2.4rem; */
+    /* flex-shrink: 0; */
   }
 
   a :global(svg):nth-child(2) {

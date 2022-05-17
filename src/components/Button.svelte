@@ -34,6 +34,7 @@
   span {
     display: flex;
     flex-direction: column;
+    white-space: nowrap;
   }
 
   .filled,

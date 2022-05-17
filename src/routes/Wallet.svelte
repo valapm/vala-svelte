@@ -259,7 +259,9 @@
   }
 
   td:nth-of-type(4),
-  td:nth-of-type(5) {
+  td:nth-of-type(5),
+  th:nth-of-type(4),
+  th:nth-of-type(5) {
     text-align: right;
   }
   tbody tr {

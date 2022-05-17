@@ -42,6 +42,10 @@
 </div>
 
 <style>
+  svg {
+    max-width: 95%;
+  }
+
   #landingpage_logo {
     position: relative;
     margin-top: 3.125rem;
