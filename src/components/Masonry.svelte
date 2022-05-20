@@ -41,7 +41,7 @@
 <div class="masonry" bind:clientWidth={masonryWidth} bind:clientHeight={masonryHeight} style="gap: {gap}px;">
   {#if masonryWidth > 0}
     {#each cols as col, colIndex (colIndex)}
-      <div class="col" style="gap: {gap}px; max-width: {maxColWidth}px;" in:fade>
+      <div class="col" style="--max-width: {maxColWidth}px; gap: {gap}px;" in:fade>
         {#each sortedItems.filter(item => item.col === colIndex) as item (item.id)}
           <div in:receive|local={{ key: item.id }} out:send|local={{ key: item.id }} animate:flip>
             <slot {item} />
@@ -65,5 +65,10 @@
     display: grid;
     height: max-content;
     width: 100%;
+    max-width: var(--max-width);
+  }
+
+  .col > div {
+    max-width: var(--max-width);
   }
 </style>

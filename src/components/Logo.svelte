@@ -18,7 +18,7 @@
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    justify-content: space-around;
+    /* justify-content: space-around; */
   }
 
   .grey :global(svg path) {

@@ -106,7 +106,7 @@
 <style>
   .market {
     background-color: #1f2329;
-    width: 20.625rem;
+    width: min(20.625rem, 100%);
     border-radius: 0.5625rem;
     display: flex;
     flex-direction: column;

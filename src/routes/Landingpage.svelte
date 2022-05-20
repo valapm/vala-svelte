@@ -75,11 +75,19 @@
     align-items: center;
     gap: 10rem;
     width: min(65rem, 95%);
+    margin-top: 5rem;
   }
 
   h1 {
     font-size: 3.125rem;
     font-weight: bold;
+    z-index: 10;
+    white-space: normal;
+  }
+
+  h1,
+  .title > p {
+    text-shadow: 0 0 1rem #272c33, 0 0 1rem #272c33, 0 0 1rem #272c33, 0 0 1rem #272c33;
   }
 
   .header {
@@ -87,8 +95,8 @@
     display: flex;
     gap: 1rem;
     position: relative;
-    flex-wrap: wrap-reverse;
-    justify-content: center;
+    /* flex-wrap: wrap-reverse; */
+    justify-content: flex-end;
   }
 
   .title {
@@ -100,11 +108,17 @@
     gap: 3.375rem;
     flex-shrink: 0;
     white-space: nowrap;
+    margin-top: 6rem;
+    width: 95%;
+    position: absolute;
+    left: 2rem;
   }
 
   .title > p {
-    width: min(95%, 40rem);
     font-size: 1.2rem;
+    z-index: 10;
+    white-space: normal;
+    font-weight: 500;
   }
 
   .paragraphs {
@@ -159,5 +173,26 @@
     opacity: 70%;
     font-weight: 500;
     max-width: 44rem;
+  }
+
+  .how > p {
+    margin: 0 1rem;
+  }
+
+  @media screen and (max-width: 650px) {
+    .title {
+      text-align: center;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-top: 3rem;
+    }
+
+    .title :global(div) {
+      justify-content: center;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+    }
   }
 </style>

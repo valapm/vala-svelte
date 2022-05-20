@@ -43,14 +43,16 @@
 
 <style>
   svg {
-    max-width: 95%;
+    max-width: 100%;
+    height: auto;
   }
 
   #landingpage_logo {
-    position: relative;
-    margin-top: 3.125rem;
+    /* position: relative;
+    margin-top: 3.125rem; */
     width: 594.44px;
     height: 547.88px;
+    margin-right: 1.2rem;
   }
 
   #vector1,

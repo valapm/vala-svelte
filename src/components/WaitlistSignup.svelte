@@ -70,6 +70,8 @@
     display: flex;
     gap: 1rem;
     align-items: center;
+    z-index: 10;
+    flex-wrap: wrap;
   }
 
   p {
@@ -84,5 +86,10 @@
 
   input:focus {
     outline: none;
+  }
+
+  input,
+  .waitlist_input :global(button) {
+    box-shadow: 0 0 1rem #272c33, 0 0 1rem #272c33, 0 0 1rem #272c33, 0 0 1rem #272c33;
   }
 </style>

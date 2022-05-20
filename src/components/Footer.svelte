@@ -6,26 +6,39 @@
 </script>
 
 <footer>
-  <div class="logo">
-    <Logo greyscale={true} />
-  </div>
-  <div class="media_icons">
-    <a href="https://github.com/valapm"><Github /></a>
-    <a href="https://twitter.com/valamarkets"><Twitter /></a>
-    <a href="https://twetch.com/u/43"><Twetch /></a>
+  <div>
+    <div class="logo">
+      <Logo greyscale={true} />
+    </div>
+    <div class="media_icons">
+      <a href="https://github.com/valapm"><Github /></a>
+      <a href="https://twitter.com/valamarkets"><Twitter /></a>
+      <a href="https://twetch.com/u/43"><Twetch /></a>
+    </div>
   </div>
 </footer>
 
 <style>
   footer {
     height: 10rem;
-    padding: 3.125rem 12.5rem;
+    padding: 3.125rem 0;
     background-color: #1f2329;
-    display: flex;
-    justify-content: space-between;
     width: 100%;
     margin-top: 10rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  footer > div {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
+    width: min(65rem, 90%);
+  }
+
+  .logo {
+    height: 1.8rem;
+    overflow: hidden;
   }
 
   .logo :global(svg):first-child {

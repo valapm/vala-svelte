@@ -307,7 +307,7 @@
   #oracle {
     display: flex;
     gap: 6rem;
-    margin-top: 5.5rem;
+    margin-top: 5rem;
     flex-direction: column;
     align-items: center;
   }

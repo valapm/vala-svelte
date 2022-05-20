@@ -34,7 +34,11 @@
     oracle = oracleData.oracle[0]
     console.log(oracle)
   })
+
+  let width
 </script>
+
+<svelte:window bind:outerWidth={width} />
 
 {#if testnet}
   <div class="testnet-bar">Testnet</div>
@@ -45,17 +49,23 @@
       <Logo />
     </div>
     <div class="menu-right">
-      <a href="#/markets"
-        ><Button type="text" on:click={() => push("#/markets")} active={/\/market.*/gm.test($location)}>Markets</Button
-        ></a
-      >
-      <a href="#/oracles"
-        ><Button type="text" on:click={() => push("#/oracles")} active={/\/oracle.*/gm.test($location)}>Oracles</Button
-        ></a
-      >
-      <a href="#/faq"
-        ><Button type="text" on:click={() => push("#/faq")} active={/\/faq.*/gm.test($location)}>FAQ</Button></a
-      >
+      {#if width > 450}
+        <div class="menu">
+          <a href="#/markets"
+            ><Button type="text" on:click={() => push("#/markets")} active={/\/market.*/gm.test($location)}
+              >Markets</Button
+            ></a
+          >
+          <a href="#/oracles"
+            ><Button type="text" on:click={() => push("#/oracles")} active={/\/oracle.*/gm.test($location)}
+              >Oracles</Button
+            ></a
+          >
+          <a href="#/faq"
+            ><Button type="text" on:click={() => push("#/faq")} active={/\/faq.*/gm.test($location)}>FAQ</Button></a
+          >
+        </div>
+      {/if}
 
       {#if $seed}
         {#if isOracle}
@@ -76,6 +86,21 @@
       {/if}
     </div>
   </div>
+  {#if width < 450}
+    <div class="menu-mobile menu">
+      <a href="#/markets"
+        ><Button type="text" on:click={() => push("#/markets")} active={/\/market.*/gm.test($location)}>Markets</Button
+        ></a
+      >
+      <a href="#/oracles"
+        ><Button type="text" on:click={() => push("#/oracles")} active={/\/oracle.*/gm.test($location)}>Oracles</Button
+        ></a
+      >
+      <a href="#/faq"
+        ><Button type="text" on:click={() => push("#/faq")} active={/\/faq.*/gm.test($location)}>FAQ</Button></a
+      >
+    </div>
+  {/if}
 </nav>
 
 <style>
@@ -92,7 +117,7 @@
   }
 
   nav {
-    height: 6.25rem;
+    /* height: 6.25rem; */
     background-color: #1f2329;
     display: flex;
     flex-direction: column;
@@ -100,12 +125,13 @@
   }
 
   .menu-main {
-    width: min(65rem, 95%);
+    width: min(65rem, 90%);
     height: 100%;
     gap: 2rem;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
+    margin: 1.5rem 2rem;
   }
 
   .menu-main img {
@@ -118,11 +144,20 @@
     min-width: 2.4rem;
   }
 
-  .menu-center,
-  .menu-right {
+  .menu-mobile {
+    margin: 1rem 2rem;
+  }
+
+  .menu-right,
+  .menu {
     display: flex;
     gap: 2rem;
     align-items: center;
+  }
+
+  .menu-right {
+    /* flex-wrap: wrap-reverse; */
+    justify-content: flex-end;
   }
 
   .button {
@@ -136,15 +171,5 @@
 
   .button img {
     height: 1rem;
-  }
-
-  @media screen and (max-width: 650px) {
-    .menu-center {
-      top: 5rem;
-    }
-
-    nav {
-      margin-bottom: 5rem;
-    }
   }
 </style>
