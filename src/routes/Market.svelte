@@ -244,7 +244,7 @@
     } catch (e) {
       notify({
         type: "danger",
-        text: "Failed to updated market",
+        text: "Failed to update market",
         description: e.message
       })
       return false
