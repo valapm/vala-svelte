@@ -20,7 +20,7 @@
     "Liquidity"
   ]
 
-  const filterOptions = ["Live Markets", "Unconfirmed Markets", "Resolved Markets"]
+  let filterOptions = ["Live Markets", "Resolved Markets"]
 
   export let oracle = undefined
   export let pubKeyFilter = undefined
@@ -30,31 +30,40 @@
   let markets = []
   let search = ""
   let sort = 0
-  let filter = [0, 1, 2]
+  let filter = [0, 1]
   let direction = "desc"
 
-  const filterQueries = [
-    "market_state: {market_oracles: {committed: {_eq: true}}, decided: {_eq: false}}",
-    "market_state: {market_oracles: {committed: {_eq: false}}}",
-    "market_state: {decided: {_eq: true}}"
+  let filterQueries = [
+    "{market_state: {market_oracles: {committed: {_eq: true}}, decided: {_eq: false}}}",
+    "{market_state: {decided: {_eq: true}}}"
   ]
 
-  // $: filterQuery = filter.reduce((query, fIndex, index) => {
-  //   if (index === 0) return filterQueries[fIndex]
+  $: isCurrentOracle = oracle && $rabinPubKey && $rabinPubKey.toString() === oracle.pubKey
 
-  //   return query + `, _or: { ${filterQueries[fIndex]} }`
-  // }, "")
+  $: {
+    if (isCurrentOracle) {
+      filterOptions = [...filterOptions, "Unconfirmed Markets"]
+      filterQueries = [...filterQueries, "{market_state: {market_oracles: {committed: {_eq: false}}}}"]
+    }
+  }
 
-  $: filterQuery =
-    filter.length === 1
-      ? filterQueries[filter[0]]
-      : `_or: [ ${filter.map(fIndex => `{ ${filterQueries[fIndex]} }`).join(", ")} ]`
+  let filters = []
+  $: {
+    if (!isCurrentOracle) {
+      // Exclude unpublished marketes
+      filters = [...filters, "{market_state: {market_oracles: {committed: {_eq: true}}}}"]
+    }
 
-  $: fullFilterQuery = pubKeyFilter
-    ? `_and: [{${filterQuery}}, {market_state: {entries: {investorPubKey: {_eq: "${pubKeyFilter}"}}}}]`
-    : oracle
-    ? `_and: [{${filterQuery}}, {market_state: {market_oracles: {oraclePubKey: {_eq: "${oracle.pubKey}" }}}}]`
-    : filterQuery
+    if (pubKeyFilter) {
+      // Filter by investor pubKey
+      filters = [...filters, `{market_state: {entries: {investorPubKey: {_eq: "${pubKeyFilter}"}}}}`]
+    }
+
+    if (oracle) {
+      // Filter by oracle
+      filters = [...filters, `{oraclePubKey: {_eq: "${oracle.pubKey}" }}`]
+    }
+  }
 
   $: orderQueries = [
     `market_state: { liquidity: ${direction} }`,
@@ -62,21 +71,15 @@
     `market_state: { liquidity: ${direction} }`
   ]
 
-  // $: console.log(`Search ${filter.join(", ")} by ${sort}`)
-
-  $: isCurrentOracle = oracle && $rabinPubKey && $rabinPubKey.toString() === oracle.pubKey
-
-  let grid
-
   const versions = Object.keys(contracts.marketContracts)
 
   $: marketQuery = gql`
     {
       market(order_by: { ${
         orderQueries[sort]
-      } }, where: { resolve: {_ilike: "%${search}%"}, version: { _in: ${JSON.stringify(
-    versions
-  )}}, ${fullFilterQuery}}${limit ? ", limit: " + limit : ""}) {
+      } }, where: { resolve: {_ilike: "%${search}%"}, version: { _in: ${JSON.stringify(versions)}}, _or: [ ${filter
+    .map(fIndex => filterQueries[fIndex])
+    .join(", ")} ], _and: [${filters.join(", ")}]}${limit ? ", limit: " + limit : ""}) {
         market_state {
           market_oracles {
             committed
