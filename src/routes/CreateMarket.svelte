@@ -184,16 +184,32 @@
 
   {#if step === 0}
     <div class="content">
-      <input placeholder="Market Title" type="text" bind:value={resolve} />
-      <textarea placeholder="Details" label="Description" bind:value={details} />
+      <div class="setting">
+        <h2>Title</h2>
+        <p>What question does this market answer? E.g. "Who will win the 2024 US election?"</p>
+        <input placeholder="Market Question" type="text" bind:value={resolve} />
+      </div>
+
+      <div class="setting">
+        <h2>Details</h2>
+        <p>
+          Let people know more about your market. What exact conditions must be met for it to resolve? Is there a
+          deadline or special circumstances? These can not be changed later.
+        </p>
+        <textarea placeholder="Details" label="Description" bind:value={details} />
+      </div>
 
       <Button on:click={completeStep0} type="filled full-width" disabled={!canComplete0}>Next</Button>
     </div>
   {:else if step === 1}
     <div class="content">
+      <p>
+        Create the possible outcomes of your market for people to bet on and provide some details if necessary. Remember
+        to cover all possible scenarios!
+      </p>
       <div class="slider">
         <div>
-          <span>Number of Options</span>
+          <span>Number of possible Outcomes</span>
           <span class="count" style="font-weight: 700;">{numOptions}</span>
         </div>
         <Slider bind:value={numOptions} min="2" max="6" />
@@ -219,10 +235,15 @@
     <div class="content">
       <div class="setting">
         <h2>Market Fee</h2>
+        <p>A fee on every trade for you, send directly to your wallet</p>
         <PercentInput bind:value={creatorFee} placeholder="Fee for yourself" min="0" />
       </div>
       <div class="setting">
         <h2>Liquidity Fee</h2>
+        <p>
+          A fee on every trade for people providing liquidity to the market. Too high and people wont trade, too low and
+          the market will dry up. Generally, the more trades you expect the lower this fee can be.
+        </p>
         <PercentInput bind:value={liquidityFee} placeholder="Fee for liquidity providers" min="0" />
       </div>
 
@@ -340,5 +361,11 @@
     align-items: center;
     height: 1rem;
     gap: 0.5rem;
+    font-weight: 500;
+  }
+
+  p {
+    /* font-weight: 500; */
+    color: #ffffff70;
   }
 </style>
