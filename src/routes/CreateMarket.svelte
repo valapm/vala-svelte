@@ -14,6 +14,7 @@
   import { rabinPubKey } from "../store/oracle"
   import { notify } from "../store/notifications"
   import { onMount } from "svelte"
+  import { resolve, reset, details, options, creatorFee, liquidityFee } from "../store/createMarket"
 
   import Button from "../components/Button.svelte"
   import ProgressPoints from "../components/ProgressPoints.svelte"
@@ -21,12 +22,6 @@
   import PercentInput from "../components/PercentInput.svelte"
 
   const { fundTx, buildTx } = bp.transaction
-
-  let resolve
-  let details
-  let options = []
-  let creatorFee
-  let liquidityFee
 
   let step = 0
 
@@ -93,16 +88,17 @@
     }
 
     loading = false
+    reset()
 
     push(`#/market/${fundedTx.hash}`)
   }
 
-  $: canComplete0 = resolve && details
+  $: canComplete0 = $resolve && $details
   $: canComplete1 =
-    options.length >= 2 &&
-    !options.some(option => !option.name) &&
-    options.length <= bp.contracts.currentMarketContract.options.maxOptionCount
-  $: canComplete2 = creatorFee >= 0 && liquidityFee >= 0
+    $options.length >= 2 &&
+    !$options.some(option => !option.name) &&
+    $options.length <= bp.contracts.currentMarketContract.options.maxOptionCount
+  $: canComplete2 = $creatorFee >= 0 && $liquidityFee >= 0
   $: canCreateMarket = canComplete0 && canComplete1 && canComplete2
 
   const contract = bp.contracts.currentMarketContract
@@ -110,9 +106,9 @@
   $: market = canComplete2
     ? bp.pm.getNewMarket(
         {
-          resolve,
-          details,
-          options: options.map(option => {
+          resolve: $resolve,
+          details: $details,
+          options: $options.map(option => {
             return {
               name: option.name,
               details: option.details
@@ -129,8 +125,8 @@
           pubKey: $publicKey,
           payoutAddress: $address
         },
-        creatorFee,
-        liquidityFee,
+        $creatorFee,
+        $liquidityFee,
         100
       )
     : undefined
@@ -143,7 +139,7 @@
     if (canComplete0) {
       step = 1
     } else {
-      console.log(resolve, details, canComplete0, resolve || details)
+      console.log($resolve, $details, canComplete0, $resolve || $details)
       console.error("Can't complete step")
     }
   }
@@ -161,18 +157,24 @@
 
   let numOptions = 2
   $: {
-    if (options.length > numOptions) {
-      options = options.slice(0, numOptions)
-    } else if (options.length < numOptions) {
-      const diff = numOptions - options.length
+    if ($options.length > numOptions) {
+      $options = $options.slice(0, numOptions)
+    } else if ($options.length < numOptions) {
+      const diff = numOptions - $options.length
       for (let i = 0; i < diff; i++) {
-        options.push({
+        $options.push({
           name: "",
           details: ""
         })
       }
-      options = options
+      $options = $options
     }
+  }
+
+  function resetMarket() {
+    if (loading) return
+    step = 0
+    reset()
   }
 </script>
 
@@ -187,16 +189,16 @@
       <div class="setting">
         <h2>Title</h2>
         <p>What question does this market answer? E.g. "Who will win the 2024 US election?"</p>
-        <input placeholder="Market Question" type="text" bind:value={resolve} />
+        <input placeholder="Market Question" type="text" bind:value={$resolve} />
       </div>
 
       <div class="setting">
         <h2>Details</h2>
         <p>
-          Let people know more about your market. What exact conditions must be met for it to resolve? Is there a
+          Let people know more about your market. What exact conditions must be met for it to $resolve? Is there a
           deadline or special circumstances? These can not be changed later.
         </p>
-        <textarea placeholder="Details" label="Description" bind:value={details} />
+        <textarea placeholder="Details" label="Description" bind:value={$details} />
       </div>
 
       <Button on:click={completeStep0} type="filled full-width" disabled={!canComplete0}>Next</Button>
@@ -217,7 +219,7 @@
     </div>
 
     <div class="options">
-      {#each options as option, index}
+      {#each $options as option, index}
         <div class="option-card">
           <input type="text" bind:value={option.name} placeholder="Title" />
           <textarea name="details" rows="4" bind:value={option.details} placeholder="Details" />
@@ -236,7 +238,7 @@
       <div class="setting">
         <h2>Market Fee</h2>
         <p>A fee on every trade for you, send directly to your wallet</p>
-        <PercentInput bind:value={creatorFee} placeholder="Fee for yourself" min="0" />
+        <PercentInput bind:value={$creatorFee} placeholder="Fee for yourself" min="0" />
       </div>
       <div class="setting">
         <h2>Liquidity Fee</h2>
@@ -244,7 +246,7 @@
           A fee on every trade for people providing liquidity to the market. Too high and people wont trade, too low and
           the market will dry up. Generally, the more trades you expect the lower this fee can be.
         </p>
-        <PercentInput bind:value={liquidityFee} placeholder="Fee for liquidity providers" min="0" />
+        <PercentInput bind:value={$liquidityFee} placeholder="Fee for liquidity providers" min="0" />
       </div>
 
       <div class="buttons">
@@ -253,6 +255,7 @@
       </div>
     </div>
   {/if}
+  <button class="reset" on:click={resetMarket}>Reset</button>
 </main>
 
 <style>
@@ -366,6 +369,12 @@
 
   p {
     /* font-weight: 500; */
+    color: #ffffff70;
+  }
+
+  .reset {
+    font-style: italic;
+    text-decoration: underline;
     color: #ffffff70;
   }
 </style>
