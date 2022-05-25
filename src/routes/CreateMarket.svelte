@@ -135,11 +135,6 @@
       )
     : undefined
 
-  $: cost =
-    Math.round(
-      (100 * ((bp.transaction.getDust(contract.length, feeb) + contract.length * feeb) * $price)) / 100000000
-    ) / 100
-
   $: console.log(market)
 
   const titles = ["Creat new Market", "Add Market Options", "Set Market Fees"]
@@ -233,9 +228,7 @@
 
       <div class="buttons">
         <Button on:click={stepBack}>Back</Button>
-        <Button on:click={postMarket} type="filled" {loading} disabled={!canCreateMarket}
-          >Create Market <b>${cost}</b></Button
-        >
+        <Button on:click={postMarket} type="filled" {loading} disabled={!canCreateMarket}>Create Market</Button>
       </div>
     </div>
   {/if}

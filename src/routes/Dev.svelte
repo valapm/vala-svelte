@@ -16,7 +16,7 @@
     loading = true
 
     const script = bsv.Script.fromASM(indexContract.asm)
-    const dust = transaction.getDust(script.toHex().length / 2)
+    const dust = 1
     const output = new bsv.Transaction.Output({
       script,
       satoshis: dust
