@@ -1,4 +1,4 @@
-import { split, HttpLink, InMemoryCache, ApolloClient } from "@apollo/client/core"
+import { split, HttpLink, InMemoryCache, ApolloClient, DefaultOptions } from "@apollo/client/core"
 import { getMainDefinition } from "@apollo/client/utilities"
 import { WebSocketLink } from "@apollo/client/link/ws"
 
@@ -26,9 +26,22 @@ function createApolloClient() {
 
   const cache = new InMemoryCache()
 
+  // Disable cache for queries
+  const defaultOptions: DefaultOptions = {
+    watchQuery: {
+      fetchPolicy: "no-cache",
+      errorPolicy: "ignore"
+    },
+    query: {
+      fetchPolicy: "no-cache",
+      errorPolicy: "all"
+    }
+  }
+
   const client = new ApolloClient({
     link,
-    cache
+    cache,
+    defaultOptions
   })
 
   return client
