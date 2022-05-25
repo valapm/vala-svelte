@@ -48,6 +48,7 @@ export let address = derived(
   null
 )
 
+let resetOutputs = true
 export let fetchedUtxos = derived(
   address,
   ($address, set) => {
@@ -55,6 +56,14 @@ export let fetchedUtxos = derived(
     async function fetchUtxos() {
       if ($address) {
         const utxos = await fetchUTXOs($address.hashBuffer.toString("hex"), testnet)
+
+        if (resetOutputs) {
+          // Reset outputs on reload
+          outputs.update(outs => {
+            return {}
+          })
+          resetOutputs = false
+        }
 
         // Add new, not yet seen outputs to store
         outputs.update(outs => {
