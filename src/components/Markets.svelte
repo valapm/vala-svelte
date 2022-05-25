@@ -34,7 +34,7 @@
   let direction = "desc"
 
   const filterQueries = [
-    "market_state: {market_oracles: {committed: {_eq: true}}}",
+    "market_state: {market_oracles: {committed: {_eq: true}}, decided: {_eq: false}}",
     "market_state: {market_oracles: {committed: {_eq: false}}}",
     "market_state: {decided: {_eq: true}}"
   ]
@@ -113,7 +113,7 @@
   `
 
   $: marketRes = query(marketQuery)
-  $: console.log($marketRes, marketQuery)
+  // $: console.log($marketRes, marketQuery)
 
   // For debugging the masonry grid
   // $: if ($marketRes.data) markets = dummyMarkets.filter(e => Math.random() > 0.5)
