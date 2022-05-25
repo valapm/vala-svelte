@@ -21,7 +21,7 @@
 
       {#if !isOracle}
         <div />
-        <a href="#/oracle">Become an Oracle</a>
+        <a href="#/oracle" class="oracle">Become an Oracle</a>
       {/if}
     </div>
   </Dropdown>
@@ -65,5 +65,10 @@
     position: absolute;
     right: -2rem;
     top: 2rem;
+  }
+
+  .oracle {
+    color: #dca52a;
+    white-space: nowrap;
   }
 </style>
