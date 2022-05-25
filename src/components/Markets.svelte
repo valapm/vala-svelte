@@ -41,7 +41,7 @@
   $: isCurrentOracle = oracle && $rabinPubKey && $rabinPubKey.toString() === oracle.pubKey
 
   $: {
-    if (isCurrentOracle) {
+    if (isCurrentOracle || pubKeyFilter) {
       filterOptions = [...filterOptions, "Unconfirmed Markets"]
       filterQueries = [...filterQueries, "{market_state: {market_oracles: {committed: {_eq: false}}}}"]
     }
@@ -49,7 +49,7 @@
 
   let filters = []
   $: {
-    if (!isCurrentOracle) {
+    if (!isCurrentOracle && !pubKeyFilter) {
       // Exclude unpublished marketes
       filters = [...filters, "{market_state: {market_oracles: {committed: {_eq: true}}}}"]
     }
