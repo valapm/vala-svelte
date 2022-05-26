@@ -2,6 +2,7 @@
   import { contracts } from "bitcoin-predict"
   import { fade } from "svelte/transition"
   import { rabinPubKey } from "../store/oracle"
+  import { onMount } from "svelte"
 
   import { query } from "svelte-apollo"
   import { gql } from "@apollo/client/core"
@@ -39,13 +40,6 @@
   ]
 
   $: isCurrentOracle = oracle && $rabinPubKey && $rabinPubKey.toString() === oracle.pubKey
-
-  $: {
-    if (isCurrentOracle || pubKeyFilter) {
-      filterOptions = [...filterOptions, "Unconfirmed Markets"]
-      filterQueries = [...filterQueries, "{market_state: {market_oracles: {committed: {_eq: false}}}}"]
-    }
-  }
 
   let filters = []
   $: {
@@ -136,6 +130,14 @@
   // $: console.log("items markets", items)
 
   // const [send, receive] = crossfade({ duration: 300, fallback: fade })
+
+  onMount(() => {
+    if (isCurrentOracle || pubKeyFilter) {
+      filterOptions = [...filterOptions, "Unconfirmed Markets"]
+      filterQueries = [...filterQueries, "{market_state: {market_oracles: {committed: {_eq: false}}}}"]
+      filter = [0, 1, 2]
+    }
+  })
 </script>
 
 <div class="markets">
