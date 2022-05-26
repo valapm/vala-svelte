@@ -29,6 +29,14 @@
   let error
 
   async function postMarket() {
+    if ($creatorFee < 0 || $liquidityFee < 0 || $creatorFee + $liquidityFee > 100) {
+      notify({
+        type: "danger",
+        text: "Market fees outside of valid range"
+      })
+      return
+    }
+
     loading = true
 
     const valaIndexRes = await gqlClient.request(gql`
@@ -238,7 +246,7 @@
       <div class="setting">
         <h2>Market Fee</h2>
         <p>A fee on every trade for you, send directly to your wallet</p>
-        <PercentInput bind:value={$creatorFee} placeholder="Fee for yourself" min="0" />
+        <PercentInput bind:value={$creatorFee} placeholder="Fee for yourself" min="0" max="100" />
       </div>
       <div class="setting">
         <h2>Liquidity Fee</h2>
@@ -246,7 +254,7 @@
           A fee on every trade for people providing liquidity to the market. Too high and people wont trade, too low and
           the market will dry up. Generally, the more trades you expect the lower this fee can be.
         </p>
-        <PercentInput bind:value={$liquidityFee} placeholder="Fee for liquidity providers" min="0" />
+        <PercentInput bind:value={$liquidityFee} placeholder="Fee for liquidity providers" min="0" max="100" />
       </div>
 
       <div class="buttons">
