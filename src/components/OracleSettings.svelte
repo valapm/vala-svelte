@@ -115,7 +115,16 @@
     prevTx.fromString(valaState.transaction.hex)
 
     const newTx = bp.transaction.getNewOracleTx($rabinPubKey, prevTx, 0, feeb)
-    bp.transaction.fundTx(newTx, $privateKey, $address, $utxos)
+    try {
+      bp.transaction.fundTx(newTx, $privateKey, $address, $utxos)
+    } catch (e) {
+      notify({
+        type: "danger",
+        text: "Insufficient funds"
+      })
+      loading = false
+      throw new Error(e)
+    }
 
     return newTx
   }
@@ -209,7 +218,7 @@
         }
       }
     } else {
-      oracle = { oracleStateByCurrentstateid: newCurrentOracleState }
+      oracle = { oracleStateByCurrentstateid: newCurrentOracleState, pubKey: $rabinPubKey.toString() }
     }
 
     loading = false
