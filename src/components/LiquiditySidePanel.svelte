@@ -89,7 +89,9 @@
   <div class="panel">
     <h2>Liquidity</h2>
 
-    <div class="description">Earn fees as a liquidity provider</div>
+    <div class="description">
+      Earn fees as a liquidity provider. <br />Reward Pool: <b>{market.liquidityFee}%</b> of trading profits
+    </div>
 
     {#if !market.market_state.decided}
       <SidePanelCard
