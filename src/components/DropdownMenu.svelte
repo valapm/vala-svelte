@@ -15,7 +15,7 @@
         <img src="/icons/gear.svg" alt="" />
         Settings</a
       >
-      <a href="#/faq"> <img src="/icons/questionmark.svg" alt="" />FAQ</a>
+      <a href="https://docs.vala.ai/"> <img src="/icons/questionmark.svg" alt="" />FAQ</a>
       <a href="#/contact"> <img src="/icons/speechbubble.svg" alt="" />Contact</a>
       <a href="#/logout"> <img src="/icons/logout.svg" alt="" />Logout</a>
 

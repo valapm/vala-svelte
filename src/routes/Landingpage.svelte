@@ -64,7 +64,7 @@
         <p>Earn Bitcoin for providing liquidity to running markets.</p>
       </div>
     </div>
-    <Button type="filled" on:click={() => push("/faq")}>Read the FAQ</Button>
+    <Button type="filled" on:click={() => window.open("https://docs.vala.ai/")}>Read the FAQ</Button>
   </div>
 </main>
 

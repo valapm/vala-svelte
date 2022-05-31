@@ -61,8 +61,8 @@
               >Oracles</Button
             ></a
           >
-          <a href="#/faq"
-            ><Button type="text" on:click={() => push("#/faq")} active={/\/faq.*/gm.test($location)}>FAQ</Button></a
+          <a href="https://docs.vala.ai/"
+            ><Button type="text" on:click={() => window.open("https://docs.vala.ai/")}>FAQ</Button></a
           >
         </div>
       {/if}
@@ -96,8 +96,8 @@
         ><Button type="text" on:click={() => push("#/oracles")} active={/\/oracle.*/gm.test($location)}>Oracles</Button
         ></a
       >
-      <a href="#/faq"
-        ><Button type="text" on:click={() => push("#/faq")} active={/\/faq.*/gm.test($location)}>FAQ</Button></a
+      <a href="https://docs.vala.ai/"
+        ><Button type="text" on:click={() => window.open("https://docs.vala.ai/")}>FAQ</Button></a
       >
     </div>
   {/if}
