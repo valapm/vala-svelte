@@ -101,7 +101,7 @@
             details
             domain
           }
-          num_open_markets: market_oracles_aggregate(where: {market_state: {state: {_not: {states: {}}}, decided: {_eq: false}}}) {
+          num_open_markets: market_oracles_aggregate(where: {market_state: {market_oracles: {committed: {_eq: true}}, state: {_not: {states: {}}}, decided: {_eq: false}}}) {
             aggregate {
               count
             }
