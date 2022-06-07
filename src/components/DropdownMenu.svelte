@@ -1,9 +1,16 @@
 <script>
   import Dropdown from "./Dropdown.svelte"
+  import ContactModal from "./ContactModal.svelte"
 
   export let isOracle
 
   let showMenu = false
+  let showContact = false
+
+  function openContact() {
+    showMenu = false
+    showContact = true
+  }
 </script>
 
 <div class="dropdown-menu">
@@ -16,7 +23,7 @@
         Settings</a
       >
       <a href="https://docs.vala.ai/"> <img src="/icons/questionmark.svg" alt="" />FAQ</a>
-      <a href="#/contact"> <img src="/icons/speechbubble.svg" alt="" />Contact</a>
+      <button on:click={openContact}> <img src="/icons/speechbubble.svg" alt="" />Contact</button>
       <a href="#/logout"> <img src="/icons/logout.svg" alt="" />Logout</a>
 
       {#if !isOracle}
@@ -26,6 +33,8 @@
     </div>
   </Dropdown>
 </div>
+
+<ContactModal bind:show={showContact} />
 
 <style>
   .dropdown-menu {
@@ -43,7 +52,8 @@
     opacity: 100%;
   }
 
-  a {
+  a,
+  button {
     display: flex;
     align-items: center;
     gap: 0.6875rem;
