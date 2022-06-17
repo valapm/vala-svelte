@@ -17,7 +17,7 @@ async function getPrice(): Promise<number> {
 
   if (!snapshot) throw new Error("Failed to fetch price")
 
-  return snapshot.blockchair || snapshot.okex
+  return snapshot.okex || snapshot.blockchair
 }
 
 export const price: AsyncReadable<number> = asyncReadable({
