@@ -38,7 +38,7 @@
     liquidity: market.market_state.liquidity
   }
 
-  $: change = market.market_state.decided ? -entry.liquidity : amount ? (action === 0 ? amount : -amount) : 0
+  $: change = market.market_state.decided ? entry ? -entry.liquidity : amount ? (action === 0 ? amount : -amount) : 0 : 0
 
   $: liquidityBalance =
     lmsr.getLmsrSats(marketBalance) -
@@ -70,7 +70,7 @@
 
   $: console.log("entry", entry)
 
-  $: redeemAllSats = market.market_state.decided
+  $: redeemAllSats = market.market_state.decided && entry
     ? earnings -
       lmsr.getLmsrSats({
         liquidity: marketBalance.liquidity - entry.liquidity,
