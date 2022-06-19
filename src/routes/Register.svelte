@@ -72,6 +72,10 @@
         error = {
           title: "Must be a valid Email"
         }
+      } else if (e.message === "Email not on waitlist") {
+        error = {
+          title: "Email not on waitlist"
+        }
       } else {
         error = unspecificErrorMessage
       }
