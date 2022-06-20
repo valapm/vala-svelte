@@ -21,7 +21,7 @@
   import Slider from "../components/Slider.svelte"
   import PercentInput from "../components/PercentInput.svelte"
 
-  const { fundTx, buildTx } = bp.transaction
+  const { fundTx } = bp.transaction
 
   let step = 0
 
@@ -56,7 +56,7 @@
 
     let tx
     try {
-      tx = bp.transaction.getNewMarketTx(market, valaIndexTx, valaIndex.outputIndex, feeb)
+      tx = bp.transaction.getMarketCreationTx(market, valaIndexTx, valaIndex.outputIndex, feeb)
     } catch (e) {
       console.error(e)
       notify({
