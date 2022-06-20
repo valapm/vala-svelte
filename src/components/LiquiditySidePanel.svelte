@@ -38,7 +38,7 @@
     liquidity: market.market_state.liquidity
   }
 
-  $: change = market.market_state.decided ? entry ? -entry.liquidity : amount ? (action === 0 ? amount : -amount) : 0 : 0
+  $: change = market.market_state.decided && entry ? -entry.liquidity : amount ? (action === 0 ? amount : -amount) : 0
 
   $: liquidityBalance =
     lmsr.getLmsrSats(marketBalance) -
@@ -70,16 +70,19 @@
 
   $: console.log("entry", entry)
 
-  $: redeemAllSats = market.market_state.decided && entry
-    ? earnings -
-      lmsr.getLmsrSats({
-        liquidity: marketBalance.liquidity - entry.liquidity,
-        shares: marketBalance.shares.map((s, i) => s - entry.shares[i])
-      }) +
-      lmsr.getLmsrSats(marketBalance)
-    : 0
+  $: redeemAllSats =
+    market.market_state.decided && entry
+      ? earnings -
+        lmsr.getLmsrSats({
+          liquidity: marketBalance.liquidity - entry.liquidity,
+          shares: marketBalance.shares.map((s, i) => s - entry.shares[i])
+        }) +
+        lmsr.getLmsrSats(marketBalance)
+      : 0
 
   $: redeemAllUSD = (redeemAllSats * $bsvPrice) / 100000000
+
+  $: console.log({ insideLimits, canBuySell, action, change, $satBalance, amount })
 
   let liquidityPanelOpened = false
   let rewardsPanelOpened = false
