@@ -4,6 +4,7 @@
   import { testnet, feeb } from "../config"
   import { price } from "../store/price"
   import { broadcast, getUtxos } from "../utils/transaction"
+  import { postTx } from "../utils/api"
   import { notify } from "../store/notifications"
   import { updateOutputs } from "../store/wallet"
 
@@ -50,7 +51,7 @@
     console.log(tx)
     let success = false
     try {
-      const res = await broadcast(tx, testnet)
+      const res = await postTx(tx, testnet)
       console.log(res)
       success = true
 
