@@ -191,10 +191,16 @@
     const datasets = getDataSets(marketData.data)
 
     labels = marketData.data.market_state.map(market => market.stateCount)
-    const firstTimestamp = new Date(
-      (marketData.data.market_state[0].state.transaction.broadcastedAt ||
-        marketData.data.market_state[0].state.transaction.minerTimestamp) + "Z"
-    ).valueOf()
+    isMarketDecided = marketData.data.market_state[market_state.length-1].decided
+    const firstTimestamp = isMarketDecided ? 
+          new Date(
+          (marketData.data.market_state[market_state.length-1].state.transaction.broadcastedAt ||
+        marketData.data.market_state[market_state.length-1].state.transaction.minerTimestamp) + "Z"
+          ).valueOf()
+          : new Date(
+            (marketData.data.market_state[0].state.transaction.broadcastedAt ||
+            marketData.data.market_state[0].state.transaction.minerTimestamp) + "Z"
+            ).valueOf()
 
     chart = getChart(datasets, labels, firstTimestamp)
     console.log("Initialized chart")
