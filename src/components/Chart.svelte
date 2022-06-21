@@ -63,9 +63,14 @@
       liquidity: marketState.liquidity
     }
 
+    const date = new Date(
+      (marketState.state.transaction.broadcastedAt || marketState.state.transaction.minerTimestamp) + "Z"
+    )
+    const timestamp = date.valueOf()
+
     for (const [shareIndex, share] of marketState.shares.entries()) {
       chart.data.datasets[shareIndex].data.push({
-        x: new Date().valueOf(),
+        x: timestamp,
         y: lmsr.getProbability(balance, share)
       })
     }
@@ -107,7 +112,7 @@
         // console.log("Result", JSON.stringify(shareData))
 
         // Add current time to the end
-        if (stateIndex === data.market_state.length - 1) {
+        if (stateIndex === data.market_state.length - 1 && !market.market_state.decided) {
           shareData[shareIndex] = shareData[shareIndex].concat([
             {
               x: new Date().valueOf(),
