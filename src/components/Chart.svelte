@@ -33,7 +33,9 @@
   `
   const priceSubscription = gql`
     subscription {
-      market_state(where: { market: { marketStateByFirststateid: { state: {transactionTxid: {_eq: "${market.marketStateByFirststateid.state.transaction.txid}"}}}}, decided: {_eq: false}}, order_by: {stateCount: desc}, limit: 1) {
+      market_state(where: { market: { marketStateByFirststateid: { state: {transaction: {txid: {_eq: "${
+        market.marketStateByFirststateid.state.transaction.txid
+      }"}, broadcastedAt: {_gt: "${new Date().toISOString()}"}}}}}, decided: {_eq: false}}, order_by: {stateCount: desc}, limit: 1) {
         shares
         liquidity
         decided
@@ -52,8 +54,9 @@
   let chart
   let labels = []
 
-  $: if (chart && $marketDataSubscription.data) {
+  $: if (chart && $marketDataSubscription.data && $marketDataSubscription.data.market_state[0]) {
     const marketState = $marketDataSubscription.data.market_state[0]
+
     console.log("New price data:", marketState)
 
     chart.data.labels.push(marketState.stateCount)
