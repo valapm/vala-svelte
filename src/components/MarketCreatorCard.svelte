@@ -18,6 +18,7 @@
   export let market
 
   let selectOption = false
+  let settingsModal = false
   let selectedOption = market.market_state.shares.indexOf(Math.max(...market.market_state.shares))
 
   $: redeemInvalid =
@@ -51,12 +52,7 @@
   </Table>
   {#if !market.market_state.decided}
     {#if semverGte(marketVersion.version, "0.4.1")}
-      {#if !market.market_state.hidden}
-        <Button type="yellow full-width" on:click={() => dispatch("hide")} loading={loadingHide}>Hide Market</Button>
-      {:else}
-        <Button type="yellow full-width" on:click={() => dispatch("unhide")} loading={loadingHide}>Unhide Market</Button
-        >
-      {/if}
+      <Button type="full-width" on:click={() => (settingsModal = true)}>Settings</Button>
     {/if}
     <Button type="filled-blue full-width" on:click={() => (selectOption = true)} loading={loadingResolve}
       >Resolve Market</Button
@@ -84,6 +80,22 @@
         <Button type="filled-grey full-width" on:click={() => (selectOption = false)}>Cancel</Button>
         <Button type="filled-yellow full-width" on:click={resolve}>Resolve</Button>
       </div>
+    </div>
+  </Modal>
+
+  <Modal bind:open={settingsModal}>
+    <div class="modal">
+      <h1>Market Settings</h1>
+      {#if semverGte(marketVersion.version, "0.4.1")}
+        <p>
+          You can hide this market. This will only delist it from vala.ai but people will still be able to trade in it.
+        </p>
+        {#if !market.market_state.hidden}
+          <Button type="full-width" on:click={() => dispatch("hide")} loading={loadingHide}>Hide Market</Button>
+        {:else}
+          <Button type="full-width" on:click={() => dispatch("unhide")} loading={loadingHide}>Unhide Market</Button>
+        {/if}
+      {/if}
     </div>
   </Modal>
 </div>

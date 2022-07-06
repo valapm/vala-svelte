@@ -12,7 +12,7 @@ export function getMarketNotifications(market) {
       type: "warning",
       title: "Market is hidden",
       description:
-        "This market is hidden. There are no limits on trading but it will not appear on vala.ai unless you have the link or are already invested."
+        "This market is hidden. There are no limits on trading but it will not appear on vala.ai unless you have the link or already traded in the market."
     })
   }
 
