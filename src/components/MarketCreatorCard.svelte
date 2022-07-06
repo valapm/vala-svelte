@@ -2,7 +2,8 @@
   import { createEventDispatcher } from "svelte"
   import { price } from "../store/price"
   import { round } from "../utils/format"
-  import { lmsr } from "bitcoin-predict"
+  import { lmsr, pm } from "bitcoin-predict"
+  import semverGte from "semver/functions/gte"
 
   import Table from "./CardTable.svelte"
   import Modal from "../components/Modal.svelte"
@@ -11,7 +12,9 @@
 
   const dispatch = createEventDispatcher()
 
-  export let loading
+  export let loadingResolve
+  export let loadingHide
+  export let loadingRedeem
   export let market
 
   let selectOption = false
@@ -31,6 +34,8 @@
 
   $: redeemInvalidUSD = (redeemInvalidSats * $price) / 100000000
 
+  $: marketVersion = pm.getMarketVersion(market.version)
+
   function resolve() {
     selectOption = false
     dispatch("resolve", { option: selectedOption })
@@ -45,9 +50,19 @@
     </div>
   </Table>
   {#if !market.market_state.decided}
-    <Button type="filled-blue full-width" on:click={() => (selectOption = true)} {loading}>Resolve Market</Button>
+    {#if semverGte(marketVersion.version, "0.4.1")}
+      {#if !market.market_state.hidden}
+        <Button type="yellow full-width" on:click={() => dispatch("hide")} loading={loadingHide}>Hide Market</Button>
+      {:else}
+        <Button type="yellow full-width" on:click={() => dispatch("unhide")} loading={loadingHide}>Unhide Market</Button
+        >
+      {/if}
+    {/if}
+    <Button type="filled-blue full-width" on:click={() => (selectOption = true)} loading={loadingResolve}
+      >Resolve Market</Button
+    >
   {:else if redeemInvalidSats}
-    <Button type="filled-blue full-width" on:click={() => dispatch("redeemInvalid")} {loading}>
+    <Button type="filled-blue full-width" on:click={() => dispatch("redeemInvalid")} loading={loadingRedeem}>
       Redeem Invalid Shares ${Math.round(redeemInvalidUSD * 100) / 100}
     </Button>
   {/if}

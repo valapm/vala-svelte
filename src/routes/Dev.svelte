@@ -4,7 +4,7 @@
   import { bsv, transaction } from "bitcoin-predict"
   import { testnet, feeb } from "../config"
   import { broadcast } from "../utils/transaction"
-  import indexContract from "bitcoin-predict/scripts/935ec6b78a842b25fb12b353f8a204c7.json"
+  import indexContract from "bitcoin-predict/scripts/2af7dfaa7e799e28c7c31fc303dc915c.json"
   import { notify } from "../store/notifications"
   import { gql } from "graphql-request"
   import { gqlClient } from "../utils/graphql"

@@ -1,18 +1,12 @@
 <script lang="ts">
   import { lmsr, transaction as pmTx, pm, bsv } from "bitcoin-predict"
-  import { price } from "../store/price"
-  // import { gql } from "graphql-request"
-  // import { gqlClient } from "../utils/graphql"
-  import { onMount } from "svelte"
   import { publicKey, privateKey, address, seed } from "../store/wallet"
   import { utxos } from "../store/wallet"
   import { getTx } from "../apis/web"
   import { testnet, feeb } from "../config"
   import { getEntries, isCompatibleVersion } from "../utils/pm"
-  import { round } from "../utils/format"
-  import { getUtxos } from "../utils/transaction"
-  import { pop } from "svelte-spa-router"
   import { postTx } from "../utils/api"
+  import { getMarketNotifications } from "../utils/notifications"
   import { rabinPubKey, rabinPrivKey } from "../store/oracle"
   import { push } from "svelte-spa-router"
   import { notify } from "../store/notifications"
@@ -25,13 +19,7 @@
 
   import OracleCard from "../components/OracleCard.svelte"
   import Chart from "../components/Chart.svelte"
-  import OutcomeCard from "../components/OutcomeCard.svelte"
-  import PaymentModal from "../components/PaymentModal.svelte"
-  import MarketDetailsCard from "../components/MarketDetailsCard.svelte"
-  import MarketMenu from "../components/MarketMenu.svelte"
-  import RedeemModal from "../components/RedeemModal.svelte"
   import NotFound from "../components/NotFound.svelte"
-  import LiquidityCard from "../components/LiquidityCard.svelte"
   import SubHeader from "../components/SubHeader.svelte"
   import OptionPanel from "../components/OptionPanel.svelte"
   import MarketHeader from "../components/MarketHeader.svelte"
@@ -41,8 +29,8 @@
   import LiquiditySidePanel from "../components/LiquiditySidePanel.svelte"
   import Button from "../components/Button.svelte"
   import MarketDetailsPanel from "../components/MarketDetailsPanel.svelte"
-  import Table from "../components/CardTable.svelte"
   import MarketCreatorCard from "../components/MarketCreatorCard.svelte"
+  import MarketInfoBanner from "../components/MarketInfoBanner.svelte"
 
   export let params
 
@@ -71,6 +59,7 @@
         liquidity
         creatorSatEarnings
         id
+        hidden
         market_oracles {
           committed
         }
@@ -133,6 +122,7 @@
           decision
           shares
           liquidity
+          hidden
           ${$publicKey ? myEntryQuery : ""}
         }
         marketStateByFirststateid {
@@ -187,8 +177,14 @@
   const currentMarketState = subscribe(marketStateQuery)
   console.log($currentMarketState)
 
-  $: if (market && $currentMarketState.data) {
-    merge(market.market_state, $currentMarketState.data.market_state[0])
+  $: if ($currentMarketState.data) {
+    updateMarketState($currentMarketState.data.market_state[0])
+  }
+
+  function updateMarketState(newState) {
+    if (!market) return
+
+    merge(market.market_state, newState)
     market = market
   }
 
@@ -344,6 +340,28 @@
     redeemingInvalid = false
   }
 
+  let updatingSettings
+  async function updateSettings(settings: any) {
+    if (updating) return
+    updating = true
+    updatingSettings = true
+
+    console.log("Hiding market")
+
+    const currentTx = await getTx(market.market_state.state.transaction.txid)
+    const updateTx = await pmTx.getUpdateMarketSettingsTx(currentTx, settings, $privateKey, feeb)
+    pmTx.fundTx(updateTx, $privateKey, $address, $utxos, feeb)
+
+    const broadcasted = await broadcast(updateTx)
+
+    if (broadcasted) {
+      market.market_state.hidden = settings.hidden
+    }
+
+    updatingSettings = false
+    updating = false
+  }
+
   async function getCommitTx() {
     const currentTx = await getTx(market.market_state.state.transaction.txid)
     const updateTx = pmTx.getOracleCommitTx(
@@ -445,6 +463,8 @@
   }
 
   $: if (market && market.market_state.decided) openedPanels[market.market_state.decision] = true
+
+  $: notifications = market ? getMarketNotifications(market) : []
 </script>
 
 <SubHeader>
@@ -457,6 +477,10 @@
     loading...
   {:else if market}
     <div class="main-panel">
+      {#each notifications as notification}
+        <MarketInfoBanner {notification} />
+      {/each}
+
       <MarketHeader {market} />
 
       {#if !compatibleVersion}<div class="warning">Unsupported market version!</div>{/if}
@@ -518,7 +542,11 @@
               {market}
               on:resolve={e => resolve(e.detail.option)}
               on:redeemInvalid={redeemInvalid}
-              loading={resolving || redeemingInvalid}
+              on:hide={() => updateSettings({ hidden: true })}
+              on:unhide={() => updateSettings({ hidden: false })}
+              loadingResolve={resolving}
+              loadingRedeem={redeemingInvalid}
+              loadingHide={updatingSettings}
             />
           {/if}
         {/if}

@@ -1,4 +1,4 @@
-import { lmsr } from "bitcoin-predict"
+import { lmsr, contracts } from "bitcoin-predict"
 
 export function getSharePrice(balance: lmsr.balance, option: number, amount: number) {
   const newBalance =
@@ -15,7 +15,12 @@ export function getSharePrice(balance: lmsr.balance, option: number, amount: num
   return lmsr.lmsr(newBalance) * lmsr.SatScaling - lmsr.getLmsrSats(balance)
 }
 
-export function isInsideLimits(balance: lmsr.balance, option: number, amount: number) {
+export function isInsideLimits(
+  balance: lmsr.balance,
+  option: number,
+  amount: number,
+  version: contracts.marketVersion
+) {
   const newBalance =
     option === -1
       ? {
@@ -28,7 +33,7 @@ export function isInsideLimits(balance: lmsr.balance, option: number, amount: nu
         }
 
   try {
-    console.log(lmsr.getLmsrSatsFixed(newBalance))
+    console.log(lmsr.getLmsrSatsFixed(newBalance, version))
     return true
   } catch (e) {
     return false

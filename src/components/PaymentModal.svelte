@@ -55,7 +55,9 @@
   $: potentialAssetsUSD = ((amount * lmsr.SatScaling) / 100000000) * $bsvPrice || 0
   $: potentialWin = Math.abs(potentialAssetsUSD - usdPrice)
   $: potentialX = potentialAssetsUSD / usdPrice
-  $: insideLimits = isInsideLimits(marketBalance, option, change)
+
+  $: version = pm.getMarketVersion(market.version)
+  $: insideLimits = isInsideLimits(marketBalance, option, change, version)
 
   $: actionLabel = action === "buy" ? (option === -1 ? "Add" : "Buy") : option === -1 ? "Remove" : "Sell"
 </script>
@@ -131,7 +133,7 @@
             class="red"
             type="currency"
             currency="USD"
-            value={(marketVersion.devFee * usdPrice) / 100}
+            value={(marketVersion.options.devFee * usdPrice) / 100}
             locale="en-US"
           />
         </Property>

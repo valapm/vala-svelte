@@ -57,7 +57,9 @@
   $: potentialAssetsUSD = ((amount * lmsr.SatScaling) / 100000000) * $bsvPrice || 0
   $: potentialWin = potentialAssetsUSD ? potentialAssetsUSD - usdPrice : 0
   $: potentialX = potentialAssetsUSD ? potentialAssetsUSD / usdPrice : 0
-  $: insideLimits = isInsideLimits(marketBalance, option, change)
+
+  $: version = pm.getMarketVersion(market.version)
+  $: insideLimits = isInsideLimits(marketBalance, option, change, version)
   $: canBuySell = change !== 0 && (action === 0 ? price <= $satBalance : -change <= balance.shares[option])
 
   $: winning = market.market_state.decided && market.market_state.decision === option

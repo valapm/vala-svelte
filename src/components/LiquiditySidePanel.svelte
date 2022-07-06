@@ -2,7 +2,7 @@
   import { price as bsvPrice } from "../store/price"
   import { getSharePrice, isInsideLimits } from "../utils/lmsr"
   import { round, formatUSD } from "../utils/format"
-  import { lmsr } from "bitcoin-predict"
+  import { lmsr, pm } from "bitcoin-predict"
   import { satBalance } from "../store/wallet"
   import { feeb } from "../config"
   import { createEventDispatcher } from "svelte"
@@ -63,7 +63,8 @@
 
   $: earningUSD = earnings ? round((earnings / 100000000) * $bsvPrice) : 0
 
-  $: insideLimits = isInsideLimits(marketBalance, -1, change)
+  $: version = pm.getMarketVersion(market.version)
+  $: insideLimits = isInsideLimits(marketBalance, -1, change, version)
   $: canBuySell = change !== 0 && (action === 0 ? price <= $satBalance : entry && -change <= entry.liquidity)
 
   $: console.log("liquidityPoints", liquidityPoints)

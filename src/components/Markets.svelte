@@ -3,6 +3,7 @@
   import { fade } from "svelte/transition"
   import { rabinPubKey } from "../store/oracle"
   import { onMount } from "svelte"
+  import { publicKey } from "../store/wallet"
 
   import { query } from "svelte-apollo"
   import { gql } from "@apollo/client/core"
@@ -43,6 +44,18 @@
 
   let filters = []
   $: {
+    if (!isCurrentOracle) {
+      // Exclude hidden markets
+      if ($publicKey) {
+        filters = [
+          ...filters,
+          `{market_state: {_or: [{hidden: {_eq: false}}, {entries: {investorPubKey: {_eq: "${$publicKey.toString()}"}}}]}}`
+        ]
+      } else {
+        filters = [...filters, `{market_state: {hidden: {_eq: false}}}`]
+      }
+    }
+
     if (!isCurrentOracle && !pubKeyFilter) {
       // Exclude unpublished marketes
       filters = [...filters, "{market_state: {market_oracles: {committed: {_eq: true}}}}"]
