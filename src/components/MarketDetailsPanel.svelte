@@ -12,6 +12,8 @@
   }
 
   let tab = 0
+
+  $: console.log("market", market)
 </script>
 
 <div id="marketPanel">
@@ -64,6 +66,7 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    white-space: pre-wrap;
   }
 
   .version {

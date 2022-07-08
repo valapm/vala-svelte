@@ -1,6 +1,6 @@
 <script>
   export let step = 1
-  export let total = 3
+  export let total = 4
 </script>
 
 <div>

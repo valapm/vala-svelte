@@ -12,7 +12,7 @@
   import Button from "./Button.svelte"
   import Switch from "../components/Switch.svelte"
   import Table from "./CardTable.svelte"
-  import X from "../icons/x.svelte"
+  import X from "../icons/X.svelte"
   import Checkmark from "../icons/checkmark.svelte"
 
   const dispatch = createEventDispatcher()
