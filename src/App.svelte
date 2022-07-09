@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte"
   import { setClient } from "svelte-apollo"
   import { client } from "./utils/apollo"
 
@@ -10,6 +11,10 @@
   import Notifications from "./components/Notifications.svelte"
 
   setClient(client)
+
+  onMount(() => {
+    document.querySelector(".preloader").style.opacity = 0
+  })
 </script>
 
 <Header />
