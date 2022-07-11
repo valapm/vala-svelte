@@ -17,15 +17,19 @@ import dotenv from "dotenv"
 
 dotenv.config()
 
-console.log({
-  BACKEND_HOST: process.env.BACKEND_HOST || "",
-  BACKEND_HOST_TESTNET: process.env.BACKEND_HOST_TESTNET || "",
-  GRAPHQL_HOST: process.env.GRAPHQL_HOST || "",
-  GRAPHQL_HOST_TESTNET: process.env.GRAPHQL_HOST_TESTNET || "",
-  GRAPHQL_WS_HOST: process.env.GRAPHQL_WS_HOST || "",
-  GRAPHQL_WS_HOST_TESTNET: process.env.GRAPHQL_WS_HOST_TESTNET || "",
-  AUTH_HOST: process.env.AUTH_HOST || ""
-})
+const domain = "vala.ai"
+
+const envVars = {
+  BACKEND_HOST: process.env.BACKEND_HOST || `https://${domain}/api`,
+  BACKEND_HOST_TESTNET: process.env.BACKEND_HOST_TESTNET || `https://${domain}/api/testnet`,
+  GRAPHQL_HOST: process.env.GRAPHQL_HOST || `https://${domain}/gql`,
+  GRAPHQL_HOST_TESTNET: process.env.GRAPHQL_HOST_TESTNET || `https://${domain}/gql/testnet`,
+  GRAPHQL_WS_HOST: process.env.GRAPHQL_WS_HOST || `wss://${domain}/gql`,
+  GRAPHQL_WS_HOST_TESTNET: process.env.GRAPHQL_WS_HOST_TESTNET || `wss://${domain}/gql/testnet`,
+  AUTH_HOST: process.env.AUTH_HOST || `https://${domain}/auth`
+}
+
+console.log(envVars)
 
 const production = !process.env.ROLLUP_WATCH
 
@@ -63,15 +67,7 @@ export default {
     replace({
       include: ["src/config.ts"],
       values: {
-        ENV: JSON.stringify({
-          BACKEND_HOST: process.env.BACKEND_HOST || "",
-          BACKEND_HOST_TESTNET: process.env.BACKEND_HOST_TESTNET || "",
-          GRAPHQL_HOST: process.env.GRAPHQL_HOST || "",
-          GRAPHQL_HOST_TESTNET: process.env.GRAPHQL_HOST_TESTNET || "",
-          GRAPHQL_WS_HOST: process.env.GRAPHQL_WS_HOST || "",
-          GRAPHQL_WS_HOST_TESTNET: process.env.GRAPHQL_WS_HOST_TESTNET || "",
-          AUTH_HOST: process.env.AUTH_HOST || ""
-        })
+        ENV: JSON.stringify(envVars)
       }
     }),
     alias({
