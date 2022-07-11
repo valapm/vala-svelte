@@ -146,6 +146,17 @@
 
   let balanceTab = "positions"
 
+  const marketRes = query(marketQuery)
+  const currentMarketState = subscribe(marketStateQuery)
+
+  let market
+  $: if ($marketRes.data) market = cloneDeep($marketRes.data.market[0])
+  $: if ($currentMarketState.data && market) {
+    console.log("Merging new market state", $currentMarketState.data)
+    merge(market.market_state, $currentMarketState.data.market_state[0])
+    market = market
+  }
+
   $: compatibleVersion = market && isCompatibleVersion(market.version)
   $: {
     if (compatibleVersion === false) {
@@ -170,25 +181,7 @@
       : 0
     : undefined
 
-  const marketRes = query(marketQuery)
-  $: market = $marketRes.data ? cloneDeep($marketRes.data.market[0]) : undefined
   $: loading = $marketRes.loading
-
-  const currentMarketState = subscribe(marketStateQuery)
-  console.log($currentMarketState)
-
-  $: if ($currentMarketState.data) {
-    updateMarketState($currentMarketState.data.market_state[0])
-  }
-
-  function updateMarketState(newState) {
-    if (!market) return
-
-    merge(market.market_state, newState)
-    market = market
-  }
-
-  $: console.log($currentMarketState.data)
 
   let updating = false
 
@@ -231,6 +224,8 @@
     console.log(newTx)
 
     await broadcast(newTx)
+    // if (broadcasted) market TODO: Update myEntry, global balance?
+
     updating = false
   }
 
