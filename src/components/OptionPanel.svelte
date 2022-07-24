@@ -61,6 +61,7 @@
   $: version = pm.getMarketVersion(market.version)
   $: insideLimits = isInsideLimits(marketBalance, option, change, version)
   $: canBuySell = change !== 0 && (action === 0 ? price <= $satBalance : -change <= balance.shares[option])
+  $: canSell = balance.shares[option] > 0
 
   $: winning = market.market_state.decided && market.market_state.decision === option
   $: loosing = market.market_state.decided && market.market_state.decision !== option
@@ -94,7 +95,7 @@
       {market.options[option].details}
     </div>
     {#if !market.market_state.decided}
-      <Switch bind:selected={action} actions={["Buy", "Sell"]} />
+      <Switch bind:selected={action} actions={[{ title: "Buy" }, { title: "Sell", disabled: !canSell }]} />
       <div class="balance">Balance: <b>{balance.shares[option]}</b> Shares</div>
       <NumberInput placeholder="Shares" bind:value={amount} max={action === 1 ? balance.shares[option] : undefined} />
     {/if}
