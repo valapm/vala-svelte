@@ -2,6 +2,7 @@
   import { price } from "../store/price"
   import { getSharePrice } from "../utils/lmsr"
   import { round, formatUSD } from "../utils/format"
+  import { lmsr } from "bitcoin-predict"
 
   import Table from "./Table.svelte"
 
@@ -14,6 +15,10 @@
   }
   $: satPrices = marketBalance.shares.map((_, index) => getSharePrice(marketBalance, index, 1))
   $: usdPrices = satPrices.map(sats => round((sats / 100000000) * $price))
+
+  function getPotentialWin(shares) {
+    return round(((shares * lmsr.SatScaling) / 100000000) * $price || 0, 2)
+  }
 </script>
 
 <Table>
@@ -24,6 +29,7 @@
       <!-- <th> Avg Price Paid </th> -->
       <th> Current Value </th>
       <!-- <th> P/L </th> -->
+      <th>Potential Win </th>
     </tr>
   </thead>
 
@@ -42,6 +48,7 @@
             {formatUSD(usdPrices[index] * shares)}
           </td>
           <!-- <td> ? </td> -->
+          <td>{formatUSD(getPotentialWin(shares))}</td>
         </tr>
       {/if}
     {/each}
