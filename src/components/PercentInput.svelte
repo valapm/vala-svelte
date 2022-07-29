@@ -3,6 +3,9 @@
   export let placeholder = undefined
   export let min = undefined
   export let max = undefined
+
+  // Limit input to 2 decimal points
+  $: if (value && value.toString().length > 4) value = Math.floor(value * 100) / 100
 </script>
 
 <div>
