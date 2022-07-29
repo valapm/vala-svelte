@@ -2,10 +2,13 @@
   export let value
   export let placeholder = undefined
   export let min = undefined
-  export let max = undefined
+  export let max = 100
 
   // Limit input to 2 decimal points
   $: if (value && value.toString().length > 4) value = Math.floor(value * 100) / 100
+
+  // Limit input to max
+  $: if (value && max && value > max) value = max
 </script>
 
 <div>
