@@ -47,6 +47,17 @@
     tx.to(recipientAddress, satAmount)
     tx.feePerKb(feeb * 1000)
     tx.change($address)
+
+    // Make sure that fee is included through the inputs
+    // Subtract from output otherwise
+    const requiredFee = tx.getFee()
+    const currentFee = tx.inputAmount - tx.outputAmount
+    const missingSats = requiredFee - currentFee
+    if (missingSats > 0) {
+      const recipientOutput = tx.outputs[0]
+      recipientOutput.satoshis = recipientOutput.satoshis - missingSats
+    }
+
     tx.sign($privateKey)
 
     console.log(tx)
