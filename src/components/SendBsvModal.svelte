@@ -18,11 +18,12 @@
   let amount
   let sending = false
   let error
+  let sendAll = false
 
   $: validRecipient = recipient && isValidRecipient()
-  $: validAmount = amount && amount <= $usdBalance
-  $: console.log(validAmount, validRecipient)
-  $: console.log("my address:", $address.toString())
+  $: validAmount = amount && (sendAll || amount <= $usdBalance)
+  $: console.log({ validAmount, validRecipient })
+
   function isValidRecipient() {
     try {
       bsv.Address.fromString(recipient, testnet ? "testnet" : "livenet")
@@ -35,7 +36,7 @@
   async function send() {
     sending = true
 
-    let satAmount = Math.ceil((amount / $price) * 100000000)
+    let satAmount = sendAll ? $satBalance : Math.ceil((amount / $price) * 100000000)
     if (satAmount > satBalance) satAmount = satBalance
 
     const recipientAddress = recipient
@@ -88,10 +89,12 @@
     <h1>Send BSV</h1>
     <NumberInput
       placeholder="USD Amount"
-      max={$usdBalance}
+      max={Math.round($usdBalance * 100) / 100}
       bind:value={amount}
       color="01a781"
       backgroundColor="323841"
+      bind:isMax={sendAll}
+      prefix="$"
     />
     <input placeholder="Recipient Address" name="recipient" type="text" bind:value={recipient} />
     <div class="buttons">

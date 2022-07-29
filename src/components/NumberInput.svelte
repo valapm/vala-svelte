@@ -5,11 +5,28 @@
   export let max = undefined
   export let color = "39baf9"
   export let backgroundColor = "434c56"
+  export let isMax = false
+  export let prefix = undefined
+
+  function setMax() {
+    value = max
+    isMax = true
+  }
 </script>
 
 <div style="{max !== undefined ? '' : 'padding-right: 1.25rem'}; background-color: #{backgroundColor};">
-  <input type="number" {placeholder} {min} {max} bind:value />
-  {#if max !== undefined}<button on:click={() => (value = max)} style="border: 1px solid #{color};">max</button>{/if}
+  {#if prefix}{prefix}{/if}
+  <input
+    type="number"
+    {placeholder}
+    {min}
+    {max}
+    on:input={() => {
+      isMax = false
+    }}
+    bind:value
+  />
+  {#if max !== undefined}<button on:click={setMax} style="border: 1px solid #{color};">max</button>{/if}
 </div>
 
 <style>
@@ -20,7 +37,7 @@
     padding: 0 0.4375rem 0 1.25rem;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
     justify-content: space-between;
     color: #d8d9e5;
   }
