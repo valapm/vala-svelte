@@ -97,7 +97,12 @@
     {#if !market.market_state.decided}
       <Switch bind:selected={action} actions={[{ title: "Buy" }, { title: "Sell", disabled: !canSell }]} />
       <div class="balance">Balance: <b>{balance.shares[option]}</b> Shares</div>
-      <NumberInput placeholder="Shares" bind:value={amount} max={action === 1 ? balance.shares[option] : undefined} />
+      <NumberInput
+        placeholder="Shares"
+        bind:value={amount}
+        max={action === 1 ? balance.shares[option] : undefined}
+        decimals={false}
+      />
     {/if}
     {#if winningShares}
       <div>

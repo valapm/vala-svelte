@@ -115,6 +115,7 @@
             bind:value={amount}
             max={action === 1 ? liquidity : undefined}
             color="01A781"
+            decimals={false}
           />
           <Table>
             <div>

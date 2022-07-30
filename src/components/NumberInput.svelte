@@ -7,6 +7,10 @@
   export let backgroundColor = "434c56"
   export let isMax = false
   export let prefix = undefined
+  export let decimals = true
+
+  // Limit to whole numbers
+  $: if (value && !decimals) value = Math.floor(value)
 
   function setMax() {
     value = max
