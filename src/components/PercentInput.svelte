@@ -5,7 +5,10 @@
   export let max = 100
 
   // Limit input to 2 decimal points
-  $: if (value && value.toString().length > 4) value = Math.floor(value * 100) / 100
+  $: if (value) {
+    const parts = value.toString().split(".")
+    if (parts.length == 2 && parts[1].length > 2) value = Math.floor(value * 100) / 100
+  }
 
   // Limit input to max
   $: if (value && max && value > max) value = max
