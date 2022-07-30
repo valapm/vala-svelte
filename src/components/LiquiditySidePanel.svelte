@@ -21,7 +21,7 @@
   export let loadingRedeem
 
   let action = 0
-  let actions = ["Add", "Remove"]
+  let actions = [{ title: "Add" }, { title: "Remove" }]
   let amount
 
   let satFeeEstimate = 63000 * feeb
@@ -83,7 +83,9 @@
 
   $: redeemAllUSD = (redeemAllSats * $bsvPrice) / 100000000
 
-  $: console.log({ insideLimits, canBuySell, action, change, $satBalance, amount })
+  $: actions[1].disabled = liquidity === 0
+
+  $: console.log({ insideLimits, canBuySell, action, change, $satBalance, amount, liquidity, liquidityPoints, market })
 
   let liquidityPanelOpened = false
   let rewardsPanelOpened = false
@@ -129,7 +131,7 @@
             loading={loadingUpdate}
             on:click={e => dispatch("update", { change })}
             ><b
-              >{actions[action]}
+              >{actions[action].title}
               {#if usdPrice > 0} ${Math.round(usdPrice * 100) / 100} {/if}</b
             ></Button
           >
