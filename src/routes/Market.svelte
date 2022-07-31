@@ -220,7 +220,20 @@
     console.log(entriesRes.data.entry)
     const entries = getEntries(entriesRes.data.entry)
 
-    const newTx = commit ? await getCommitTx() : await getUpdateTx(newBalance, entries, redeemLiquidityPoints)
+    let newTx
+    try {
+      newTx = commit ? await getCommitTx() : await getUpdateTx(newBalance, entries, redeemLiquidityPoints)
+    } catch (e) {
+      console.error(e)
+      notify({
+        type: "danger",
+        text: "Failed to create transaction",
+        description: e.message
+      })
+      updating = false
+      return
+    }
+
     console.log(newTx)
 
     await broadcast(newTx)
@@ -271,7 +284,17 @@
 
     let updateTx
     if (existingEntry) {
-      console.log([currentTx, entries, newBalance, $privateKey, $address, $utxos, $privateKey])
+      console.log([
+        currentTx,
+        entries,
+        newBalance,
+        redeemLiquidityPoints,
+        $privateKey,
+        $address,
+        $utxos,
+        $privateKey,
+        feeb
+      ])
       updateTx = pmTx.getUpdateEntryTx(
         currentTx,
         entries,
