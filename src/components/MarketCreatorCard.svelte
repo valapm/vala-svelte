@@ -59,7 +59,7 @@
     >
   {:else if redeemInvalidSats}
     <Button type="filled-blue full-width" on:click={() => dispatch("redeemInvalid")} loading={loadingRedeem}>
-      Redeem Invalid Shares ${Math.round(redeemInvalidUSD * 100) / 100}
+      <b>Redeem Excess Funds ${Math.round(redeemInvalidUSD * 100) / 100}</b>
     </Button>
   {/if}
   <Modal bind:open={selectOption}>

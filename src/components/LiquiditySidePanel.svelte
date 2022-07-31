@@ -85,7 +85,7 @@
 
   $: actions[1].disabled = liquidity === 0
 
-  $: console.log({ insideLimits, canBuySell, action, change, $satBalance, amount, liquidity, liquidityPoints, market })
+  // $: console.log({ insideLimits, canBuySell, action, change, $satBalance, amount, liquidity, liquidityPoints, market })
 
   let liquidityPanelOpened = false
   let rewardsPanelOpened = false
