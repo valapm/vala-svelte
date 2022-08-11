@@ -13,9 +13,7 @@
     version = pm.getMarketVersion(market.version)
   } catch {}
   $: fees = version ? round(market.liquidityFee + market.creatorFee + version.options.devFee) : "?"
-  $: totalInvested =
-    (lmsr.getLmsrSats({ liquidity: market.market_state.liquidity, shares: market.market_state.shares }) * $price) /
-    100000000
+  $: totalInvested = (market.market_state.satoshis * $price) / 100000000
   // $: totalVolume = (market.market_state.totalSatVolume * $price) / 100000000
 
   $: oracleHostname = parseHostname(market.oracle.oracleStateByCurrentstateid.domain)

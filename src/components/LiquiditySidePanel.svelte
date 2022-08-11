@@ -1,4 +1,7 @@
-<script>
+<script lang="ts">
+  import type { marketStatus as marketStatusType } from "bitcoin-predict/lib/pm"
+  import type { balance as balanceType } from "bitcoin-predict/lib/lmsr"
+
   import { price as bsvPrice } from "../store/price"
   import { getSharePrice, isInsideLimits } from "../utils/lmsr"
   import { round, formatUSD } from "../utils/format"
@@ -33,21 +36,37 @@
   $: liquidityPercent =
     liquidity && market.market_state.liquidity ? (liquidity / market.market_state.liquidity) * 100 : 0
 
+  let marketBalance: balanceType
   $: marketBalance = market && {
     shares: market.market_state.shares,
     liquidity: market.market_state.liquidity
   }
 
+  let marketStatus: marketStatusType
+  $: marketStatus = market && {
+    accLiquidityFeePool: market.market_state.accLiquidityFeePool,
+    decided: market.market_state.decided,
+    decision: market.market_state.decision,
+    liquidityFeePool: market.market_state.liquidityFeePool,
+    liquidityPoints: market.market_state.liquidityPoints,
+    votes: market.market_state.votes
+  }
+
+  $: marketVersion = pm.getMarketVersion(market.version)
+
   $: change = market.market_state.decided && entry ? -entry.liquidity : amount ? (action === 0 ? amount : -amount) : 0
 
-  $: liquidityBalance =
-    lmsr.getLmsrSats(marketBalance) -
-    lmsr.getLmsrSats({
-      shares: marketBalance.shares,
-      liquidity: marketBalance.liquidity - liquidity
-    })
+  $: liquidityBalance = pm.getLiquiditySatBalance(
+    marketBalance,
+    marketStatus,
+    market.market_state.satoshis,
+    liquidity,
+    marketVersion
+  )
 
   $: liquidityBalanceUSD = round((liquidityBalance / 100000000) * $bsvPrice)
+  $: console.log({ liquidityBalanceUSD, liquidity, marketBalance })
+
   $: price =
     change !== 0
       ? action === 0
@@ -71,15 +90,7 @@
 
   $: console.log("entry", entry)
 
-  $: redeemAllSats =
-    market.market_state.decided && entry
-      ? earnings -
-        lmsr.getLmsrSats({
-          liquidity: marketBalance.liquidity - entry.liquidity,
-          shares: marketBalance.shares.map((s, i) => s - entry.shares[i])
-        }) +
-        lmsr.getLmsrSats(marketBalance)
-      : 0
+  $: redeemAllSats = market.market_state.decided && entry ? earnings + liquidityBalance : 0
 
   $: redeemAllUSD = (redeemAllSats * $bsvPrice) / 100000000
 

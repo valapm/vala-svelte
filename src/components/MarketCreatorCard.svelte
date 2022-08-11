@@ -4,6 +4,7 @@
   import { round } from "../utils/format"
   import { lmsr, pm } from "bitcoin-predict"
   import semverGte from "semver/functions/gte"
+  import semverLt from "semver/functions/lt"
 
   import Table from "./CardTable.svelte"
   import Modal from "../components/Modal.svelte"
@@ -57,7 +58,7 @@
     <Button type="filled-blue full-width" on:click={() => (selectOption = true)} loading={loadingResolve}
       >Resolve Market</Button
     >
-  {:else if redeemInvalidSats}
+  {:else if redeemInvalidSats && semverLt(marketVersion.version, "0.6.0")}
     <Button type="filled-blue full-width" on:click={() => dispatch("redeemInvalid")} loading={loadingRedeem}>
       <b>Redeem Excess Funds ${Math.round(redeemInvalidUSD * 100) / 100}</b>
     </Button>

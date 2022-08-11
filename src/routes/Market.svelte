@@ -69,6 +69,7 @@
           }
           outputIndex
         }
+        votes
         ${$publicKey ? myEntryQuery : ""}
       }
     }
@@ -123,6 +124,7 @@
           shares
           liquidity
           hidden
+          votes
           ${$publicKey ? myEntryQuery : ""}
         }
         marketStateByFirststateid {
@@ -465,7 +467,7 @@
     redeemingLiquidity = true
     await updateMarket(
       {
-        shares: balance.shares,
+        shares: balance.shares.map((s, i) => (i === market.market_state.decision ? s : 0)),
         liquidity: 0
       },
       true
