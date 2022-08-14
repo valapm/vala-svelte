@@ -224,15 +224,16 @@
     <div class="content">
       <div class="setting">
         <h2>Market Fee</h2>
-        <p>A fee on every trade for you, send directly to your wallet</p>
+        <p>A fee on every trade, sent directly to your wallet</p>
         <PercentInput bind:value={$creatorFee} placeholder="Fee for yourself" min="0" max="100" />
       </div>
       <div class="setting">
         <h2>Liquidity Fee</h2>
         <p>
-          A fee on every trade for people providing liquidity to the market. Too high and people wont trade, too low and
-          the market will dry up. Generally, the more trades you expect the lower this fee can be.
+          A fee on every trade payed out to people providing liquidity to the market. Too high and people wont trade,
+          too low and the market will dry up. Generally, the more volume you expect the lower this fee can be.
         </p>
+        <a href="https://docs.vala.ai/faq/liquidity/">Learn more about Liquidity</a>
         <PercentInput bind:value={$liquidityFee} placeholder="Fee for liquidity providers" min="0" max="100" />
       </div>
 
@@ -348,11 +349,15 @@
     font-weight: 500;
   }
 
-  p {
+  p,
+  a {
     /* font-weight: 500; */
     color: #ffffff70;
   }
 
+  a {
+    text-decoration: underline;
+  }
   .reset {
     font-style: italic;
     text-decoration: underline;
