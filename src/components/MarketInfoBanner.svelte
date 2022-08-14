@@ -6,7 +6,7 @@
   export let notification: notification
 </script>
 
-<div class="banner {notification.type}" transition:fade>
+<div class="banner {notification.type}" in:fade>
   <h1>{notification.title}</h1>
   <p>{notification.description}</p>
 </div>
