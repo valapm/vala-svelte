@@ -160,15 +160,6 @@
   }
 
   $: compatibleVersion = market && isCompatibleVersion(market.version)
-  $: {
-    if (compatibleVersion === false) {
-      notify({
-        type: "danger",
-        text: "Market version not supported",
-        position: "top-right"
-      })
-    }
-  }
 
   $: existingEntry = $publicKey && market && market.market_state.myEntry[0]
   $: balance = existingEntry || {
@@ -497,13 +488,13 @@
     loading...
   {:else if market}
     <div class="main-panel">
-      {#each notifications as notification}
-        <MarketInfoBanner {notification} />
-      {/each}
+      <div class="notifications">
+        {#each notifications as notification}
+          <MarketInfoBanner {notification} />
+        {/each}
+      </div>
 
       <MarketHeader {market} />
-
-      {#if !compatibleVersion}<div class="warning">Unsupported market version!</div>{/if}
 
       {#if tab === 1}
         <MarketBanner {market} />
@@ -674,5 +665,12 @@
     font-weight: 700;
     font-size: 1.1rem;
     color: #ff0060;
+  }
+
+  .notifications {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    gap: 1rem;
   }
 </style>

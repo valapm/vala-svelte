@@ -19,6 +19,7 @@
     gap: 1rem;
     border-radius: 0.375rem;
     font-size: 0.9rem;
+    width: 100%;
   }
 
   .warning {
