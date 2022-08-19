@@ -11,6 +11,7 @@ import Oracles from "./routes/Oracles.svelte"
 import Oracle from "./routes/Oracle.svelte"
 import Landingpage from "./routes/Landingpage.svelte"
 import Dev from "./routes/Dev.svelte"
+import Recover from "./routes/Recover.svelte"
 
 export const routes = {
   "/": Landingpage,
@@ -25,5 +26,6 @@ export const routes = {
   "/register": Register,
   "/wallet": Wallet,
   "/options": Options,
-  "/dev": Dev
+  "/dev": Dev,
+  "/recover": Recover
 }

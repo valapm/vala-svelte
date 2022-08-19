@@ -1,18 +1,23 @@
-import { writable as persistentWritable, derived as persistentDerived } from "svelte-persistent-store/dist/local"
-import { writable, readable, derived, Readable, get } from "svelte/store"
+import { persist, localStorage } from "@macfja/svelte-persistent-store"
+import { writable, readable, derived, Readable, get, Writable } from "svelte/store"
 import { bsv } from "bitcoin-predict"
 import Mnemonic from "../utils/mnemonic"
 import { testnet } from "../config"
 import { getUtxos } from "../utils/utxo"
 import { price } from "./price"
 import { fetchUTXOs } from "../apis/whatsonchain"
+import { hex2patp, patp2hex } from "urbit-ob"
 // import writableDerived from "svelte-writable-derived"
+import { getUserId } from "../utils/wallet"
 
 // console.log(Mnemonic)
 
 export const derivationPath = "m/44'/0'/0'/0/0"
+export const profileDerivationPath = "m/9752'/8653'/7662'/0/1" // Used to derive profile name
 
-export let seed = persistentWritable("seed", null)
+export let newSeed: Writable<Mnemonic> = writable(null) // For keeping newly generated seed in memory
+
+export let seed = persist(writable(null), localStorage(), "seed")
 
 export let hdPrivateKey = derived(
   seed,
@@ -31,6 +36,22 @@ export let privateKey = derived(
   },
   null
 )
+
+export let profilePrivateKey = derived(
+  hdPrivateKey,
+  hdPrivateKey => {
+    return hdPrivateKey ? hdPrivateKey.deriveChild(profileDerivationPath).privateKey : null
+  },
+  null
+)
+
+export let userId = derived(
+  profilePrivateKey,
+  profilePrivateKey => (profilePrivateKey ? getUserId(profilePrivateKey.publicKey) : null),
+  null
+)
+
+export let username = derived(userId, userId => (userId ? hex2patp(userId) : null), null)
 
 export let publicKey = derived(
   privateKey,
@@ -99,10 +120,14 @@ export let fetchedUtxos = derived(
   null
 )
 
-export let outputs = persistentWritable("outputs", {}, set => {
-  // Required to start periodic fetching
-  fetchedUtxos.subscribe(_ => {})
-})
+export let outputs = persist(
+  writable({}, set => {
+    // Required to start periodic fetching
+    fetchedUtxos.subscribe(_ => {})
+  }),
+  localStorage(),
+  "outputs"
+)
 
 export let utxos = derived(
   [outputs, address],

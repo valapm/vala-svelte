@@ -3,6 +3,7 @@
 
   export let value = ""
   export let placeholder = undefined
+  export let name = undefined
 
   let hidden = true
 
@@ -12,7 +13,7 @@
 </script>
 
 <div>
-  <input type={hidden ? "password" : "text"} {placeholder} on:input={handleInput} />
+  <input type={hidden ? "password" : "text"} {placeholder} {name} on:input={handleInput} />
   <button on:click={() => (hidden = !hidden)} tabindex="-1"><Eye /></button>
 </div>
 

@@ -1,37 +1,11 @@
 <script>
   import { testnet } from "../config"
-  import { email, verified } from "../store/profile"
   import { post } from "../utils/fetch"
   import { AUTH_HOST } from "../config"
   import { notify } from "../store/notifications"
+  import { username } from "../store/wallet"
 
   import Button from "../components/Button.svelte"
-
-  async function requestEmail() {
-    let res
-    let fail = ""
-    try {
-      res = await post(AUTH_HOST + "/resend-email", { email: $email })
-    } catch (e) {
-      fail = e.message
-    }
-
-    console.log(res)
-
-    if (fail || !res || !res.success) {
-      notify({
-        type: "danger",
-        text: "Failed to send verification email",
-        description: fail
-      })
-    } else {
-      notify({
-        type: "success",
-        text: "Send new verification email",
-        description: ""
-      })
-    }
-  }
 
   function switchNetwork() {
     if (!testnet) {
@@ -47,9 +21,7 @@
 <div class="options">
   <h1>Settings</h1>
 
-  Logged in as {$email}
-
-  {#if !$verified}<Button on:click={requestEmail}>Resend verification email</Button>{/if}
+  <p>Wallet ID: <b>{$username}</b></p>
 
   <!-- <div>
     Use Testnet

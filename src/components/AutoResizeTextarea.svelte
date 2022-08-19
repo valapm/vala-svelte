@@ -3,6 +3,7 @@
 
   export let value
   export let editable = true
+  export let placeholder = "Description"
 
   let textarea
 
@@ -18,7 +19,7 @@
   class="details"
   bind:this={textarea}
   bind:value
-  placeholder="Description"
+  {placeholder}
   disabled={!editable}
   on:input={resizeTextArea}
 />

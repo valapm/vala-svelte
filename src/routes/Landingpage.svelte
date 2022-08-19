@@ -4,7 +4,6 @@
   import { push } from "svelte-spa-router"
   import { fade } from "svelte/transition"
 
-  import WaitlistSignup from "../components/WaitlistSignup.svelte"
   import LandingpageLogo from "../components/LandingpageLogo.svelte"
   import Button from "../components/Button.svelte"
   import BsvCricle from "../icons/BsvCircle.svelte"
@@ -25,7 +24,7 @@
       <h1>Peer to Peer <br />Prediction Markets <br />on Bitcoin</h1>
 
       <p>Start trading Event Derivatives on-chain</p>
-      <WaitlistSignup />
+      <div><Button type="filled" on:click={() => push("/login")}>Get started</Button></div>
     </div>
     <LandingpageLogo />
   </div>

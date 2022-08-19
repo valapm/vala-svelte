@@ -106,7 +106,7 @@
     $options.length >= 2 &&
     !$options.some(option => !option.name) &&
     $options.length <= bp.contracts.currentMarketContract.options.maxOptionCount
-  $: canComplete2 = $creatorFee && $liquidityFee && $creatorFee >= 0 && $liquidityFee >= 0
+  $: canComplete2 = $creatorFee !== null && $creatorFee >= 0 && $liquidityFee !== null && $liquidityFee >= 0
   $: canCreateMarket = canComplete0 && canComplete1 && canComplete2 && committed
 
   $: market = canComplete2

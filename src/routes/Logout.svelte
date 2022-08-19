@@ -1,12 +1,11 @@
 <script>
   import { onMount } from "svelte"
   import { push } from "svelte-spa-router"
-  import { seed, outputs } from "../store/wallet"
-  import { email } from "../store/profile"
+  import { seed, outputs, newSeed } from "../store/wallet"
 
   onMount(() => {
     $seed = null
-    $email = null
+    $newSeed = null
     $outputs = {}
     push("#/login")
   })

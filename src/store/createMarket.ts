@@ -1,11 +1,12 @@
-import { writable as persistentWritable } from "svelte-persistent-store/dist/local"
+import { persist, sessionStorage } from "@macfja/svelte-persistent-store"
+import { writable } from "svelte/store"
 
-export const resolve = persistentWritable("new_market_resolve", null)
-export const details = persistentWritable("new_market_details", null)
-export const numOptions = persistentWritable("new_market_options_num", 2)
-export const options = persistentWritable("new_market_options", [])
-export const creatorFee = persistentWritable("new_market_creatorfee", null)
-export const liquidityFee = persistentWritable("new_market_liquidityfee", 0.5)
+export const resolve = persist(writable(null), sessionStorage(), "new_market_resolve")
+export const details = persist(writable(null), sessionStorage(), "new_market_details")
+export const numOptions = persist(writable(2), sessionStorage(), "new_market_options_num")
+export const options = persist(writable([]), sessionStorage(), "new_market_options")
+export const creatorFee = persist(writable(null), sessionStorage(), "new_market_creatorfee")
+export const liquidityFee = persist(writable(0.5), sessionStorage(), "new_market_liquidityfee")
 
 export function reset() {
   resolve.set(null)

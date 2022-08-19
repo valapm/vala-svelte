@@ -21,7 +21,7 @@
 
 <div class="login">
   <BigCard>
-    <WalletCreation />
+    <WalletCreation recover={true} />
   </BigCard>
 </div>
 

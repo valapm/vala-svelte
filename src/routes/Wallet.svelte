@@ -1,6 +1,5 @@
 <script>
-  import { address, seed, usdBalance, publicKey } from "../store/wallet"
-  import { username } from "../store/profile"
+  import { seed, publicKey, username } from "../store/wallet"
   import WalletCard from "../components/WalletCard.svelte"
   import { pm, lmsr } from "bitcoin-predict"
   import { price } from "../store/price"
@@ -114,8 +113,13 @@
 <div class="container">
   {#if $seed}
     {#if selected === 0}
+      <h1>
+        <div class="label">Wallet ID</div>
+        {$username}
+      </h1>
+
       <div class="card">
-        <WalletCard address={$address.toString()} username={$username} />
+        <WalletCard />
 
         <div class="wallet-buttons">
           <Button type="filled-grey full-width" on:click={() => (showReceiveModal = true)}>Receive BSV</Button>
@@ -276,5 +280,18 @@
     font-size: 2rem;
     opacity: 60%;
     font-weight: 700;
+  }
+
+  h1 {
+    font-size: 2rem;
+    color: #d8d9e5;
+    font-weight: 500;
+  }
+
+  .label {
+    font-size: 1rem;
+    font-weight: 400;
+    color: white;
+    opacity: 50%;
   }
 </style>
