@@ -102,6 +102,7 @@
           shares
           liquidity
           decision
+          totalSatVolume
         }
         marketStateByFirststateid {
           state {

@@ -46,8 +46,8 @@
     }
   })
 
-  $: bsvTotal = market.market_state.satoshis / 100000000
-  $: usdTotal = bsvTotal * $price
+  $: bsvVolume = market.market_state.totalSatVolume / 100000000
+  $: usdVolume = bsvVolume * $price
   $: bsvLiquidity =
     lmsr.getLmsrSats({ liquidity: balance.liquidity, shares: new Array(market.options.length).fill(0) }) / 100000000
   $: usdLiquidity = bsvLiquidity * $price
@@ -90,8 +90,8 @@
     </div>
     <div class="footer">
       <div>
-        <label for="volume">Market Cap</label>
-        <div id="volume">{formatUSD(usdTotal, true)}</div>
+        <label for="volume">Volume</label>
+        <div id="volume">{formatUSD(usdVolume, true)}</div>
       </div>
       <div class="oracle">
         {#if market.market_state.market_oracles[0].oracle.iconType}

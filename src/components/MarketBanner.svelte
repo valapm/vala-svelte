@@ -13,8 +13,8 @@
     version = pm.getMarketVersion(market.version)
   } catch {}
   $: fees = version ? round(market.liquidityFee + market.creatorFee + version.options.devFee) : "?"
-  $: totalInvested = (market.market_state.satoshis * $price) / 100000000
-  // $: totalVolume = (market.market_state.totalSatVolume * $price) / 100000000
+  // $: totalInvested = (market.market_state.satoshis * $price) / 100000000
+  $: totalVolume = (market.market_state.totalSatVolume * $price) / 100000000
 
   $: oracleHostname = parseHostname(market.oracle.oracleStateByCurrentstateid.domain)
 </script>
@@ -30,8 +30,8 @@
     </div>
   </div>
   <div>
-    <h2>Total Invested</h2>
-    <div>{formatUSD(totalInvested)}</div>
+    <h2>Total Volume</h2>
+    <div>{formatUSD(totalVolume)}</div>
   </div>
   <div>
     <h2>Trading Fees</h2>

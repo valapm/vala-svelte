@@ -70,6 +70,7 @@
           outputIndex
         }
         votes
+        totalSatVolume
         ${$publicKey ? myEntryQuery : ""}
       }
     }
@@ -125,6 +126,7 @@
           liquidity
           hidden
           votes
+          totalSatVolume
           ${$publicKey ? myEntryQuery : ""}
         }
         marketStateByFirststateid {
