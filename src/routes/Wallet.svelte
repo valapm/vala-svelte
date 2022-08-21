@@ -240,7 +240,7 @@
     flex-direction: column;
     align-items: center;
     gap: 1rem;
-    width: 12rem;
+    width: 9rem;
   }
 
   .balances > div > div {
@@ -265,6 +265,11 @@
     flex-direction: column;
     gap: 1rem;
     width: min(21rem, 90%);
+  }
+
+  td:nth-of-type(1),
+  td:nth-of-type(2) {
+    word-break: break-word;
   }
 
   td:nth-of-type(4),
@@ -298,5 +303,15 @@
     font-weight: 400;
     color: white;
     opacity: 50%;
+  }
+
+  @media screen and (max-width: 600px) {
+    .balances > div > div {
+      font-size: 1.2rem;
+    }
+
+    .balances {
+      gap: 1rem;
+    }
   }
 </style>

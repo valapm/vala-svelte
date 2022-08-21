@@ -34,6 +34,14 @@
 
   table :global(th:first-of-type),
   table :global(td:first-of-type) {
-    min-width: 10rem;
+    min-width: 5rem;
+  }
+
+  @media screen and (max-width: 400px) {
+    table :global(td),
+    table :global(th) {
+      padding: 0.6rem;
+      text-align: left;
+    }
   }
 </style>
