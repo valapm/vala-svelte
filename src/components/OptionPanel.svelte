@@ -29,11 +29,11 @@
   let action = 0
 
   function resetAmount() {
-    amount = 0
+    amount = undefined
   }
 
-  // Reset when balance changes
-  $: if (balance) resetAmount()
+  // Reset when balance or action changes
+  $: if (balance || action !== null) resetAmount()
 
   let satFeeEstimate = 63000 * feeb
   $: usdFeeEstimate = (satFeeEstimate * $bsvPrice) / 100000000
