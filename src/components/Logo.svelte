@@ -14,7 +14,7 @@
 
 <style>
   .logo {
-    flex-wrap: wrap;
+    /* flex-wrap: wrap; */
     display: flex;
     align-items: center;
     gap: 0.4rem;
@@ -37,5 +37,11 @@
 
   a :global(svg):nth-child(2) {
     height: 1.2rem;
+  }
+
+  @media screen and (max-width: 800px) {
+    a :global(svg):nth-child(2) {
+      display: none;
+    }
   }
 </style>

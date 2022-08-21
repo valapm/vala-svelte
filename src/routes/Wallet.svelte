@@ -122,8 +122,8 @@
         <WalletCard />
 
         <div class="wallet-buttons">
-          <Button type="filled-grey full-width" on:click={() => (showReceiveModal = true)}>Receive BSV</Button>
-          <Button type="filled-green full-width" on:click={() => (showSendModal = true)}>Send BSV</Button>
+          <Button type="filled-grey" on:click={() => (showReceiveModal = true)}>Receive BSV</Button>
+          <Button type="filled-green" on:click={() => (showSendModal = true)}>Send BSV</Button>
         </div>
       </div>
 
@@ -253,6 +253,11 @@
     /* width: min(21rem, 90%); */
     width: 100%;
     gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .wallet-buttons > :global(*) {
+    flex-grow: 1;
   }
 
   .card {

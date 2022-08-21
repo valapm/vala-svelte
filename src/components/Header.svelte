@@ -49,7 +49,7 @@
       <Logo />
     </div>
     <div class="menu-right">
-      {#if width > 450}
+      {#if width > 580}
         <div class="menu">
           <a href="#/markets"><Button type="text" active={/\/market.*/gm.test($location)}>Markets</Button></a>
           <a href="#/oracles"><Button type="text" active={/\/oracle.*/gm.test($location)}>Oracles</Button></a>
@@ -76,7 +76,7 @@
       {/if}
     </div>
   </div>
-  {#if width < 450}
+  {#if width < 580}
     <div class="menu-mobile menu">
       <a href="#/markets"><Button type="text" active={/\/market.*/gm.test($location)}>Markets</Button></a>
       <a href="#/oracles"><Button type="text" active={/\/oracle.*/gm.test($location)}>Oracles</Button></a>
@@ -137,6 +137,10 @@
     align-items: center;
   }
 
+  .menu-right > * {
+    flex-shrink: 0;
+  }
+
   .menu-right {
     /* flex-wrap: wrap-reverse; */
     justify-content: flex-end;
@@ -153,5 +157,12 @@
 
   .button img {
     height: 1rem;
+  }
+
+  @media screen and (max-width: 800px) {
+    .menu,
+    .menu-right {
+      gap: 1rem;
+    }
   }
 </style>
