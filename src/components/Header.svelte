@@ -51,19 +51,9 @@
     <div class="menu-right">
       {#if width > 450}
         <div class="menu">
-          <a href="#/markets"
-            ><Button type="text" on:click={() => push("#/markets")} active={/\/market.*/gm.test($location)}
-              >Markets</Button
-            ></a
-          >
-          <a href="#/oracles"
-            ><Button type="text" on:click={() => push("#/oracles")} active={/\/oracle.*/gm.test($location)}
-              >Oracles</Button
-            ></a
-          >
-          <a href="https://docs.vala.ai/"
-            ><Button type="text" on:click={() => window.open("https://docs.vala.ai/")}>FAQ</Button></a
-          >
+          <a href="#/markets"><Button type="text" active={/\/market.*/gm.test($location)}>Markets</Button></a>
+          <a href="#/oracles"><Button type="text" active={/\/oracle.*/gm.test($location)}>Oracles</Button></a>
+          <a href="https://docs.vala.ai/"><Button type="text">FAQ</Button></a>
         </div>
       {/if}
 
@@ -88,17 +78,9 @@
   </div>
   {#if width < 450}
     <div class="menu-mobile menu">
-      <a href="#/markets"
-        ><Button type="text" on:click={() => push("#/markets")} active={/\/market.*/gm.test($location)}>Markets</Button
-        ></a
-      >
-      <a href="#/oracles"
-        ><Button type="text" on:click={() => push("#/oracles")} active={/\/oracle.*/gm.test($location)}>Oracles</Button
-        ></a
-      >
-      <a href="https://docs.vala.ai/"
-        ><Button type="text" on:click={() => window.open("https://docs.vala.ai/")}>FAQ</Button></a
-      >
+      <a href="#/markets"><Button type="text" active={/\/market.*/gm.test($location)}>Markets</Button></a>
+      <a href="#/oracles"><Button type="text" active={/\/oracle.*/gm.test($location)}>Oracles</Button></a>
+      <a href="https://docs.vala.ai/"><Button type="text">FAQ</Button></a>
     </div>
   {/if}
 </nav>
