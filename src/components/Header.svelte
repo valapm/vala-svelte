@@ -137,7 +137,7 @@
     align-items: center;
   }
 
-  .menu-right > * {
+  .menu-right > :global(*) {
     flex-shrink: 0;
   }
 

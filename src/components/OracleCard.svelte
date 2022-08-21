@@ -87,4 +87,16 @@
     font-size: 2.125rem;
     font-weight: 700;
   }
+
+  @media screen and (max-width: 600px) {
+    #oracle_card {
+      align-items: center;
+    }
+
+    .header {
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+  }
 </style>

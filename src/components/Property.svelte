@@ -16,6 +16,7 @@
     justify-content: space-between;
     color: white;
     height: 3.5rem;
+    gap: 0.4rem;
   }
 
   .property > div {
@@ -29,5 +30,6 @@
     font-size: 0.875rem;
     opacity: 50%;
     font-weight: 700;
+    text-align: center;
   }
 </style>
