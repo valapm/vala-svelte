@@ -114,14 +114,7 @@ export default {
       inlineSources: !production
     }),
     copy({
-      targets: [
-        { src: "node_modules/vala-auth/dist/*", dest: "public/includes" },
-        {
-          src: "node_modules/@shoelace-style/shoelace/dist/assets",
-          dest: "public/includes/shoelace"
-        }
-      ],
-      copyOnce: true // Needed because of a bug resulting in horrible performance with shoelace
+      targets: [{ src: "node_modules/vala-auth/dist/*", dest: "public/includes" }]
     }),
 
     // In dev mode, call `npm run start` once
