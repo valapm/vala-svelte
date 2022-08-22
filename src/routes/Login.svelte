@@ -185,4 +185,10 @@
     gap: 2rem;
     max-width: 35rem;
   }
+
+  @media screen and (max-width: 425px) {
+    .login {
+      margin-top: 5rem;
+    }
+  }
 </style>

@@ -11,4 +11,10 @@
     margin-top: 5rem;
     width: min(65rem, 95%);
   }
+
+  @media screen and (max-width: 600px) {
+    div {
+      margin-top: 1rem;
+    }
+  }
 </style>

@@ -34,4 +34,10 @@
     align-items: center;
     width: min(30rem, 95%);
   }
+
+  @media screen and (max-width: 425px) {
+    .login {
+      margin-top: 5rem;
+    }
+  }
 </style>
