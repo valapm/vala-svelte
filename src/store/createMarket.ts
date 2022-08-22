@@ -1,12 +1,12 @@
-import { persist, sessionStorage } from "@macfja/svelte-persistent-store"
+import { persist, createSessionStorage } from "@macfja/svelte-persistent-store"
 import { writable } from "svelte/store"
 
-export const resolve = persist(writable(null), sessionStorage(), "new_market_resolve")
-export const details = persist(writable(null), sessionStorage(), "new_market_details")
-export const numOptions = persist(writable(2), sessionStorage(), "new_market_options_num")
-export const options = persist(writable([]), sessionStorage(), "new_market_options")
-export const creatorFee = persist(writable(null), sessionStorage(), "new_market_creatorfee")
-export const liquidityFee = persist(writable(0.5), sessionStorage(), "new_market_liquidityfee")
+export const resolve = persist(writable(null), createSessionStorage(), "new_market_resolve")
+export const details = persist(writable(null), createSessionStorage(), "new_market_details")
+export const numOptions = persist(writable(2), createSessionStorage(), "new_market_options_num")
+export const options = persist(writable([]), createSessionStorage(), "new_market_options")
+export const creatorFee = persist(writable(null), createSessionStorage(), "new_market_creatorfee")
+export const liquidityFee = persist(writable(0.5), createSessionStorage(), "new_market_liquidityfee")
 
 export function reset() {
   resolve.set(null)

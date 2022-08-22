@@ -1,4 +1,4 @@
-import { persist, localStorage } from "@macfja/svelte-persistent-store"
+import { persist, createLocalStorage } from "@macfja/svelte-persistent-store"
 import { writable, readable, derived, Readable, get, Writable } from "svelte/store"
 import { bsv } from "bitcoin-predict"
 import Mnemonic from "../utils/mnemonic"
@@ -17,7 +17,7 @@ export const profileDerivationPath = "m/9752'/8653'/7662'/0/1" // Used to derive
 
 export let newSeed: Writable<Mnemonic> = writable(null) // For keeping newly generated seed in memory
 
-export let seed = persist(writable(null), localStorage(), "seed")
+export let seed = persist(writable(null), createLocalStorage(), "seed")
 
 export let hdPrivateKey = derived(
   seed,
@@ -125,7 +125,7 @@ export let outputs = persist(
     // Required to start periodic fetching
     fetchedUtxos.subscribe(_ => {})
   }),
-  localStorage(),
+  createLocalStorage(),
   "outputs"
 )
 
