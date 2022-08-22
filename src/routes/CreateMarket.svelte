@@ -197,7 +197,7 @@
       <div class="setting">
         <h2>Details</h2>
         <p>
-          Let people know more about your market. What exact conditions must be met for it to $resolve? Is there a
+          Let people know more about your market. What exact conditions must be met for it to resolve? Is there a
           deadline or special circumstances? These can not be changed later.
         </p>
         <div class="input">
