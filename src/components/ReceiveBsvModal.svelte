@@ -58,6 +58,7 @@
     font-size: 1.125rem;
     font-weight: 500;
     align-items: center;
+    word-break: break-all;
   }
 
   .address > label {
