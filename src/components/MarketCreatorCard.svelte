@@ -110,6 +110,7 @@
     flex-direction: column;
     gap: 1.25rem;
     align-items: center;
+    width: 18.75rem;
   }
 
   .modal {

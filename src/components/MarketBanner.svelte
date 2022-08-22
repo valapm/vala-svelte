@@ -49,7 +49,7 @@
     font-weight: 500;
     justify-content: space-around;
     width: 100%;
-    padding: 0.875rem;
+    padding: 0.875rem 0;
   }
 
   h2 {

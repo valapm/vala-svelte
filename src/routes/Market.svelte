@@ -31,6 +31,7 @@
   import MarketDetailsPanel from "../components/MarketDetailsPanel.svelte"
   import MarketCreatorCard from "../components/MarketCreatorCard.svelte"
   import MarketInfoBanner from "../components/MarketInfoBanner.svelte"
+  import PositionsPanel from "../components/PositionsPanel.svelte"
 
   export let params
 
@@ -405,8 +406,6 @@
 
   $: console.log("updating", updating)
 
-  $: hasBalance = balance.shares.reduce((partialSum, a) => partialSum + a, 0) > 0
-
   let tab = 1
 
   let updatingLiquidity = false
@@ -512,26 +511,7 @@
         {#if !$seed}
           <a href="#/login"><Button type="filled">Login to trade</Button></a>
         {:else}
-          <div id="balances">
-            <button
-              on:click={() => (balanceTab = "positions")}
-              style={balanceTab === "positions" ? "color: white;" : ""}>My Positions</button
-            >
-            <button
-              on:click={() => (balanceTab = "liquidity")}
-              style={balanceTab === "liquidity" ? "color: white;" : ""}>My Liquidity</button
-            >
-          </div>
-
-          {#if balanceTab === "positions"}
-            {#if hasBalance}
-              <Positions {market} {balance} />
-            {:else}
-              Nothing here yet
-            {/if}
-          {:else if balanceTab === "liquidity"}
-            <LiquidityPanel {market} entry={existingEntry} on:redeem={e => updateMarket(balance, true)} />
-          {/if}
+          <PositionsPanel {market} />
         {/if}
       {:else if tab === 2}
         <div class="details-panel">
@@ -615,6 +595,7 @@
     gap: 2rem;
     align-items: center;
     width: 100%;
+    flex-shrink: 1;
   }
 
   .details-panel {
@@ -633,7 +614,7 @@
   }
 
   .options {
-    width: 100%;
+    width: 18.75rem;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -651,18 +632,8 @@
     flex-direction: column;
     gap: 1.25rem;
     align-items: center;
+    width: 18.75rem;
   }
-
-  #balances {
-    font-size: 1.25rem;
-    display: flex;
-    gap: 2.5rem;
-    color: rgba(255, 255, 255, 0.5);
-    justify-content: flex-start;
-    font-weight: 500;
-    width: 100%;
-  }
-
   .warning {
     font-weight: 700;
     font-size: 1.1rem;
@@ -674,5 +645,26 @@
     width: 100%;
     flex-direction: column;
     gap: 1rem;
+  }
+
+  @media screen and (max-width: 1000px) {
+    main {
+      gap: 3rem;
+    }
+  }
+
+  @media screen and (max-width: 800px) {
+    main {
+      flex-direction: column;
+      margin-top: 0;
+    }
+
+    .side-panel {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: space-evenly;
+      align-items: flex-start;
+      width: 100%;
+    }
   }
 </style>

@@ -154,9 +154,8 @@
         datasets
       },
       options: {
-        legend: {
-          display: false
-        },
+        responsive: true,
+        maintainAspectRatio: true,
         scales: {
           x: {
             min: firstTimestamp,
