@@ -163,6 +163,7 @@ export function updateOutputs(tx: bsv.Transaction) {
     for (const [index, out] of tx.outputs.entries()) {
       let payoutAddress
       try {
+        if (out.script.chunks.length > 10) continue
         payoutAddress = bsv.Address.fromScript(out.script, network)
       } catch (e) {
         continue
