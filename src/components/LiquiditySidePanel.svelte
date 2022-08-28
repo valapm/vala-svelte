@@ -34,32 +34,33 @@
   $: liquidityPoints = entry && entry.liquidityPoints ? entry.liquidityPoints : 0
 
   $: liquidityPercent =
-    liquidity && market.market_state.liquidity ? (liquidity / market.market_state.liquidity) * 100 : 0
+    liquidity && market.market_state[0].liquidity ? (liquidity / market.market_state[0].liquidity) * 100 : 0
 
   let marketBalance: balanceType
   $: marketBalance = market && {
-    shares: market.market_state.shares,
-    liquidity: market.market_state.liquidity
+    shares: market.market_state[0].shares,
+    liquidity: market.market_state[0].liquidity
   }
 
   let marketStatus: marketStatusType
   $: marketStatus = market && {
-    accLiquidityFeePool: market.market_state.accLiquidityFeePool,
-    decided: market.market_state.decided,
-    decision: market.market_state.decision,
-    liquidityFeePool: market.market_state.liquidityFeePool,
-    liquidityPoints: market.market_state.liquidityPoints,
-    votes: market.market_state.votes
+    accLiquidityFeePool: market.market_state[0].accLiquidityFeePool,
+    decided: market.market_state[0].decided,
+    decision: market.market_state[0].decision,
+    liquidityFeePool: market.market_state[0].liquidityFeePool,
+    liquidityPoints: market.market_state[0].liquidityPoints,
+    votes: market.market_state[0].votes
   }
 
   $: marketVersion = pm.getMarketVersion(market.version)
 
-  $: change = market.market_state.decided && entry ? -entry.liquidity : amount ? (action === 0 ? amount : -amount) : 0
+  $: change =
+    market.market_state[0].decided && entry ? -entry.liquidity : amount ? (action === 0 ? amount : -amount) : 0
 
   $: liquidityBalance = pm.getLiquiditySatBalance(
     marketBalance,
     marketStatus,
-    market.market_state.satoshis,
+    market.market_state[0].satoshis,
     liquidity,
     marketVersion
   )
@@ -76,9 +77,12 @@
   $: usdPrice = (price * $bsvPrice) / 100000000
 
   $: feeChange =
-    entry && entry.prevLiquidityPoolState ? market.market_state.accLiquidityFeePool - entry.prevLiquidityPoolState : 0
+    entry && entry.prevLiquidityPoolState
+      ? market.market_state[0].accLiquidityFeePool - entry.prevLiquidityPoolState
+      : 0
   $: totalLiquidityPoints = liquidityPoints + feeChange * liquidity
-  $: earnings = (totalLiquidityPoints / market.market_state.liquidityPoints || 0) * market.market_state.liquidityFeePool
+  $: earnings =
+    (totalLiquidityPoints / market.market_state[0].liquidityPoints || 0) * market.market_state[0].liquidityFeePool
 
   $: earningUSD = earnings ? round((earnings / 100000000) * $bsvPrice) : 0
 
@@ -90,7 +94,7 @@
 
   $: console.log("entry", entry)
 
-  $: redeemAllSats = market.market_state.decided && entry ? earnings + liquidityBalance : 0
+  $: redeemAllSats = market.market_state[0].decided && entry ? earnings + liquidityBalance : 0
 
   $: redeemAllUSD = (redeemAllSats * $bsvPrice) / 100000000
 
@@ -102,7 +106,7 @@
   let rewardsPanelOpened = false
 </script>
 
-{#if !market.market_state.decided || liquidity || liquidityPoints}
+{#if !market.market_state[0].decided || liquidity || liquidityPoints}
   <div class="panel">
     <h2>Liquidity</h2>
 
@@ -110,7 +114,7 @@
       Earn fees as a liquidity provider. <br />Reward Pool: <b>{market.liquidityFee}%</b> of trading profits
     </div>
 
-    {#if !market.market_state.decided}
+    {#if !market.market_state[0].decided}
       <SidePanelCard
         title="Add/Remove Liquidity"
         gradient={100}
@@ -138,7 +142,7 @@
           </Table>
           <Button
             type="filled full-width"
-            disabled={!insideLimits || !canBuySell}
+            disabled={!loadingUpdate && (!insideLimits || !canBuySell)}
             loading={loadingUpdate}
             on:click={e => dispatch("update", { change })}
             ><b
@@ -187,7 +191,7 @@
           </Table>
           <Button
             type="filled full-width"
-            disabled={!insideLimits || !canBuySell}
+            disabled={!loadingRedeem && (!insideLimits || !canBuySell)}
             loading={loadingRedeem}
             on:click={e => dispatch("redeemAll")}><b>Redeem ${Math.round(redeemAllUSD * 100) / 100}</b></Button
           >

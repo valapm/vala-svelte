@@ -9,7 +9,7 @@ export type notification = {
 export function getMarketNotifications(market) {
   const notifications: notification[] = []
 
-  if (market.market_state.hidden) {
+  if (market.market_state[0].hidden) {
     notifications.push({
       type: "warning",
       title: "Market is hidden",

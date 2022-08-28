@@ -6,7 +6,7 @@
 
   let icon
 
-  $: hostname = parseHostname(oracle.oracleStateByCurrentstateid.domain)
+  $: hostname = parseHostname(oracle.oracle_state[0].domain)
 </script>
 
 <div class="image">

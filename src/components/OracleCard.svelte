@@ -13,8 +13,8 @@
 
   const dispatch = createEventDispatcher()
 
-  $: hostname = parseHostname(oracle.oracleStateByCurrentstateid.domain)
-  $: joined = large ? new Date(oracle.oracle_state.state.transaction.processedAt + "Z") : undefined
+  $: hostname = parseHostname(oracle.oracle_state[0].domain)
+  $: joined = large ? new Date(oracle.oracleStateByFirststateid.state.transaction.processedAt + "Z") : undefined
 </script>
 
 <div id="oracle_card" on:click={() => dispatch("click")} class={button ? "button" : ""} in:fade>
@@ -32,8 +32,8 @@
   </div>
 
   {#if large}
-    {#if oracle.oracleStateByCurrentstateid.details}
-      {oracle.oracleStateByCurrentstateid.details}
+    {#if oracle.oracle_state[0].details}
+      {oracle.oracle_state[0].details}
     {/if}
 
     <div class="footer">

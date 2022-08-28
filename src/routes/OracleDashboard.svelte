@@ -21,14 +21,14 @@
         pubKey
         iconType
         hasCorrectDNS
-        oracle_state {
+        oracleStateByFirststateid {
           state {
             transaction {
               processedAt
             }
           }
         }
-        oracleStateByCurrentstateid {
+        oracle_state {
           details
           domain
           state {
@@ -69,7 +69,7 @@
 </SubHeader>
 
 {#if !loading}
-  {#if oracle && oracle.oracleStateByCurrentstateid && oracle.oracleStateByCurrentstateid.domain && oracle.hasCorrectDNS}
+  {#if oracle && oracle.oracle_state[0] && oracle.oracle_state[0].domain && oracle.hasCorrectDNS}
     {#if selected === 0}
       <OracleOverview {oracle} />
     {:else if selected === 2}

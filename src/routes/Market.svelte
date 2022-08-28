@@ -89,7 +89,7 @@
         oracle {
           iconType
           pubKey
-          oracleStateByCurrentstateid {
+          oracle_state {
             details
             domain
           }
@@ -158,21 +158,21 @@
   $: if ($marketRes.data) market = cloneDeep($marketRes.data.market[0])
   $: if ($currentMarketState.data && market) {
     console.log("Merging new market state", $currentMarketState.data)
-    merge(market.market_state, $currentMarketState.data.market_state[0])
+    merge(market.market_state[0], $currentMarketState.data.market_state[0])
     market = market
   }
 
   $: compatibleVersion = market && isCompatibleVersion(market.version)
 
-  $: existingEntry = $publicKey && market && market.market_state.myEntry[0]
+  $: existingEntry = $publicKey && market && market.market_state[0].myEntry[0]
   $: balance = existingEntry || {
     shares: new Array(market ? market.options.length : 0).fill(0),
     liquidity: 0
   }
   $: status = market
-    ? market.market_state.decided
+    ? market.market_state[0].decided
       ? 2
-      : market.market_state.market_oracles[0].committed
+      : market.market_state[0].market_oracles[0].committed
       ? 1
       : 0
     : undefined
@@ -195,7 +195,7 @@
 
     const entriesQuery = gql`
       query {
-      entry(where: {market_state: {id: {_eq: ${market.market_state.id}}}}) {
+      entry(where: {market_state: {id: {_eq: ${market.market_state[0].id}}}}) {
         liquidity
         shares
         liquidityPoints
@@ -276,7 +276,7 @@
   // }
 
   async function getUpdateTx(newBalance, entries, redeemLiquidityPoints = false) {
-    const currentTx = await getTx(market.market_state.state.transaction.txid)
+    const currentTx = await getTx(market.market_state[0].state.transaction.txid)
 
     let updateTx
     if (existingEntry) {
@@ -311,7 +311,7 @@
         $address,
         $utxos,
         $privateKey,
-        market.market_state.state.outputIndex,
+        market.market_state[0].state.outputIndex,
         feeb
       )
     }
@@ -327,14 +327,14 @@
     console.log("Resolving option " + option)
     resolving = true
 
-    const currentTx = await getTx(market.market_state.state.transaction.txid)
+    const currentTx = await getTx(market.market_state[0].state.transaction.txid)
     const updateTx = await pmTx.getOracleVoteTx(currentTx, option, $rabinPrivKey, $address, $utxos, $privateKey, feeb)
 
     const broadcasted = await broadcast(updateTx)
 
     if (broadcasted) {
-      market.market_state.decision = option
-      market.market_state.decided = true
+      market.market_state[0].decision = option
+      market.market_state[0].decided = true
     }
 
     resolving = false
@@ -347,8 +347,8 @@
 
     console.log("Redeeming invalid shares")
     await updateMarket({
-      liquidity: market.market_state.liquidity,
-      shares: market.market_state.shares.map((s, i) => (i === market.market_state.decision ? i : 0))
+      liquidity: market.market_state[0].liquidity,
+      shares: market.market_state[0].shares.map((s, i) => (i === market.market_state[0].decision ? i : 0))
     })
 
     redeemingInvalid = false
@@ -362,14 +362,14 @@
 
     console.log("Hiding market")
 
-    const currentTx = await getTx(market.market_state.state.transaction.txid)
+    const currentTx = await getTx(market.market_state[0].state.transaction.txid)
     const updateTx = await pmTx.getUpdateMarketSettingsTx(currentTx, settings, $privateKey, feeb)
     pmTx.fundTx(updateTx, $privateKey, $address, $utxos, feeb)
 
     const broadcasted = await broadcast(updateTx)
 
     if (broadcasted) {
-      market.market_state.hidden = settings.hidden
+      market.market_state[0].hidden = settings.hidden
     }
 
     updatingSettings = false
@@ -377,14 +377,14 @@
   }
 
   async function getCommitTx() {
-    const currentTx = await getTx(market.market_state.state.transaction.txid)
+    const currentTx = await getTx(market.market_state[0].state.transaction.txid)
     const updateTx = pmTx.getOracleCommitTx(
       currentTx,
       $rabinPrivKey,
       $address,
       $utxos,
       $privateKey,
-      market.market_state.state.outputIndex,
+      market.market_state[0].state.outputIndex,
       feeb
     )
     return updateTx
@@ -398,7 +398,7 @@
     const tx = await getCommitTx()
     const broadcasted = await broadcast(tx)
 
-    if (broadcasted) market.market_state.market_oracles[0].committed = true
+    if (broadcasted) market.market_state[0].market_oracles[0].committed = true
 
     commitLoading = false
     updating = false
@@ -427,7 +427,7 @@
   }
 
   async function redeemShares() {
-    updatingOption = market.market_state.decision
+    updatingOption = market.market_state[0].decision
 
     const newBalance = {
       shares: new Array(balance.shares.length).fill(0),
@@ -436,7 +436,7 @@
 
     await updateMarket(newBalance)
 
-    if (updatingOption === market.market_state.decision) updatingOption = undefined
+    if (updatingOption === market.market_state[0].decision) updatingOption = undefined
   }
 
   async function changeLiquidity(change: number) {
@@ -459,7 +459,7 @@
     redeemingLiquidity = true
     await updateMarket(
       {
-        shares: balance.shares.map((s, i) => (i === market.market_state.decision ? s : 0)),
+        shares: balance.shares.map((s, i) => (i === market.market_state[0].decision ? s : 0)),
         liquidity: 0
       },
       true
@@ -474,7 +474,7 @@
     openedPanels = newArray
   }
 
-  $: if (market && market.market_state.decided) openedPanels[market.market_state.decision] = true
+  $: if (market && market.market_state[0].decided) openedPanels[market.market_state[0].decision] = true
 
   $: notifications = market ? getMarketNotifications(market) : []
 </script>
@@ -545,7 +545,7 @@
         {/if}
 
         <div class="options">
-          {#each market.market_state.shares as shares, index}
+          {#each market.market_state[0].shares as shares, index}
             <OptionPanel
               on:opened={e => handleOpened(index)}
               open={openedPanels[index]}

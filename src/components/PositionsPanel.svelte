@@ -6,7 +6,7 @@
 
   export let market
 
-  $: existingEntry = $publicKey && market && market.market_state.myEntry[0]
+  $: existingEntry = $publicKey && market && market.market_state[0].myEntry[0]
   $: balance = existingEntry || {
     shares: new Array(market ? market.options.length : 0).fill(0),
     liquidity: 0

@@ -45,8 +45,8 @@
 
   // $: marketVersion = pm.getMarketVersion(market.version)
   $: marketBalance = {
-    shares: market.market_state.shares,
-    liquidity: market.market_state.liquidity
+    shares: market.market_state[0].shares,
+    liquidity: market.market_state[0].liquidity
   }
   $: change = amount ? (action === 0 ? amount : -amount) : 0
   $: newPrice = getSharePrice(marketBalance, option, change)
@@ -70,12 +70,12 @@
   $: canBuySell = change !== 0 && (action === 0 ? price <= $satBalance : -change <= balance.shares[option])
   $: canSell = balance.shares[option] > 0
 
-  $: winning = market.market_state.decided && market.market_state.decision === option
-  $: loosing = market.market_state.decided && market.market_state.decision !== option
+  $: winning = market.market_state[0].decided && market.market_state[0].decision === option
+  $: loosing = market.market_state[0].decided && market.market_state[0].decision !== option
   $: winningShares = winning ? balance.shares[option] : 0
   $: winningUSD = (winningShares * lmsr.SatScaling * $bsvPrice) / 100000000
 
-  $: deactivated = !market.market_state.market_oracles[0].committed || loosing
+  $: deactivated = !market.market_state[0].market_oracles[0].committed || loosing
   $: gradient = winning ? 100 : loosing ? 0 : probability ? Math.round(probability * 100) : 0
 
   $: if (open) {
@@ -85,7 +85,7 @@
 
 <SidePanelCard title={market.options[option].name} {gradient} {deactivated} limitTitle="6rem" bind:open>
   <div slot="header">
-    {#if !market.market_state.decided}
+    {#if !market.market_state[0].decided}
       <div class="price">${Math.round(priceBuyOneUSD * 100) / 100}</div>
       {#if probability}
         <span class="probability">{Math.round(probability * 100)}%</span>
@@ -101,7 +101,7 @@
     <div class="details">
       {market.options[option].details}
     </div>
-    {#if !market.market_state.decided}
+    {#if !market.market_state[0].decided}
       <Switch bind:selected={action} actions={[{ title: "Buy" }, { title: "Sell", disabled: !canSell }]} />
       <div class="balance">Balance: <b>{balance.shares[option]}</b> Shares</div>
       <NumberInput
@@ -118,9 +118,9 @@
         >
       </div>
     {/if}
-    {#if !market.market_state.decided || winningShares}
+    {#if !market.market_state[0].decided || winningShares}
       <Table>
-        {#if action === 0 && !market.market_state.decided}
+        {#if action === 0 && !market.market_state[0].decided}
           <div>
             <div class="label">Potential Win</div>
             <div>${potentialWin >= 0 ? Math.round(potentialWin * 100) / 100 : 0}</div>
@@ -136,7 +136,7 @@
           <div>${Math.round(usdFeeEstimate * 100) / 100}</div>
         </div>
 
-        {#if action === 1 || market.market_state.decided}
+        {#if action === 1 || market.market_state[0].decided}
           <div>
             <div class="label">Market Fee</div>
             <div>{market.creatorFee}%</div>
@@ -156,7 +156,7 @@
 
       <Button
         type="filled-blue full-width"
-        disabled={!winningShares && (!insideLimits || !canBuySell)}
+        disabled={!loading && !winningShares && (!insideLimits || !canBuySell)}
         on:click={() => (winningShares ? dispatch("redeem") : dispatch("update", { change }))}
         {loading}
         ><b

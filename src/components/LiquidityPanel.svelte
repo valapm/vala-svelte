@@ -10,26 +10,29 @@
   $: liquidity = entry && entry.liquidity ? entry.liquidity : 0
   $: liquidityPoints = entry && entry.liquidityPoints ? entry.liquidityPoints : 0
 
-  $: liquidityPercent = (liquidity / market.market_state.liquidity) * 100
+  $: liquidityPercent = (liquidity / market.market_state[0].liquidity) * 100
 
   $: marketBalance = market && {
-    shares: market.market_state.shares,
-    liquidity: market.market_state.liquidity
+    shares: market.market_state[0].shares,
+    liquidity: market.market_state[0].liquidity
   }
 
   $: liquidityBalance =
     lmsr.getLmsrSats(marketBalance) -
     lmsr.getLmsrSats({
-      shares: market.market_state.shares,
-      liquidity: market.market_state.liquidity - liquidity
+      shares: market.market_state[0].shares,
+      liquidity: market.market_state[0].liquidity - liquidity
     })
 
   $: liquidityBalanceUSD = round((liquidityBalance / 100000000) * $price)
 
   $: feeChange =
-    entry && entry.prevLiquidityPoolState ? market.market_state.accLiquidityFeePool - entry.prevLiquidityPoolState : 0
+    entry && entry.prevLiquidityPoolState
+      ? market.market_state[0].accLiquidityFeePool - entry.prevLiquidityPoolState
+      : 0
   $: totalLiquidityPoints = liquidityPoints + feeChange * liquidity
-  $: earnings = (totalLiquidityPoints / market.market_state.liquidityPoints || 0) * market.market_state.liquidityFeePool
+  $: earnings =
+    (totalLiquidityPoints / market.market_state[0].liquidityPoints || 0) * market.market_state[0].liquidityFeePool
 
   $: earningUSD = earnings ? round((earnings / 100000000) * $price) : 0
 </script>

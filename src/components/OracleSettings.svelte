@@ -108,7 +108,7 @@
     }
   `
 
-  async function getNewOracleTx(): bsv.Transaction {
+  async function getNewOracleTx(): Promise<bsv.Transaction> {
     const valaState = (await gqlClient.request(valaIndexTxQuery)).state[0]
 
     const prevTx = new bsv.Transaction()
@@ -145,10 +145,10 @@
       return
     }
 
-    if (oracle && oracle.oracleStateByCurrentstateid) {
+    if (oracle && oracle.oracle_state[0]) {
       prevTx = new bsv.Transaction()
-      prevTx.fromString(oracle.oracleStateByCurrentstateid.state.transaction.hex)
-      prevOutputIndex = oracle.oracleStateByCurrentstateid.state.outputIndex
+      prevTx.fromString(oracle.oracle_state[0].state.transaction.hex)
+      prevOutputIndex = oracle.oracle_state[0].state.outputIndex
     } else {
       // Initialize oracle
       const initTx = await getNewOracleTx()
@@ -209,8 +209,8 @@
     if (oracle) {
       const newDate = new Date(Date.now()).toISOString()
 
-      oracle.oracleStateByCurrentstateid = newCurrentOracleState
-      oracle.oracle_state = {
+      oracle.oracle_state[0] = newCurrentOracleState
+      oracle.oracleStateByFirststateid = {
         state: {
           transaction: {
             processedAt: newDate.slice(0, newDate.length - 1) // Remove the Z
@@ -218,7 +218,7 @@
         }
       }
     } else {
-      oracle = { oracleStateByCurrentstateid: newCurrentOracleState, pubKey: $rabinPubKey.toString() }
+      oracle = { oracle_state: [newCurrentOracleState], pubKey: $rabinPubKey.toString() }
     }
 
     loading = false
@@ -245,7 +245,7 @@
   }
 
   async function resolveMarket(market, vote: number) {
-    const currentTx = await getRawTx(market.market_state.state.transactionTxid)
+    const currentTx = await getRawTx(market.market_state[0].state.transactionTxid)
 
     console.log([currentTx, vote, $rabinPrivKey, $address, $utxos, $privateKey])
 
@@ -255,7 +255,7 @@
   }
 
   async function commitToMarket(market) {
-    const currentTx = await getRawTx(market.market_state.state.transactionTxid)
+    const currentTx = await getRawTx(market.market_state[0].state.transactionTxid)
 
     // const tx = buildTx(market)
     // fundTx(tx, privateKey, address, utxos)
@@ -266,16 +266,16 @@
   }
 
   onMount(async () => {
-    if (oracle && oracle.oracleStateByCurrentstateid) {
-      const oracleDomain = oracle.oracleStateByCurrentstateid.domain
+    if (oracle && oracle.oracle_state[0]) {
+      const oracleDomain = oracle.oracle_state[0].domain
       if (oracleDomain) domainName = parseHostname(oracleDomain)
-      details = oracle.oracleStateByCurrentstateid.details
+      details = oracle.oracle_state[0].details
     }
   })
 </script>
 
 <div id="oracle">
-  {#if !oracle || !oracle.oracleStateByCurrentstateid || !oracle.oracleStateByCurrentstateid.domain}
+  {#if !oracle || !oracle.oracle_state[0] || !oracle.oracle_state[0].domain}
     <h1>Oracle Setup</h1>
 
     <div class="setup-form">

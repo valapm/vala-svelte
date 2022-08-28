@@ -33,6 +33,7 @@
     "fast-password-entropy": "^1.1.1",
     "graphql": "^15.8.0",
     "graphql-request": "^3.7.0",
+    "json-to-graphql-query": "^2.2.4",
     "lodash": "^4.17.21",
     "mini-css-extract-plugin": "^1.6.2",
     "moment": "^2.29.2",

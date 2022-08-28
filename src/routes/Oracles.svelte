@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { gql } from "graphql-request"
   import { gqlClient } from "../utils/graphql"
   import { push } from "svelte-spa-router"
@@ -9,14 +9,14 @@
 
   $: oracleQuery = gql`
     {
-      oracle(order_by: { market_oracles_aggregate: {count: desc} }, where: { hasCorrectDNS: {_eq: true}, oracleStateByCurrentstateid: { _or: [{ domain: {_ilike: "%${search}%"}}, {details: {_ilike: "%${search}%"}}]}}) {
+      oracle(order_by: { market_oracles_aggregate: {count: desc} }, where: { hasCorrectDNS: {_eq: true}, oracle_state: {_or: [{ domain: {_ilike: "%${search}%"}}, {details: {_ilike: "%${search}%"}}]}}) {
         pubKey
-        oracleStateByCurrentstateid {
+        oracle_state {
           domain
           details
         }
         iconType
-        oracle_state {
+        oracleStateByFirststateid {
           state {
             transaction {
               processedAt

@@ -16,26 +16,26 @@
   export let market
 
   $: balance = {
-    shares: market.market_state.shares,
-    liquidity: market.market_state.liquidity
+    shares: market.market_state[0].shares,
+    liquidity: market.market_state[0].liquidity
   }
 
   $: txid = market.marketStateByFirststateid.state.transaction.txid
 
-  $: shares = market.market_state.shares.map((share, index) => {
-    const newShares = [...market.market_state.shares]
+  $: shares = market.market_state[0].shares.map((share, index) => {
+    const newShares = [...market.market_state[0].shares]
     newShares[index] += 1
 
     const satPrice =
       lmsr.getLmsrSats({
         shares: newShares,
-        liquidity: market.market_state.liquidity
+        liquidity: market.market_state[0].liquidity
       }) - lmsr.getLmsrSats(balance)
 
     const usdPrice = round((satPrice / 100000000) * $price)
 
-    const probability = market.market_state.decided
-      ? market.market_state.decision === index
+    const probability = market.market_state[0].decided
+      ? market.market_state[0].decision === index
         ? 1
         : 0
       : lmsr.getProbability(balance, share)
@@ -46,15 +46,15 @@
     }
   })
 
-  $: bsvVolume = market.market_state.totalSatVolume / 100000000
+  $: bsvVolume = market.market_state[0].totalSatVolume / 100000000
   $: usdVolume = bsvVolume * $price
   $: bsvLiquidity =
     lmsr.getLmsrSats({ liquidity: balance.liquidity, shares: new Array(market.options.length).fill(0) }) / 100000000
   $: usdLiquidity = bsvLiquidity * $price
 
-  $: status = market.market_state.decided
+  $: status = market.market_state[0].decided
     ? 2
-    : market.market_state.market_oracles.every(oracle => oracle.committed)
+    : market.market_state[0].market_oracles.every(oracle => oracle.committed)
     ? 1
     : 0
 
@@ -64,7 +64,7 @@
     return Math.round(n * 100) / 100
   }
 
-  $: oracleHostname = parseHostname(market.market_state.market_oracles[0].oracle.oracleStateByCurrentstateid.domain)
+  $: oracleHostname = parseHostname(market.market_state[0].market_oracles[0].oracle.oracle_state[0].domain)
 </script>
 
 <a class="market" href="#/market/{txid}">
@@ -84,7 +84,7 @@
           {option}
           price={shares[index].usdPrice}
           probability={shares[index].probability}
-          resolved={market.market_state.decided}
+          resolved={market.market_state[0].decided}
         />
       {/each}
     </div>
@@ -94,8 +94,8 @@
         <div id="volume">{formatUSD(usdVolume, true)}</div>
       </div>
       <div class="oracle">
-        {#if market.market_state.market_oracles[0].oracle.iconType}
-          <OracleIcon oracle={market.market_state.market_oracles[0].oracle} />
+        {#if market.market_state[0].market_oracles[0].oracle.iconType}
+          <OracleIcon oracle={market.market_state[0].market_oracles[0].oracle} />
         {/if}
         {oracleHostname}
       </div>

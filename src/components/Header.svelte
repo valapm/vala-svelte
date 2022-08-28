@@ -19,7 +19,7 @@
     query {
       oracle(where: {pubKey: {_eq: "${$rabinPubKey}"}}) {
         hasCorrectDNS
-        oracleStateByCurrentstateid {
+        oracle_state {
           domain
         }
       }
@@ -27,7 +27,7 @@
 
   let oracle
 
-  $: isOracle = oracle && oracle.oracleStateByCurrentstateid && oracle.oracleStateByCurrentstateid.domain
+  $: isOracle = oracle && oracle.oracle_state[0] && oracle.oracle_state[0].domain
 
   onMount(async () => {
     const oracleData = await gqlClient.request(oracleQuery)
@@ -59,7 +59,7 @@
 
       {#if $seed}
         {#if isOracle}
-          <a href="#/oracle" class="button">{oracle.oracleStateByCurrentstateid.domain}</a>
+          <a href="#/oracle" class="button">{oracle.oracle_state[0].domain}</a>
         {/if}
 
         <a class="button" href="#/wallet">

@@ -20,17 +20,17 @@
 
   let selectOption = false
   let settingsModal = false
-  let selectedOption = market.market_state.shares.indexOf(Math.max(...market.market_state.shares))
+  let selectedOption = market.market_state[0].shares.indexOf(Math.max(...market.market_state[0].shares))
 
   $: redeemInvalid =
-    market.market_state.decided &&
-    market.market_state.shares.reduce((a, b, i) => (i === market.market_state.decision ? a : a + b)) > 0
+    market.market_state[0].decided &&
+    market.market_state[0].shares.reduce((a, b, i) => (i === market.market_state[0].decision ? a : a + b)) > 0
 
   $: redeemInvalidSats = redeemInvalid
     ? lmsr.getLmsrSats(market.market_state) -
       lmsr.getLmsrSats({
-        liquidity: market.market_state.liquidity,
-        shares: market.market_state.shares.map((a, i) => (i === market.market_state.decision ? a : 0))
+        liquidity: market.market_state[0].liquidity,
+        shares: market.market_state[0].shares.map((a, i) => (i === market.market_state[0].decision ? a : 0))
       })
     : 0
 
@@ -48,10 +48,10 @@
   <Table>
     <div>
       <div class="label">Total Fee Earnings</div>
-      <div><b>${round((market.market_state.creatorSatEarnings * $price) / 100000000)}</b></div>
+      <div><b>${round((market.market_state[0].creatorSatEarnings * $price) / 100000000)}</b></div>
     </div>
   </Table>
-  {#if !market.market_state.decided}
+  {#if !market.market_state[0].decided}
     {#if semverGte(marketVersion.version, "0.4.1")}
       <Button type="full-width" on:click={() => (settingsModal = true)}>Settings</Button>
     {/if}
@@ -91,7 +91,7 @@
         <p>
           You can hide this market. This will only delist it from vala.ai but people will still be able to trade in it.
         </p>
-        {#if !market.market_state.hidden}
+        {#if !market.market_state[0].hidden}
           <Button type="full-width" on:click={() => dispatch("hide")} loading={loadingHide}>Hide Market</Button>
         {:else}
           <Button type="full-width" on:click={() => dispatch("unhide")} loading={loadingHide}>Unhide Market</Button>

@@ -14,7 +14,7 @@
 
 <div class="dns_info_box">
   <div class="header">
-    <h2>Validate {oracle.oracleStateByCurrentstateid.domain}</h2>
+    <h2>Validate {oracle.oracle_state[0].domain}</h2>
   </div>
   <div class="body">
     <p>

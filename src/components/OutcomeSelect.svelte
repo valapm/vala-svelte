@@ -9,8 +9,8 @@
   export let selected = false
 
   let marketBalance = {
-    shares: market.market_state.shares,
-    liquidity: market.market_state.liquidity
+    shares: market.market_state[0].shares,
+    liquidity: market.market_state[0].liquidity
   }
   let probability = lmsr.getProbability(marketBalance, marketBalance.shares[option])
 </script>

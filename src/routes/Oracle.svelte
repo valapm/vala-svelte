@@ -14,7 +14,7 @@
       oracle(where: {pubKey: {_eq: "${params.rabinPubKey}"}}) {
         pubKey
         hasCorrectDNS
-        oracle_state {
+        oracleStateByFirststateid {
           state {
             transaction {
               processedAt
@@ -22,7 +22,7 @@
           }
         }
         iconType
-        oracleStateByCurrentstateid {
+        oracle_state {
           details
           domain
           state {

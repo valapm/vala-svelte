@@ -115,7 +115,7 @@
         // console.log("Result", JSON.stringify(shareData))
 
         // Add current time to the end
-        if (stateIndex === data.market_state.length - 1 && !market.market_state.decided) {
+        if (stateIndex === data.market_state.length - 1 && !market.market_state[0].decided) {
           shareData[shareIndex] = shareData[shareIndex].concat([
             {
               x: new Date().valueOf(),

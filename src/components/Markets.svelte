@@ -7,6 +7,7 @@
 
   import { query } from "svelte-apollo"
   import { gql } from "@apollo/client/core"
+  import { jsonToGraphQLQuery, EnumType } from "json-to-graphql-query"
 
   import Searchbar from "../components/Searchbar.svelte"
   import SearchOptions from "../components/SearchOptions.svelte"
@@ -16,8 +17,8 @@
   // import dummyMarkets from "../test/dummymarkets.json"
 
   const sortOptions = [
-    "Market Cap",
-    // "Total Volume",
+    // "Market Cap",
+    "Total Volume",
     "Most Recent",
     "Liquidity"
   ]
@@ -35,107 +36,181 @@
   let filter = [0, 1]
   let direction = "desc"
 
+  // $: if (markets) console.log("markets changed")
+  // $: if (search) console.log("search changed")
+  // $: if (sort) console.log("sort changed")
+  // $: if (filter) console.log("filter changed")
+  // $: if (direction) console.log("direction changed")
+
+  // let filterQueries = [
+  //   "{market_state: {market_oracles: {committed: {_eq: true}}, decided: {_eq: false}}}",
+  //   "{market_state: {decided: {_eq: true}}}"
+  // ]
   let filterQueries = [
-    "{market_state: {market_oracles: {committed: {_eq: true}}, decided: {_eq: false}}}",
-    "{market_state: {decided: {_eq: true}}}"
+    { market_oracles: { committed: { _eq: true } }, decided: { _eq: false } },
+    { decided: { _eq: true } }
   ]
 
   $: isCurrentOracle = oracle && $rabinPubKey && $rabinPubKey.toString() === oracle.pubKey
 
-  let filters = []
+  // let filters = []
+  // let marketStateFilter = {}
+  let marketFilter = {}
   $: {
+    let marketStateFilters = []
+
+    if (filter.length) {
+      let selectedFilterQueries = []
+      for (const i of filter) {
+        selectedFilterQueries.push(filterQueries[i])
+      }
+      marketStateFilters.push({ _or: selectedFilterQueries })
+    }
+
     if (!isCurrentOracle) {
       // Exclude hidden markets
       if ($publicKey) {
-        filters = [
-          ...filters,
-          `{market_state: {_or: [{hidden: {_eq: false}}, {entries: {investorPubKey: {_eq: "${$publicKey.toString()}"}}}]}}`
-        ]
+        // marketStateFilter = {
+        //   ...marketStateFilter,
+        //   _or: [{ hidden: { _eq: false } }, { entries: { investorPubKey: { _eq: publicKey.toString() } } }]
+        // }
+        marketStateFilters.push({
+          _or: [{ hidden: { _eq: false } }, { entries: { investorPubKey: { _eq: $publicKey.toString() } } }]
+        })
+        // filters = [
+        //   ...filters,
+        //   `{market_state: {_or: [{hidden: {_eq: false}}, {entries: {investorPubKey: {_eq: "${$publicKey.toString()}"}}}]}}`
+        // ]
       } else {
-        filters = [...filters, `{market_state: {hidden: {_eq: false}}}`]
+        // marketStateFilter = {
+        //   ...marketStateFilter,
+        //   hidden: { _eq: false }
+        // }
+        marketStateFilters.push({ hidden: { _eq: false } })
+        // filters = [...filters, `{market_state: {hidden: {_eq: false}}}`]
       }
     }
 
     if (!isCurrentOracle && !pubKeyFilter) {
       // Exclude unpublished marketes
-      filters = [...filters, "{market_state: {market_oracles: {committed: {_eq: true}}}}"]
+      // marketStateFilter = {
+      //   ...marketStateFilter,
+      //   market_oracles: { committed: { _eq: true } }
+      // }
+      marketStateFilters.push({ market_oracles: { committed: { _eq: true } } })
+      // filters = [...filters, "{market_state: {market_oracles: {committed: {_eq: true}}}}"]
     }
 
     if (pubKeyFilter) {
       // Filter by investor pubKey
-      filters = [...filters, `{market_state: {entries: {investorPubKey: {_eq: "${pubKeyFilter}"}}}}`]
+      // marketStateFilter = {
+      //   ...marketStateFilter,
+      //   entries: { investorPubKey: { _eq: pubKeyFilter } }
+      // }
+      marketStateFilters.push({ entries: { investorPubKey: { _eq: pubKeyFilter } } })
+      // filters = [...filters, `{market_state: {entries: {investorPubKey: {_eq: "${pubKeyFilter}"}}}}`]
     }
 
     if (oracle) {
       // Filter by oracle
-      filters = [...filters, `{oraclePubKey: {_eq: "${oracle.pubKey}" }}`]
+      marketFilter = {
+        ...marketFilter,
+        oraclePubKey: { _eq: oracle.pubKey }
+      }
+      // filters = [...filters, `{oraclePubKey: {_eq: "${oracle.pubKey}" }}`]
+    }
+
+    if (marketStateFilters.length) {
+      marketFilter = {
+        ...marketFilter,
+        ...(marketStateFilters.length && {
+          market_state: {
+            _and: marketStateFilters
+          }
+        })
+      }
     }
   }
 
   $: orderQueries = [
-    `market_state: { liquidity: ${direction} }`,
-    `marketStateByFirststateid: { state: { transaction: { processedAt: ${direction} } } }`,
-    `market_state: { liquidity: ${direction} }`
-  ]
-
-  const versions = Object.keys(contracts.marketContracts)
-
-  $: marketQuery = gql`
     {
-      market(order_by: { ${
-        orderQueries[sort]
-      } }, where: { resolve: {_ilike: "%${search}%"}, version: { _in: ${JSON.stringify(versions)}}, _or: [ ${filter
-    .map(fIndex => filterQueries[fIndex])
-    .join(", ")} ], _and: [${filters.join(", ")}]}${limit ? ", limit: " + limit : ""}) {
-        market_state {
-          market_oracles {
-            committed
-            oracle {
-              iconType
-              oracleStateByCurrentstateid {
-                domain
-              }
-            }
-          }
-          satoshis
-          decided
-          shares
-          liquidity
-          decision
-          totalSatVolume
+      market_state_aggregate: {
+        max: {
+          totalSatVolume: new EnumType(direction)
         }
-        marketStateByFirststateid {
-          state {
-            transaction {
-              txid
-              broadcastedAt
-              minerTimestamp
-              processedAt
-            }
-          }
-        }
-        resolve
-        details
-        options {
-          name
+      }
+    },
+    { marketStateByFirststateid: { state: { transaction: { processedAt: direction } } } },
+    {
+      market_state_aggregate: {
+        max: {
+          liquidity: new EnumType(direction)
         }
       }
     }
-  `
+  ]
 
-  $: marketRes = query(marketQuery)
-  // $: console.log($marketRes, marketQuery)
+  $: globalFilter = {
+    ...marketFilter,
+    ...(search && { resolve: { _ilike: `%${search}%` } }),
+    version: { _in: versions }
+  }
+
+  const versions = Object.keys(contracts.marketContracts)
+
+  $: jsonQuery = {
+    market: {
+      __args: { where: globalFilter, order_by: orderQueries[sort], ...(limit && { limit: limit }) },
+      market_state: {
+        market_oracles: {
+          committed: true,
+          oracle: {
+            iconType: true,
+            oracle_state: {
+              domain: true
+            }
+          }
+        },
+        satoshis: true,
+        decided: true,
+        shares: true,
+        liquidity: true,
+        decision: true,
+        totalSatVolume: true
+      },
+      marketStateByFirststateid: {
+        state: {
+          transaction: {
+            txid: true,
+            broadcastedAt: true,
+            minerTimestamp: true,
+            processedAt: true
+          }
+        }
+      },
+      resolve: true,
+      details: true,
+      options: {
+        name: true
+      }
+    }
+  }
+
+  $: console.log(jsonToGraphQLQuery(jsonQuery))
+  $: marketQuery = gql`{${jsonToGraphQLQuery(jsonQuery)}}`
+
+  $: marketRes = initializing ? undefined : query(marketQuery)
 
   // For debugging the masonry grid
   // $: if ($marketRes.data) markets = dummyMarkets.filter(e => Math.random() > 0.5)
 
   let items = []
-  $: if ($marketRes.data) {
+  $: if ($marketRes && $marketRes.data) {
     items = $marketRes.data.market.map((market, index) => {
       return { ...market, id: market.marketStateByFirststateid.state.transaction.txid }
     })
-    if (isCurrentOracle) items.unshift({ id: "createMarket" })
   }
+  $: if (isCurrentOracle) items.unshift({ id: "createMarket" })
 
   function remToPixels(rem) {
     return rem * parseFloat(getComputedStyle(document.documentElement).fontSize)
@@ -145,22 +220,21 @@
 
   // const [send, receive] = crossfade({ duration: 300, fallback: fade })
 
+  let initializing = true
   onMount(() => {
     if (isCurrentOracle || pubKeyFilter) {
       filterOptions = [...filterOptions, "Unconfirmed Markets"]
-      filterQueries = [...filterQueries, "{market_state: {market_oracles: {committed: {_eq: false}}}}"]
+      filterQueries = [...filterQueries, { market_state: { market_oracles: { committed: { _eq: false } } } }]
       filter = [0, 1, 2]
     }
+    initializing = false
   })
 </script>
 
 <div class="markets">
   {#if searchBar}
     <div class="search">
-      <Searchbar
-        bind:value={search}
-        placeholder="Search Bets {oracle ? 'by ' + oracle.oracleStateByCurrentstateid.domain : ''}"
-      />
+      <Searchbar bind:value={search} placeholder="Search Bets {oracle ? 'by ' + oracle.oracle_state[0].domain : ''}" />
       <SearchOptions {sortOptions} {filterOptions} bind:sort bind:filter bind:direction />
     </div>
   {/if}
@@ -181,7 +255,7 @@
       <!-- <MarketCard {market} /> -->
       <!-- </div> -->
     </Masonry>
-  {:else if !$marketRes.loading}
+  {:else if $marketRes && !$marketRes.loading}
     <p id="nothing_found">Nothing found!</p>
   {/if}
 </div>

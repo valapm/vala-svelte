@@ -10,8 +10,8 @@
   export let balance
 
   $: marketBalance = market && {
-    shares: market.market_state.shares,
-    liquidity: market.market_state.liquidity
+    shares: market.market_state[0].shares,
+    liquidity: market.market_state[0].liquidity
   }
   $: satPrices = marketBalance.shares.map((_, index) => getSharePrice(marketBalance, index, 1))
   $: usdPrices = satPrices.map(sats => round((sats / 100000000) * $price))

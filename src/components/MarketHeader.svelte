@@ -7,7 +7,7 @@
 
   const colors = ["#6CD4FF", "#00FFC5", "rgba(255, 255, 255, 0.5)"]
 
-  $: status = market && market.market_state.decided ? 2 : market.market_state.market_oracles[0].committed ? 1 : 0
+  $: status = market && market.market_state[0].decided ? 2 : market.market_state[0].market_oracles[0].committed ? 1 : 0
   $: creationDate =
     market && getCreationDate(market).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })
 </script>

@@ -29,7 +29,7 @@
       {market.details}
       <div class="version">
         Market Version: <a
-          href="https://{testnet ? 'test.' : ''}whatsonchain.com/tx/{market.market_state.state.transaction.txid}"
+          href="https://{testnet ? 'test.' : ''}whatsonchain.com/tx/{market.market_state[0].state.transaction.txid}"
           >{version ? version.version : "?"}</a
         >
       </div>
