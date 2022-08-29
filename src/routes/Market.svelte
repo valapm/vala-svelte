@@ -10,6 +10,7 @@
   import { rabinPubKey, rabinPrivKey } from "../store/oracle"
   import { push } from "svelte-spa-router"
   import { notify } from "../store/notifications"
+  import { confirmingTx } from "../store/tx"
 
   import { query, subscribe } from "svelte-apollo"
   import { gql } from "@apollo/client/core"
@@ -72,10 +73,24 @@
         }
         votes
         totalSatVolume
+        stateCount
         ${$publicKey ? myEntryQuery : ""}
       }
     }
   `
+
+  // const confimedStateQuery = gql`
+  //   subscription {
+  //     market_state(where: {state: {transaction: {broadcasted: {_eq:true}}}, market: {marketStateByFirststateid: { state: {transaction: {txid: {_eq: "${params.firstTxTxid}"}}}}}}, order_by: {stateCount:desc}, limit: 1) {
+  //       state {
+  //         transaction {
+  //           txid
+  //         }
+  //       }
+  //       stateCount
+  //     }
+  //   }
+  // `
 
   const marketQuery = gql`
   query {
@@ -128,6 +143,7 @@
           hidden
           votes
           totalSatVolume
+          stateCount
           ${$publicKey ? myEntryQuery : ""}
         }
         marketStateByFirststateid {
@@ -153,6 +169,7 @@
 
   const marketRes = query(marketQuery)
   const currentMarketState = subscribe(marketStateQuery)
+  // const confirmedState = subscribe(confimedStateQuery)
 
   let market
   $: if ($marketRes.data) market = cloneDeep($marketRes.data.market[0])
@@ -193,6 +210,7 @@
     } // TODO: Show error
     updating = true
 
+    const newStateCount = market.market_state[0].stateCount + 1
     const entriesQuery = gql`
       query {
       entry(where: {market_state: {id: {_eq: ${market.market_state[0].id}}}}) {
@@ -232,11 +250,50 @@
 
     console.log(newTx)
 
-    await broadcast(newTx)
-    // if (broadcasted) market TODO: Update myEntry, global balance?
+    // Mark transaction as confirming
+
+    const broadcasted = await broadcast(newTx)
+    if (broadcasted) {
+      const notification = notify(
+        {
+          type: "success",
+          text: "Order successfully placed",
+          description: "Waiting for confirmation"
+        },
+        0
+      )
+      $confirmingTx = { txid: newTx.hash, notification }
+    }
 
     updating = false
   }
+
+  // // Notify user when places order confirms or is rejected
+  // $: if ($confirmedState.data) {
+  //   const newMarketState = $confirmedState.data.market_state[0]
+  //   console.log("confirmed: ", newMarketState, $confirmingTxs)
+  //   const confirmingTxHash = $confirmingTxs[newMarketState.stateCount]
+  //   if (confirmingTxHash) {
+  //     if (confirmingTxHash === newMarketState.state.transaction.txid) {
+  //       notify({
+  //         type: "success",
+  //         text: "Confirmed transaction",
+  //         description: `<a href='https://${
+  //           testnet ? "test." : ""
+  //         }whatsonchain.com/tx/${confirmingTxHash}'>${confirmingTxHash.slice(0, 20)}...</a>`
+  //       })
+  //       delete $confirmingTxs[newMarketState.stateCount]
+  //       $confirmingTxs = $confirmingTxs
+  //     } else {
+  //       notify({
+  //         type: "danger",
+  //         text: "Failed to confirm transaction",
+  //         description: "Your order did not go through"
+  //       })
+  //       $confirmingTxs = {}
+  //     }
+  //   }
+  // }
 
   async function broadcast(tx: bsv.Transaction) {
     try {
@@ -250,14 +307,6 @@
       return false
     }
 
-    notify({
-      type: "success",
-      text: "Successfully updated market",
-      description: `<a href='https://${testnet ? "test." : ""}whatsonchain.com/tx/${tx.hash}'>${tx.hash.slice(
-        0,
-        20
-      )}...</a>`
-    })
     return true
   }
 

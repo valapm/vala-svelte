@@ -23,4 +23,12 @@
   .notification :global(a) {
     text-decoration: underline;
   }
+
+  .success {
+    border: 1px solid #01a781;
+  }
+
+  .danger {
+    border: 1px solid #ff0060;
+  }
 </style>

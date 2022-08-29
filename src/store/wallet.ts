@@ -69,21 +69,22 @@ export let address = derived(
   null
 )
 
-let resetOutputs = true
+export let resetOutputs = writable(true)
 export let fetchedUtxos = derived(
-  address,
-  ($address, set) => {
+  [address, resetOutputs],
+  ([$address, $resetOutputs], set) => {
     // Periodically fetch UTXOs from whatsonchain
     async function fetchUtxos() {
       if ($address) {
         const utxos = await fetchUTXOs($address.hashBuffer.toString("hex"), testnet)
 
-        if (resetOutputs) {
+        if ($resetOutputs) {
           // Reset outputs on reload
           outputs.update(outs => {
             return {}
           })
-          resetOutputs = false
+          resetOutputs.set(false)
+          console.log("Refetched all outputs")
         }
 
         // Add new, not yet seen outputs to store

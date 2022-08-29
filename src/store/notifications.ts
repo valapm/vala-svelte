@@ -11,7 +11,13 @@ export function removeNotification(id) {
   })
 }
 
-export function notify(data): number {
+export type Notification = {
+  id: number
+  remove: () => void
+  [key: string]: any
+}
+
+export function notify(data, time = 5000): Notification {
   const id = notificationId
   notificationId += 1
 
@@ -31,10 +37,12 @@ export function notify(data): number {
   })
 
   // Remove notification again
-  const timeout = new Promise(r => setTimeout(r, 2000))
-  timeout.then(() => {
-    notification.remove()
-  })
+  if (time) {
+    const timeout = new Promise(r => setTimeout(r, time))
+    timeout.then(() => {
+      notification.remove()
+    })
+  }
 
-  return id
+  return notification
 }
