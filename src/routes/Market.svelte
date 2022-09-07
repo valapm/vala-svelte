@@ -49,7 +49,7 @@
     subscription {
       market_state(where: {market: {marketStateByFirststateid: { state: {transaction: {txid: {_eq: "${
         params.firstTxTxid
-      }"}}}}}}, order_by: {stateCount:desc}, limit: 1) {
+      }"}}}}}, broadcastFailed: {_eq: false}}, order_by: {stateCount:desc}, limit: 1) {
         totalSatVolume
         accLiquidityFeePool
         liquidityPoints
