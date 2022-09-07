@@ -27,7 +27,7 @@
     market.market_state[0].shares.reduce((a, b, i) => (i === market.market_state[0].decision ? a : a + b)) > 0
 
   $: redeemInvalidSats = redeemInvalid
-    ? lmsr.getLmsrSats(market.market_state) -
+    ? lmsr.getLmsrSats(market.market_state[0]) -
       lmsr.getLmsrSats({
         liquidity: market.market_state[0].liquidity,
         shares: market.market_state[0].shares.map((a, i) => (i === market.market_state[0].decision ? a : 0))
