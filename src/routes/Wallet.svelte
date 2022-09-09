@@ -29,6 +29,8 @@
             liquidity
             shares
             decided
+            satoshis
+            liquidityFeePool
             decision
             market_oracles {
               committed
@@ -43,6 +45,7 @@
               options {
                 name
               }
+              version
             }
           }
         }
@@ -87,11 +90,20 @@
 
   $: liquiditySats = $entries.data
     ? $entries.data.entry.map(entry => {
-        const changedBalance = {
-          liquidity: entry.market_state.liquidity - entry.liquidity,
-          shares: entry.market_state.shares
-        }
-        return lmsr.getLmsrSats(entry.market_state) - lmsr.getLmsrSats(changedBalance)
+        const { liquidity, shares, decided, decision, satoshis, liquidityFeePool } = entry.market_state
+        const marketVersion = pm.getMarketVersion(entry.market_state.market.version)
+
+        return pm.getLiquiditySatBalance(
+          { shares, liquidity },
+          {
+            decided,
+            decision,
+            liquidityFeePool
+          },
+          satoshis,
+          entry.liquidity,
+          marketVersion
+        )
       })
     : []
 

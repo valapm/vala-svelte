@@ -2,7 +2,7 @@
   import { price } from "../store/price"
   import { getSharePrice } from "../utils/lmsr"
   import { round, formatUSD } from "../utils/format"
-  import { lmsr } from "bitcoin-predict"
+  import { lmsr, pm } from "bitcoin-predict"
 
   export let market
   export let entry
@@ -17,12 +17,21 @@
     liquidity: market.market_state[0].liquidity
   }
 
+  $: marketVersion = pm.getMarketVersion(market.version)
+
   $: liquidityBalance =
-    lmsr.getLmsrSats(marketBalance) -
-    lmsr.getLmsrSats({
-      shares: market.market_state[0].shares,
-      liquidity: market.market_state[0].liquidity - liquidity
-    })
+    liquidity &&
+    pm.getLiquiditySatBalance(
+      { shares: market.market_state[0].shares, liquidity: market.market_state[0].liquidity },
+      {
+        decided: market.market_state[0].decided,
+        decision: market.market_state[0].decision,
+        liquidityFeePool: market.market_state[0].liquidityFeePool
+      },
+      market.market_state[0].satoshis,
+      liquidity,
+      marketVersion
+    )
 
   $: liquidityBalanceUSD = round((liquidityBalance / 100000000) * $price)
 
