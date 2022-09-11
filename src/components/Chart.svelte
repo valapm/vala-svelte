@@ -34,9 +34,7 @@
 
   const priceSubscription = gql`
     subscription {
-      market_state(where: { market: { marketStateByFirststateid: { state: {transaction: {txid: {_eq: "${
-        market.marketStateByFirststateid.state.transaction.txid
-      }"}, broadcastedAt: {_gt: "${new Date().toISOString()}"}}}}}, decided: {_eq: false}}, order_by: {stateCount: desc}, limit: 1) {
+      market_state(where: { market: { marketStateByFirststateid: { state: {transaction: {txid: {_eq: "${market.marketStateByFirststateid.state.transaction.txid}"}}}}}, decided: {_eq: false}, stateCount: {_gt: ${market.market_state[0].stateCount}}, state: {transaction: {broadcastFailed: {_eq: false}}}}, order_by: {stateCount: desc}, limit: 1) {
         shares
         liquidity
         decided
@@ -50,6 +48,7 @@
       }
     }
   `
+
   const marketDataSubscription = subscribe(priceSubscription)
 
   let chart
