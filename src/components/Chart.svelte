@@ -31,6 +31,7 @@
       }
     }
   `
+
   const priceSubscription = gql`
     subscription {
       market_state(where: { market: { marketStateByFirststateid: { state: {transaction: {txid: {_eq: "${
@@ -137,10 +138,13 @@
         label: getOptionName(index),
         data,
         // fill: false,
-        cubicInterpolationMode: "monotone",
         borderColor: [colors[index % 6]],
-        borderWidth: 1,
-        radius: 0
+        borderWidth: 3,
+        pointRadius: 0,
+        pointHitRadius: 10,
+        lineTension: 0.2,
+        borderJoinStyle: "round",
+        borderCapStyle: "round"
         // backgroundColor: gradient // Only works after canvas is loaded
       }
     })
@@ -162,6 +166,7 @@
             type: "time",
             bounds: "data",
             ticks: {
+              color: "rgba(255, 255, 255, 0.5)",
               maxRotation: 0,
               major: {
                 enabled: true
@@ -173,14 +178,47 @@
                   }
                 }
               }
+            },
+            grid: {
+              display: false,
+              borderColor: "#323841",
+              borderWidth: 2
             }
           },
           y: {
+            display: false,
             min: 0,
             max: 1,
             grid: {
               display: false
             }
+          }
+        },
+        plugins: {
+          legend: {
+            position: "chartArea",
+            align: "start",
+            labels: {
+              color: "rgba(255, 255, 255, 0.5)",
+              // usePointStyle: true,
+              // pointStyleWidth: 10,
+              boxWidth: 3
+            }
+          },
+          tooltip: {
+            callbacks: {
+              //This removes the tooltip title
+              title: function () {}
+            },
+            //this removes legend color
+            displayColors: false,
+            yPadding: 10,
+            xPadding: 10,
+            position: "nearest",
+            caretSize: 10,
+            // backgroundColor: "rgba(255,255,255,.9)",
+            bodyFontSize: 15
+            // bodyFontColor: "#303030"
           }
         }
       }

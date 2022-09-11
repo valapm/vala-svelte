@@ -670,6 +670,11 @@
 
   .chart {
     width: 100%;
+    /* background-color: #323841; */
+    border: 2px solid #323841;
+    border-radius: 0.75rem;
+    box-shadow: 3px 3px 17px 3px #323841;
+    padding: 0.6rem 0;
   }
 
   .card {
