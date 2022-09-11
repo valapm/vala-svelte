@@ -115,6 +115,7 @@
         // console.log("Result", JSON.stringify(shareData))
 
         // Add current time to the end
+        // FIXME: Needs to be removed when chart updates
         if (stateIndex === data.market_state.length - 1 && !market.market_state[0].decided) {
           shareData[shareIndex] = shareData[shareIndex].concat([
             {
@@ -164,6 +165,9 @@
             min: firstTimestamp,
             type: "time",
             bounds: "data",
+            time: {
+              minUnit: "minute"
+            },
             ticks: {
               color: "rgba(255, 255, 255, 0.5)",
               maxRotation: 0,
