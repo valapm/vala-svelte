@@ -139,7 +139,7 @@
 
     <button class="checkbox" on:click={() => (checked2 = !checked2)}>
       <Checkbox bind:checked={checked2} />
-      <p>This password is <b>unique</b> and I have not used it on any other websites</p>
+      <p>I understand that Vala is not responsible for any loss of funds resulting from the usage of the platform</p>
     </button>
   </div>
 

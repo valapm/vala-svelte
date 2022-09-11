@@ -22,6 +22,7 @@
   import Checkbox from "../components/Checkbox.svelte"
   import OptionsEditor from "../components/OptionsEditor.svelte"
   import AutoResizeTextarea from "../components/AutoResizeTextarea.svelte"
+  import MarketInfoBanner from "../components/MarketInfoBanner.svelte"
 
   const { fundTx } = bp.transaction
 
@@ -188,6 +189,15 @@
 
   {#if step === 0}
     <div class="content">
+      <MarketInfoBanner
+        notification={{
+          type: "warning",
+          title: "Market Duration",
+          description:
+            "We highly recommend not creating markets with a possible runtime of more then a few weeks for the duration of the Beta."
+        }}
+      />
+
       <div class="setting">
         <h2>Title</h2>
         <p>What question does this market answer? E.g. "Who will win the 2024 US election?"</p>

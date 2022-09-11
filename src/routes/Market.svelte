@@ -537,11 +537,13 @@
     loading...
   {:else if market}
     <div class="main-panel">
-      <div class="notifications">
-        {#each notifications as notification}
-          <MarketInfoBanner {notification} />
-        {/each}
-      </div>
+      {#if notifications.length}
+        <div class="notifications">
+          {#each notifications as notification}
+            <MarketInfoBanner {notification} />
+          {/each}
+        </div>
+      {/if}
 
       <MarketHeader {market} />
 
@@ -627,7 +629,7 @@
   main {
     width: min(65rem, 95%);
     display: flex;
-    margin-top: 3.125rem;
+    /* margin-top: 3.125rem; */
     gap: 5.5rem;
   }
 
@@ -644,6 +646,7 @@
     align-items: center;
     width: 100%;
     flex-shrink: 1;
+    margin-top: 3.125rem;
   }
 
   .details-panel {
@@ -659,6 +662,7 @@
     flex-direction: column;
     gap: 2.75rem;
     flex-shrink: 0;
+    margin-top: 3.125rem;
   }
 
   .options {
@@ -698,6 +702,7 @@
     width: 100%;
     flex-direction: column;
     gap: 1rem;
+    /* margin-top: 2rem; */
   }
 
   @media screen and (max-width: 1000px) {
@@ -718,6 +723,7 @@
       justify-content: space-evenly;
       align-items: flex-start;
       width: 100%;
+      margin-top: 0rem;
     }
   }
 </style>
