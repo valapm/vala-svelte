@@ -33,7 +33,7 @@
   let markets = []
   let search = ""
   let sort = 0
-  let filter = [0, 1]
+  let filter = 0
   let direction = "desc"
 
   // $: if (markets) console.log("markets changed")
@@ -42,73 +42,37 @@
   // $: if (filter) console.log("filter changed")
   // $: if (direction) console.log("direction changed")
 
-  // let filterQueries = [
-  //   "{market_state: {market_oracles: {committed: {_eq: true}}, decided: {_eq: false}}}",
-  //   "{market_state: {decided: {_eq: true}}}"
-  // ]
   let filterQueries = [
     { market_oracles: { committed: { _eq: true } }, decided: { _eq: false } },
-    { decided: { _eq: true } }
+    { decided: { _eq: true } },
+    { market_oracles: { committed: { _eq: false } } }
   ]
 
   $: isCurrentOracle = oracle && $rabinPubKey && $rabinPubKey.toString() === oracle.pubKey
 
-  // let filters = []
-  // let marketStateFilter = {}
   let marketFilter = {}
   $: {
     let marketStateFilters = []
 
-    if (filter.length) {
-      let selectedFilterQueries = []
-      for (const i of filter) {
-        selectedFilterQueries.push(filterQueries[i])
-      }
-      marketStateFilters.push({ _or: selectedFilterQueries })
-    }
+    marketStateFilters.push(filterQueries[filter])
 
     if (!isCurrentOracle) {
       // Exclude hidden markets
       if ($publicKey) {
-        // marketStateFilter = {
-        //   ...marketStateFilter,
-        //   _or: [{ hidden: { _eq: false } }, { entries: { investorPubKey: { _eq: publicKey.toString() } } }]
-        // }
         marketStateFilters.push({
           _or: [{ hidden: { _eq: false } }, { entries: { investorPubKey: { _eq: $publicKey.toString() } } }]
         })
-        // filters = [
-        //   ...filters,
-        //   `{market_state: {_or: [{hidden: {_eq: false}}, {entries: {investorPubKey: {_eq: "${$publicKey.toString()}"}}}]}}`
-        // ]
       } else {
-        // marketStateFilter = {
-        //   ...marketStateFilter,
-        //   hidden: { _eq: false }
-        // }
         marketStateFilters.push({ hidden: { _eq: false } })
-        // filters = [...filters, `{market_state: {hidden: {_eq: false}}}`]
       }
     }
 
-    if (!isCurrentOracle && !pubKeyFilter) {
-      // Exclude unpublished marketes
-      // marketStateFilter = {
-      //   ...marketStateFilter,
-      //   market_oracles: { committed: { _eq: true } }
-      // }
-      marketStateFilters.push({ market_oracles: { committed: { _eq: true } } })
-      // filters = [...filters, "{market_state: {market_oracles: {committed: {_eq: true}}}}"]
-    }
+    // Filter by selected market status option
+    marketStateFilters.push(filterQueries[filter])
 
     if (pubKeyFilter) {
       // Filter by investor pubKey
-      // marketStateFilter = {
-      //   ...marketStateFilter,
-      //   entries: { investorPubKey: { _eq: pubKeyFilter } }
-      // }
       marketStateFilters.push({ entries: { investorPubKey: { _eq: pubKeyFilter } } })
-      // filters = [...filters, `{market_state: {entries: {investorPubKey: {_eq: "${pubKeyFilter}"}}}}`]
     }
 
     if (oracle) {
@@ -117,7 +81,6 @@
         ...marketFilter,
         oraclePubKey: { _eq: oracle.pubKey }
       }
-      // filters = [...filters, `{oraclePubKey: {_eq: "${oracle.pubKey}" }}`]
     }
 
     if (marketStateFilters.length) {
@@ -222,11 +185,8 @@
 
   let initializing = true
   onMount(() => {
-    if (isCurrentOracle || pubKeyFilter) {
-      filterOptions = [...filterOptions, "Unconfirmed Markets"]
-      filterQueries = [...filterQueries, { market_state: { market_oracles: { committed: { _eq: false } } } }]
-      filter = [0, 1, 2]
-    }
+    if (isCurrentOracle) filterOptions = [...filterOptions, "Unpublished Markets"]
+
     initializing = false
   })
 </script>

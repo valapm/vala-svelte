@@ -4,7 +4,7 @@
   export let sortOptions
   export let filterOptions
 
-  export let filter = [0]
+  export let filter = 0
   export let sort = 0
   export let direction = "desc"
 
@@ -12,22 +12,22 @@
   let showSort = false
 
   let directionButton
-
-  $: filterString =
-    filter.length === filterOptions.length ? "Show All" : filter.map(index => filterOptions[index]).join(", ") || "None"
 </script>
 
 <div class="main">
   <div class="left">
     <div>
-      <button class="selected" on:click={() => (showFilter = true)}>{filterString}</button>
+      <button class="selected" on:click={() => (showFilter = true)}>{filterOptions[filter]}</button>
       <Dropdown bind:show={showFilter}>
         <div id="filter_select">
           {#each filterOptions as option, index}
-            <label class={filter.includes(index) ? "selected" : ""}>
-              <input type="checkbox" bind:group={filter} value={index} />
-              {option}
-            </label>
+            <button
+              class={index === filter ? "selected" : ""}
+              on:click={() => {
+                filter = index
+                showFilter = false
+              }}>{option}</button
+            >
           {/each}
         </div>
       </Dropdown>
@@ -111,7 +111,7 @@
   }
 
   #sort_select button,
-  #filter_select label {
+  #filter_select button {
     opacity: 50%;
   }
 
@@ -121,12 +121,9 @@
     opacity: 100% !important;
   }
 
-  #sort_select {
-    transform: translate(-0.5625rem, -0.5625rem);
-  }
-
+  #sort_select,
   #filter_select {
-    transform: translate(0, -0.5625rem);
+    transform: translate(-0.5625rem, -0.5625rem);
   }
 
   .direction {
