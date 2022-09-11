@@ -47,9 +47,9 @@
 
   const marketStateQuery = gql`
     subscription {
-      market_state(where: {market: {marketStateByFirststateid: { state: {transaction: {txid: {_eq: "${
+      market_state(where: {state: {transaction: {broadcastFailed: {_eq: false}}}, market: {marketStateByFirststateid: { state: {transaction: {txid: {_eq: "${
         params.firstTxTxid
-      }"}}}}}, broadcastFailed: {_eq: false}}, order_by: {stateCount:desc}, limit: 1) {
+      }"}}}}}}, order_by: {stateCount:desc}, limit: 1) {
         totalSatVolume
         accLiquidityFeePool
         liquidityPoints
@@ -169,7 +169,6 @@
 
   const marketRes = query(marketQuery)
   const currentMarketState = subscribe(marketStateQuery)
-  // const confirmedState = subscribe(confimedStateQuery)
 
   let market
   $: if ($marketRes.data) market = cloneDeep($marketRes.data.market[0])

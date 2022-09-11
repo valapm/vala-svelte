@@ -76,22 +76,22 @@
       console.error(`Subscription error for tx ${txid}:`, e)
     })
 
-    // In case reponse is too fast for subscription
-    client
-      .query({
-        query: gql`
-          query {
-            transaction(where: {txid: {_eq: "${txid}"}}) {
-              broadcastFailed
-              broadcasted
-            }
-          }
-        `
-      })
-      .then(res => {
-        console.log("query res:")
-        handleTxRes(res)
-      })
+    // // In case reponse is too fast for subscription
+    // client
+    //   .query({
+    //     query: gql`
+    //       query {
+    //         transaction(where: {txid: {_eq: "${txid}"}}) {
+    //           broadcastFailed
+    //           broadcasted
+    //         }
+    //       }
+    //     `
+    //   })
+    //   .then(res => {
+    //     console.log("query res:")
+    //     handleTxRes(res)
+    //   })
   }
 
   $: if ($confirmingTx) notifyOnConfirmation($confirmingTx.txid, $confirmingTx.notification)

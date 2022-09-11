@@ -107,6 +107,8 @@
       })
     : []
 
+  $: console.log("liquiditySats", liquiditySats)
+
   $: usdLiquidity = ($price * liquiditySats.reduce((total, sats) => total + sats, 0)) / 100000000
   $: usdPositions =
     ($price *
