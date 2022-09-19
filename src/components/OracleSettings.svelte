@@ -1,5 +1,4 @@
 <script type="ts">
-  import { BoostPowJobModel } from "../utils/boostPow"
   import { bsv, rabin as rab } from "bitcoin-predict"
   import * as bp from "bitcoin-predict"
   import { rabinPubKey, rabinPrivKey } from "../store/oracle"

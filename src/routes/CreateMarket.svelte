@@ -194,7 +194,7 @@
           type: "warning",
           title: "Market Duration",
           description:
-            "We highly recommend not creating markets with a possible runtime of more then a few weeks for the duration of the Beta."
+            "We highly recommend not creating markets with a possible runtime of more than a few weeks for the duration of the Beta."
         }}
       />
 
