@@ -525,6 +525,17 @@
   $: if (market && market.market_state[0].decided) openedPanels[market.market_state[0].decision] = true
 
   $: notifications = market ? getMarketNotifications(market) : []
+
+  $: if (params.firstTxTxid === "2e5842faa55d9930f024a5963b8cac3720a9927be30a745da1d054e003d38c95") {
+    notifications = notifications.concat([
+      {
+        type: "warning",
+        title: "Issue detected",
+        description:
+          "We are investigating and fixing an issue in this market. Thank you for participating the the Beta."
+      }
+    ])
+  }
 </script>
 
 <SubHeader>
