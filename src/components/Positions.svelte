@@ -1,6 +1,6 @@
 <script>
   import { price } from "../store/price"
-  import { getSharePrice } from "../utils/lmsr"
+  import { getShareValue } from "../utils/lmsr"
   import { round, formatUSD } from "../utils/format"
   import { lmsr } from "bitcoin-predict"
 
@@ -26,7 +26,7 @@
 
   $: shareSatValues = market.market_state[0].decided
     ? balance.shares.map((s, i) => (i === market.market_state[0].decision ? s * lmsr.SatScaling : 0))
-    : balance.shares.map((s, i) => getSharePrice(marketBalance, i, s))
+    : balance.shares.map((s, i) => getShareValue(marketBalance, i, s))
   $: shareUsdValues = shareSatValues.map(sats => round((sats / 100000000) * $price))
 </script>
 
