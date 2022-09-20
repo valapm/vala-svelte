@@ -33,11 +33,7 @@ box-shadow: 0 0 1.125rem #${color}80;`
     <div class="open" />
     <h3>
       <Chevron color={deactivated ? "ffffff" : color} style={open ? "transform: rotate(90deg);" : ""} />
-      <span
-        style={limitTitle
-          ? `text-overflow: ellipsis; white-space: nowrap; overflow: hidden; max-width: ${limitTitle};`
-          : ""}>{title}</span
-      >
+      <span style={limitTitle ? `max-width: ${limitTitle};` : ""}>{title}</span>
     </h3>
     <slot name="header" />
   </div>

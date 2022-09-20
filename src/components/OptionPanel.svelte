@@ -84,7 +84,7 @@
 </script>
 
 <SidePanelCard title={market.options[option].name} {gradient} {deactivated} limitTitle="6rem" bind:open>
-  <div slot="header">
+  <div slot="header" class="header">
     {#if !market.market_state[0].decided}
       <div class="price">${Math.round(priceBuyOneUSD * 100) / 100}</div>
       {#if probability}
@@ -181,15 +181,11 @@
     width: 100%;
   }
   .probability {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
     font-size: 0.875rem;
     font-family: "Roboto Mono", sans-serif;
     font-weight: 700;
     opacity: 50%;
     z-index: -1;
-    top: 1.25rem;
   }
   .price {
     font-family: "Roboto Mono", sans-serif;
@@ -207,5 +203,14 @@
 
   .label {
     opacity: 70%;
+  }
+
+  .header {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30%;
+    width: 50%;
   }
 </style>
