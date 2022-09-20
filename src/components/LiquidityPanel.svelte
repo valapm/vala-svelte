@@ -61,7 +61,7 @@
         {liquidity} ({formatUSD(liquidityBalanceUSD)})
       </td>
       <td>
-        {liquidityPercent}
+        {round(liquidityPercent)}%
       </td>
       <td>
         {totalLiquidityPoints}
