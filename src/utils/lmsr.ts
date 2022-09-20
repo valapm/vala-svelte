@@ -15,6 +15,21 @@ export function getSharePrice(balance: lmsr.balance, option: number, amount: num
   return lmsr.lmsr(newBalance) * lmsr.SatScaling - lmsr.getLmsrSats(balance)
 }
 
+export function getShareValue(balance: lmsr.balance, option: number, amount: number) {
+  const newBalance =
+    option === -1
+      ? {
+          shares: balance.shares,
+          liquidity: balance.liquidity - amount
+        }
+      : {
+          shares: balance.shares.map((s, i) => (i === option ? s - amount : s)),
+          liquidity: balance.liquidity
+        }
+
+  return lmsr.getLmsrSats(balance) - lmsr.lmsr(newBalance) * lmsr.SatScaling
+}
+
 export function isInsideLimits(
   balance: lmsr.balance,
   option: number,
