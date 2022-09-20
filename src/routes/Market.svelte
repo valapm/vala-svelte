@@ -212,7 +212,7 @@
     const newStateCount = market.market_state[0].stateCount + 1
     const entriesQuery = gql`
       query {
-      entry(where: {market_state: {id: {_eq: ${market.market_state[0].id}}}}) {
+      entry(where: {market_state: {id: {_eq: ${market.market_state[0].id}}}}, order_by: {id: asc}) {
         liquidity
         shares
         liquidityPoints
