@@ -212,7 +212,7 @@
     const newStateCount = market.market_state[0].stateCount + 1
     const entriesQuery = gql`
       query {
-      entry(where: {market_state: {id: {_eq: ${market.market_state[0].id}}}}, order_by: {id: asc}) {
+      entry(where: {market_state: {id: {_eq: ${market.market_state[0].id}}}}, order_by: {position: asc}) {
         liquidity
         shares
         liquidityPoints
@@ -526,16 +526,16 @@
 
   $: notifications = market ? getMarketNotifications(market) : []
 
-  $: if (params.firstTxTxid === "2e5842faa55d9930f024a5963b8cac3720a9927be30a745da1d054e003d38c95") {
-    notifications = notifications.concat([
-      {
-        type: "warning",
-        title: "Issue detected",
-        description:
-          "We are investigating and fixing an issue in this market. Thank you for participating the the Beta."
-      }
-    ])
-  }
+  // $: if (params.firstTxTxid === "2e5842faa55d9930f024a5963b8cac3720a9927be30a745da1d054e003d38c95") {
+  //   notifications = notifications.concat([
+  //     {
+  //       type: "warning",
+  //       title: "Issue detected",
+  //       description:
+  //         "We are investigating and fixing an issue in this market. Thank you for participating the the Beta."
+  //     }
+  //   ])
+  // }
 </script>
 
 <SubHeader>
