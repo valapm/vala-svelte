@@ -98,7 +98,10 @@
 
   $: if ($confirmingTx) notifyOnConfirmation($confirmingTx.txid, $confirmingTx.notification)
 
-  const earningsQuery = gql`
+  async function notifyResolved() {
+    console.log("Fetching unredeemed shares and liquidity")
+
+    const earningsQuery = gql`
     query {
     entry(where: { _not: { market_state: {state: {states: {}}}}, market_state: {decided: {_eq: true}}, investorPubKey: { _eq: "${$publicKey.toString()}"}}) {
       shares
@@ -118,9 +121,6 @@
     }
   }
   `
-
-  onMount(async () => {
-    document.querySelector(".preloader").style.opacity = 0
 
     const earningsRes = await client.query({ query: earningsQuery })
 
@@ -144,6 +144,12 @@
         0
       )
     }
+  }
+
+  $: if ($publicKey) notifyResolved()
+
+  onMount(async () => {
+    document.querySelector(".preloader").style.opacity = 0
   })
 </script>
 
