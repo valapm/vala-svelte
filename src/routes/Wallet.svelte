@@ -54,7 +54,7 @@
   const entries = query(entryQuery)
 
   function getMarketStatus(entry) {
-    return entry.market_state.market.decided ? 2 : entry.market_state.market_oracles[0].committed ? 1 : 0
+    return entry.market_state.decided ? 2 : entry.market_state.market_oracles[0].committed ? 1 : 0
   }
 
   $: satPositions = $entries.data
@@ -191,7 +191,7 @@
             <tbody>
               {#each $entries.data.entry as entry, entryIndex}
                 {#each entry.shares as shares, shareIndex}
-                  {#if shares > 0}
+                  {#if shares > 0 && (!entry.market_state.decided || entry.market_state.decision === shareIndex)}
                     <tr
                       on:click={() =>
                         push("/market/" + entry.market_state.market.marketStateByFirststateid.state.transactionTxid)}
