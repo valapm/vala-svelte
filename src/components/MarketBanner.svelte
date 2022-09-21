@@ -20,7 +20,7 @@
 </script>
 
 <div id="banner">
-  <div>
+  <a href="#/oracles/{market.oracle.pubKey}">
     <h2>Oracle</h2>
     <div class="oracle">
       {#if market.oracle.iconType}
@@ -28,7 +28,7 @@
       {/if}
       {oracleHostname}
     </div>
-  </div>
+  </a>
   <div>
     <h2>Total Volume</h2>
     <div>{formatUSD(totalVolume)}</div>
@@ -57,7 +57,7 @@
     color: rgba(255, 255, 255, 0.5);
   }
 
-  #banner > div {
+  #banner > * {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -65,7 +65,7 @@
     flex-grow: 1;
   }
 
-  #banner > div > div {
+  #banner > * > div {
     height: 1.3rem;
     display: flex;
     gap: 0.3rem;
@@ -73,7 +73,7 @@
     height: 1.5rem;
   }
 
-  #banner > div + div {
+  #banner > * + * {
     border-left: 1px solid rgba(255, 255, 255, 0.5);
   }
 
