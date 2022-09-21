@@ -3,6 +3,7 @@
   import Twetch from "../icons/Twetch.svelte"
   import Twitter from "../icons/Twitter.svelte"
   import Github from "../icons/Github.svelte"
+  import Telegram from "../icons/Telegram.svelte"
 </script>
 
 <footer>
@@ -11,6 +12,7 @@
       <Logo greyscale={true} />
     </div>
     <div class="media_icons">
+      <a href="https://t.me/valamarkets"><Telegram /></a>
       <a href="https://github.com/valapm"><Github /></a>
       <a href="https://twitter.com/valamarkets"><Twitter /></a>
       <a href="https://twetch.com/u/43"><Twetch /></a>
