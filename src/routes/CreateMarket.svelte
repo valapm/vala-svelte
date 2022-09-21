@@ -2,7 +2,6 @@
   import * as bp from "bitcoin-predict"
   import { privateKey, publicKey, address } from "../store/wallet"
   // import { getUtxos } from "../utils/utxo"
-  import { oracles } from "../oracle"
   import { testnet, feeb } from "../config"
   import { postTx } from "../utils/api"
   import { gql } from "graphql-request"
