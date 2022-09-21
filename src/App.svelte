@@ -2,6 +2,7 @@
   import { onMount } from "svelte"
   import { setClient } from "svelte-apollo"
   import { client } from "./utils/apollo"
+  import { contracts } from "bitcoin-predict"
 
   import Router from "svelte-spa-router"
   import { routes } from "./routes"
@@ -14,9 +15,10 @@
   import { gql } from "@apollo/client/core"
   import cloneDeep from "lodash/cloneDeep"
   import merge from "lodash/merge"
+  import semverLt from "semver/functions/lt"
 
   import { confirmingTx } from "./store/tx"
-  import { resetOutputs } from "./store/wallet"
+  import { resetOutputs, publicKey } from "./store/wallet"
   import { notify, Notification, notifications } from "./store/notifications"
   import { testnet } from "./config"
 
@@ -96,8 +98,52 @@
 
   $: if ($confirmingTx) notifyOnConfirmation($confirmingTx.txid, $confirmingTx.notification)
 
-  onMount(() => {
+  const earningsQuery = gql`
+    query {
+    entry(where: { _not: { market_state: {state: {states: {}}}}, market_state: {decided: {_eq: true}}, investorPubKey: { _eq: "${$publicKey.toString()}"}}) {
+      shares
+      liquidity
+      market_state {
+        decision
+        market {
+          version
+          resolve
+          marketStateByFirststateid {
+            state {
+              transactionTxid
+            }
+          }
+        }
+      }
+    }
+  }
+  `
+
+  onMount(async () => {
     document.querySelector(".preloader").style.opacity = 0
+
+    const earningsRes = await client.query({ query: earningsQuery })
+
+    // Find unredeemed earnings in resolved markets
+    const earnings = earningsRes.data.entry.filter(entry => {
+      const marketVersion = contracts.marketContracts[entry.market_state.market.version]
+      if (!marketVersion || semverLt(marketVersion.version, "0.6.0")) return false
+      if (entry.liquidity) return true
+      if (entry.market_state.decided) return entry.shares[entry.market_state.decision] > 0
+      return entry.shares.some(s => s > 0)
+    })
+
+    for (const entry of earnings) {
+      notify(
+        {
+          type: "success",
+          text: `${entry.market_state.market.resolve}`,
+          description: `Market resolved: Redeem your earnings now.`,
+          link: `/market/${entry.market_state.market.marketStateByFirststateid.state.transactionTxid}`
+        },
+        0
+      )
+    }
   })
 </script>
 

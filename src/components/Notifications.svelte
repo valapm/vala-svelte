@@ -20,6 +20,7 @@
     right: 1rem;
     display: flex;
     flex-direction: column;
+    align-items: flex-end;
     gap: 1rem;
     z-index: 10;
   }
