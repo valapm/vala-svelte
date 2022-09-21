@@ -15,7 +15,10 @@
     return Math.round(n * 100) / 100
   }
 
-  const oracleQuery = gql`
+  let oracle
+
+  async function fetchOracle() {
+    const oracleQuery = gql`
     query {
       oracle(where: {pubKey: {_eq: "${$rabinPubKey}"}}) {
         hasCorrectDNS
@@ -25,15 +28,15 @@
       }
     }`
 
-  let oracle
-
-  $: isOracle = oracle && oracle.oracle_state[0] && oracle.oracle_state[0].domain
-
-  onMount(async () => {
     const oracleData = await gqlClient.request(oracleQuery)
     oracle = oracleData.oracle[0]
-    console.log(oracle)
-  })
+  }
+
+  $: if ($rabinPubKey) {
+    fetchOracle()
+  }
+
+  $: isOracle = oracle && oracle.oracle_state[0] && oracle.oracle_state[0].domain
 
   let width
 </script>
