@@ -1,6 +1,10 @@
 <script>
+  import { seed } from "../store/wallet"
+
   import Dropdown from "./Dropdown.svelte"
   import ContactModal from "./ContactModal.svelte"
+  import Rss from "../icons/Rss.svelte"
+  import Login from "../icons/Login.svelte"
 
   export let isOracle
 
@@ -18,17 +22,63 @@
 
   <Dropdown bind:show={showMenu} position="">
     <div class="menu">
-      <a href="#/options">
-        <img src="/icons/gear.svg" alt="" />
-        Settings</a
-      >
+      {#if !$seed}
+        <a
+          href="#/login"
+          on:click={() => {
+            showMenu = false
+          }}
+        >
+          <Login />
+          Log in</a
+        >
+      {/if}
+
+      {#if $seed}
+        <a
+          href="#/options"
+          on:click={() => {
+            showMenu = false
+          }}
+        >
+          <img src="/icons/gear.svg" alt="" />
+          Settings</a
+        >
+      {/if}
+
+      <a href="https://blog.vala.ai/"> <Rss />Blog</a>
       <a href="https://docs.vala.ai/"> <img src="/icons/questionmark.svg" alt="" />FAQ</a>
       <button on:click={openContact}> <img src="/icons/speechbubble.svg" alt="" />Contact</button>
-      <a href="#/logout"> <img src="/icons/logout.svg" alt="" />Logout</a>
 
-      {#if !isOracle}
+      {#if $seed}
+        <a
+          href="#/logout"
+          on:click={() => {
+            showMenu = false
+          }}
+        >
+          <img src="/icons/logout.svg" alt="" />Logout</a
+        >
+      {/if}
+
+      {#if isOracle}
         <div />
-        <a href="#/oracle" class="oracle">Become an Oracle</a>
+        <a
+          href="#/create"
+          class="oracle"
+          on:click={() => {
+            showMenu = false
+          }}>Create a new Market</a
+        >
+      {:else}
+        <div />
+        <a
+          href="#/oracle"
+          class="oracle"
+          on:click={() => {
+            showMenu = false
+          }}>Become an Oracle</a
+        >
       {/if}
     </div>
   </Dropdown>
@@ -39,6 +89,10 @@
 <style>
   .dropdown-menu {
     /* position: relative; */
+  }
+
+  .menu :global(svg) {
+    width: 1rem;
   }
 
   img {

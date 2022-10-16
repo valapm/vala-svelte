@@ -56,7 +56,8 @@
         <div class="menu">
           <a href="#/markets"><Button type="text" active={/\/market.*/gm.test($location)}>Markets</Button></a>
           <a href="#/oracles"><Button type="text" active={/\/oracle.*/gm.test($location)}>Oracles</Button></a>
-          <a href="https://docs.vala.ai/"><Button type="text">FAQ</Button></a>
+          <a href="https://blog.vala.ai/"><Button type="text">Blog</Button></a>
+          <!-- <a href="https://docs.vala.ai/"><Button type="text">Docs</Button></a> -->
         </div>
       {/if}
 
@@ -71,19 +72,22 @@
         </a>
       {/if}
 
-      {#if $seed}
-        <DropdownMenu {isOracle} />
-      {:else}
-        <a href="#/login"><Button>Sign in</Button></a>
+      {#if !$seed}
+        {#if width >= 580}
+          <a href="#/login"><Button>Sign in</Button></a>
+        {/if}
         <a href="#/register"><Button type="filled">Sign up</Button></a>
       {/if}
+
+      <DropdownMenu {isOracle} />
     </div>
   </div>
   {#if width < 580}
     <div class="menu-mobile menu">
       <a href="#/markets"><Button type="text" active={/\/market.*/gm.test($location)}>Markets</Button></a>
       <a href="#/oracles"><Button type="text" active={/\/oracle.*/gm.test($location)}>Oracles</Button></a>
-      <a href="https://docs.vala.ai/"><Button type="text">FAQ</Button></a>
+      <a href="https://blog.vala.ai/"><Button type="text">Blog</Button></a>
+      <!-- <a href="https://docs.vala.ai/"><Button type="text">FAQ</Button></a> -->
     </div>
   {/if}
 </nav>
