@@ -161,8 +161,9 @@
         bind:open={rewardsPanelOpened}
         on:opened={e => (liquidityPanelOpened = false)}
         ><div slot="body" class="body">
-          <div class="details">Your earned Liquidity Tokens</div>
-          <div class="balance">Earned: <b>{totalLiquidityPoints}</b> Tokens</div>
+          <!-- <div class="details">Your earned Liquidity Tokens</div> -->
+          <!-- <div class="balance">Earned: <b>{totalLiquidityPoints}</b> Tokens</div> -->
+          <div class="balance">Earnings: <b>{formatUSD(earningUSD)}</b></div>
           <Table>
             <div>
               <div class="label">Tx Fee</div>
@@ -180,7 +181,8 @@
           <div class="details">Redeem your Liquidity and Liquidity Rewards</div>
           <div class="balance">
             Liquidity: <b>{liquidity}</b><br />
-            Rewards: <b>{totalLiquidityPoints}</b> Tokens
+            Earnings: <b>{formatUSD(earningUSD)}</b>
+            <!-- Rewards: <b>{totalLiquidityPoints}</b> Tokens -->
           </div>
 
           <Table>

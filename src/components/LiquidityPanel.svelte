@@ -51,7 +51,7 @@
     <tr>
       <th> Balance </th>
       <th> Share </th>
-      <th> Earned Liquidity Tokens </th>
+      <th> Earnings </th>
     </tr>
   </thead>
 
@@ -63,10 +63,7 @@
       <td>
         {round(liquidityPercent)}%
       </td>
-      <td>
-        {totalLiquidityPoints}
-        {#if earningUSD}({formatUSD(earningUSD)}){/if}</td
-      >
+      <td> {formatUSD(earningUSD)}</td>
     </tr>
   </tbody>
 </table>
