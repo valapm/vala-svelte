@@ -18,6 +18,7 @@
 
   const sortOptions = [
     // "Market Cap",
+    "Total Value Locked",
     "Total Volume",
     "Most Recent",
     "Liquidity"
@@ -96,6 +97,13 @@
   }
 
   $: orderQueries = [
+    {
+      market_state_aggregate: {
+        max: {
+          satoshis: new EnumType(direction)
+        }
+      }
+    },
     {
       market_state_aggregate: {
         max: {

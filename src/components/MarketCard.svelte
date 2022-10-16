@@ -48,6 +48,10 @@
 
   $: bsvVolume = market.market_state[0].totalSatVolume / 100000000
   $: usdVolume = bsvVolume * $price
+
+  $: bsvTVL = market.market_state[0].satoshis / 100000000
+  $: usdTVL = bsvTVL * $price
+
   $: bsvLiquidity =
     lmsr.getLmsrSats({ liquidity: balance.liquidity, shares: new Array(market.options.length).fill(0) }) / 100000000
   $: usdLiquidity = bsvLiquidity * $price
@@ -92,6 +96,10 @@
       <div>
         <label for="volume">Volume</label>
         <div id="volume">{formatUSD(usdVolume, true)}</div>
+      </div>
+      <div>
+        <label for="tvl">TVL</label>
+        <div id="tvl">{formatUSD(usdTVL, true)}</div>
       </div>
       <div class="oracle">
         {#if market.market_state[0].market_oracles[0].oracle.iconType}
@@ -163,7 +171,8 @@
     opacity: 50%;
   }
 
-  #volume {
+  #volume,
+  #tvl {
     font-family: "Roboto Mono", sans-serif;
     font-size: 0.75rem;
   }
