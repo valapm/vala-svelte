@@ -184,6 +184,7 @@
       left: 50%;
       transform: translateX(-50%);
       margin-top: 3rem;
+      align-items: center;
     }
 
     .title :global(div) {
