@@ -1,9 +1,11 @@
 <script>
-  import Markets from "../components/Markets.svelte"
+  // import Markets from "../components/Markets.svelte";
+  import ThankYouNotice from "../components/ThankYouNotice.svelte";
 </script>
 
 <div>
-  <Markets />
+  <!-- <Markets /> -->
+  <ThankYouNotice />
 </div>
 
 <style>

@@ -16,7 +16,7 @@
 <style>
   .notifications {
     position: fixed;
-    top: 2rem;
+    top: 6rem;
     right: 1rem;
     display: flex;
     flex-direction: column;
